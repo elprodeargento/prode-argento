@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@prode/shared": ["./packages/shared/src"],
+      "@prode/db": ["./packages/db/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next"]
+}
