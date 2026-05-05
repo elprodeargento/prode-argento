@@ -60,7 +60,7 @@ export default async function EmpresaDashboardPage() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardActivity />
-        <DashboardRanking empresaId={business.id} />
+        <DashboardRanking />
       </div>
     </div>
   )

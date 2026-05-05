@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { Search, Download, Send, ChevronLeft, ChevronRight, Loader2, Filter, SlidersHorizontal } from 'lucide-react'
 
 interface Participant {
@@ -15,51 +14,37 @@ interface Participant {
   active?: boolean
 }
 
-export function ParticipantesTable({ businessId }: { businessId: string }) {
+export function ParticipantesTable() {
   const [participants, setParticipants] = useState<Participant[]>([])
+  const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const pageSize = 10
-  const supabase = createClient()
 
   useEffect(() => {
     async function fetchParticipants() {
       setLoading(true)
-      let query = supabase
-        .from('participants')
-        .select('*')
-        .eq('business_id', businessId)
-        .order('total_points', { ascending: false })
-
-      if (search) {
-        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
-      }
-
-      const { data, error } = await query
-
-      if (error) {
+      try {
+        const { apiGet } = await import('@/lib/api')
+        const params = new URLSearchParams({ page: String(page), limit: String(pageSize) })
+        if (search) params.set('search', search)
+        const res = await apiGet<{ data: Participant[]; total: number }>(`/participants/me?${params}`)
+        setParticipants(res.data || [])
+        setTotal(res.total || 0)
+      } catch (error) {
         console.error('Error fetching participants:', error)
-      } else {
-        setParticipants(data || [])
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
-    const timer = setTimeout(() => {
-      fetchParticipants()
-    }, 300) // debounce search
-
+    const timer = setTimeout(fetchParticipants, 300)
     return () => clearTimeout(timer)
-  }, [businessId, search])
+  }, [search, page])
 
-  const filtered = participants.filter(p => 
-    p.name.toLowerCase().includes(search.toLowerCase()) || 
-    p.email.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize)
-  const totalPages = Math.ceil(filtered.length / pageSize)
+  const paginated = participants
+  const totalPages = Math.ceil(total / pageSize)
 
   if (loading) {
     return (
@@ -177,7 +162,7 @@ export function ParticipantesTable({ businessId }: { businessId: string }) {
       {/* FOOTER */}
       <div className="p-4 border-t-[1.5px] border-[#DDE1EF] flex items-center justify-between flex-wrap gap-4">
         <span className="text-[13px] font-semibold text-[#5A6480]">
-          Mostrando {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filtered.length)} de {filtered.length} participantes
+          Mostrando {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)} de {total} participantes
         </span>
         <div className="flex items-center gap-1.5">
           <button 

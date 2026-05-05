@@ -57,4 +57,28 @@ export class ParticipantsService {
     if (error) throw new Error(error.message);
     return data;
   }
+
+  async findByAdminUserId(adminUserId: string, search?: string, page = 1, limit = 10) {
+    const { data: business, error: bizErr } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .single();
+    if (bizErr || !business) throw new Error('Business not found');
+
+    let query = this.supabase.client
+      .from('participants')
+      .select('*', { count: 'exact' })
+      .eq('business_id', business.id)
+      .order('total_points', { ascending: false })
+      .range((page - 1) * limit, page * limit - 1);
+
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw new Error(error.message);
+    return { data: data ?? [], total: count ?? 0, page, limit };
+  }
 }

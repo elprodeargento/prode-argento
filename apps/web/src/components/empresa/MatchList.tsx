@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Bell, CheckCircle2, Loader2 } from 'lucide-react'
@@ -17,6 +16,8 @@ interface Match {
   away_score?: number
   status: 'finished' | 'live' | 'scheduled'
   fd_match_id?: number
+  coverage?: number
+  total_participants?: number
 }
 
 interface DateGroup {
@@ -28,21 +29,23 @@ interface DateGroup {
 export function MatchList() {
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  const [reminded, setReminded] = useState<Set<number>>(new Set())
 
+  const handleRemind = (matchId: number) => {
+    setReminded(prev => new Set(prev).add(matchId))
+    setTimeout(() => setReminded(prev => { const s = new Set(prev); s.delete(matchId); return s }), 3000)
+  }
   useEffect(() => {
     async function fetchMatches() {
-      const { data, error } = await supabase
-        .from('matches')
-        .select('*')
-        .order('kickoff_at', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching matches:', error)
-      } else {
+      try {
+        const { apiGet } = await import('@/lib/api')
+        const data = await apiGet<Match[]>('/matches')
         setMatches(data || [])
+      } catch (error) {
+        console.error('Error fetching matches:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchMatches()
   }, [])
@@ -133,9 +136,25 @@ export function MatchList() {
                     </div>
                   </div>
 
-                  {/* Status */}
-                  <div className="flex items-center gap-6 min-w-[150px] justify-between lg:justify-end">
+                  {/* Status + Remind */}
+                  <div className="flex items-center gap-2 min-w-[150px] justify-between lg:justify-end">
                     <StatusBadge status={match.status} />
+                    {match.status === 'scheduled' &&
+                      match.coverage !== undefined &&
+                      match.total_participants !== undefined &&
+                      match.total_participants > 0 &&
+                      match.coverage / match.total_participants < 0.6 && (
+                        <button
+                          onClick={() => handleRemind(match.id)}
+                          className={`text-[11px] font-black px-2.5 py-1 rounded-full transition-all whitespace-nowrap ${
+                            reminded.has(match.id)
+                              ? 'bg-emerald-100 text-emerald-600'
+                              : 'bg-[#F1F3F9] text-[#5A6480] hover:bg-[#EBF4FC] hover:text-[#003FA3]'
+                          }`}
+                        >
+                          {reminded.has(match.id) ? '✓ Enviado' : '📢 Recordar'}
+                        </button>
+                      )}
                   </div>
                 </div>
               )

@@ -1,9 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
+import { apiGet, apiPut } from '@/lib/api'
 import { Trophy, X, Plus, Lightbulb, Loader2, Save } from 'lucide-react'
 
 interface Prize {
@@ -12,29 +10,24 @@ interface Prize {
   description: string
 }
 
-export function PrizeManager({ businessId }: { businessId: string }) {
+export function PrizeManager() {
   const [prizes, setPrizes] = useState<Prize[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     async function fetchPrizes() {
-      const { data, error } = await supabase
-        .from('prizes')
-        .select('*')
-        .eq('business_id', businessId)
-        .order('rank', { ascending: true })
-
-      if (error) {
-        console.error('Error fetching prizes:', error)
-      } else {
+      try {
+        const data = await apiGet<Prize[]>('/prizes/me')
         setPrizes(data || [])
+      } catch (error) {
+        console.error('Error fetching prizes:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchPrizes()
-  }, [businessId])
+  }, [])
 
   const addPrize = () => {
     const nextRank = prizes.length + 1
@@ -56,24 +49,16 @@ export function PrizeManager({ businessId }: { businessId: string }) {
 
   const handleSave = async () => {
     setSaving(true)
-    // Delete existing and re-insert or upsert. Upsert is better.
-    const prizesToSave = prizes.map(p => ({
-      business_id: businessId,
-      rank: p.rank,
-      description: p.description
-    }))
-
-    // Clean current prizes first to avoid conflicts if ranks changed
-    await supabase.from('prizes').delete().eq('business_id', businessId)
-
-    const { error } = await supabase.from('prizes').insert(prizesToSave)
-
-    if (error) {
-      alert('Error al guardar premios')
-    } else {
+    try {
+      await apiPut('/prizes/me', {
+        prizes: prizes.map(p => ({ rank: p.rank, description: p.description })),
+      })
       alert('Premios guardados correctamente')
+    } catch {
+      alert('Error al guardar premios')
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
   if (loading) {

@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Loader2 } from 'lucide-react'
 
@@ -13,35 +12,23 @@ interface LeaderboardEntry {
   }
 }
 
-export function DashboardRanking({ empresaId }: { empresaId: string }) {
+export function DashboardRanking() {
   const [ranking, setRanking] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
-
   useEffect(() => {
     async function fetchRanking() {
-      const { data, error } = await supabase
-        .from('leaderboard_cache')
-        .select(`
-          rank,
-          total_points,
-          participants (
-            name
-          )
-        `)
-        .eq('business_id', empresaId)
-        .order('rank', { ascending: true })
-        .limit(5)
-
-      if (error) {
+      try {
+        const { apiGet } = await import('@/lib/api')
+        const data = await apiGet<LeaderboardEntry[]>('/leaderboard/me?limit=5')
+        setRanking(data || [])
+      } catch (error) {
         console.error('Error fetching ranking:', error)
-      } else {
-        setRanking((data as any) || [])
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchRanking()
-  }, [empresaId])
+  }, [])
 
   if (loading) {
     return (

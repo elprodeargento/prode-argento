@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { apiGet, apiPatch, apiPut } from '@/lib/api'
 import { Card } from '@/components/ui/Card'
-import { Loader2, QrCode, Mail, MessageCircle, Copy, CheckCircle2, X, Plus, Minus, ArrowRight, Image as ImageIcon, Check } from 'lucide-react'
+import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check } from 'lucide-react'
 
 import { uploadToR2 } from '@/lib/storage/r2'
 
@@ -13,7 +14,6 @@ const DEFAULTS = ['Trofeo + Diploma ⚽', 'Medalla de plata 🥈', 'Medalla de b
 
 export function OnboardingWizard() {
   const router = useRouter()
-  const supabase = createClient()
   const [step, setStep] = useState<'config' | 'success'>('config')
   const [loading, setLoading] = useState(false)
   const [business, setBusiness] = useState<any>(null)
@@ -29,27 +29,27 @@ export function OnboardingWizard() {
 
   useEffect(() => {
     async function getBusiness() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/empresa/login')
         return
       }
-      
-      const { data } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('admin_user_id', user.id)
-        .single()
-      
-      if (data) {
-        setBusiness(data)
-        setName(data.name)
-        if (data.primary_color) setColor(data.primary_color)
-        if (data.logo_url) setLogoUrl(data.logo_url)
+
+      try {
+        const data = await apiGet<any>('/businesses/me')
+        if (data) {
+          setBusiness(data)
+          setName(data.name)
+          if (data.primary_color) setColor(data.primary_color)
+          if (data.logo_url) setLogoUrl(data.logo_url)
+        }
+      } catch {
+        // no business yet
       }
     }
     getBusiness()
-  }, [router, supabase])
+  }, [router])
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -57,7 +57,7 @@ export function OnboardingWizard() {
 
     setLoading(true)
     try {
-      const publicUrl = await uploadToR2(file)
+      const publicUrl = await uploadToR2(file, business.id)
       setLogoUrl(publicUrl)
     } catch (error) {
       console.error('Error uploading logo to R2:', error)
@@ -71,41 +71,22 @@ export function OnboardingWizard() {
     if (!business) return
     setLoading(true)
 
-    // Update business
-    const { error: bizError } = await supabase
-      .from('businesses')
-      .update({
-        primary_color: color,
-        logo_url: logoUrl,
-      })
-      .eq('id', business.id)
+    try {
+      await apiPatch('/businesses/me', { primary_color: color, logo_url: logoUrl })
 
-    if (bizError) {
-      console.error('Error updating business:', bizError)
+      const prizesToSave = prizes.slice(0, prizeCount).map((desc, i) => ({
+        rank: i + 1,
+        description: desc || DEFAULTS[i],
+      }))
+      await apiPut('/prizes/me', { prizes: prizesToSave })
+
+      setStep('success')
+      window.scrollTo(0, 0)
+    } catch (error) {
+      console.error('Error saving:', error)
+    } finally {
       setLoading(false)
-      return
     }
-
-    // Update prizes (delete and re-insert)
-    await supabase.from('prizes').delete().eq('business_id', business.id)
-    
-    const prizesToInsert = prizes.slice(0, prizeCount).map((desc, i) => ({
-      business_id: business.id,
-      rank: i + 1,
-      description: desc || DEFAULTS[i]
-    }))
-
-    const { error: prizeError } = await supabase
-      .from('prizes')
-      .insert(prizesToInsert)
-
-    if (prizeError) {
-      console.error('Error saving prizes:', prizeError)
-    }
-
-    setStep('success')
-    setLoading(false)
-    window.scrollTo(0, 0)
   }
 
   const copyLink = () => {
@@ -175,26 +156,76 @@ export function OnboardingWizard() {
 
           {showPlanes && (
             <div className="space-y-3 mb-6 animate-in slide-in-from-top-4 duration-300">
-               {/* Simplified plan display based on design */}
-               <div className="border-2 border-slate-100 rounded-2xl p-4 text-left">
-                 <div className="flex justify-between items-start mb-2">
-                   <div>
-                     <h4 className="font-black text-[#0D1A3A]">Free</h4>
-                     <p className="text-[10px] text-slate-400 font-bold">Plan actual ✓</p>
-                   </div>
-                   <span className="font-bebas text-2xl text-slate-400">$0</span>
-                 </div>
-               </div>
-               <div className="border-2 border-blue-100 bg-blue-50/50 rounded-2xl p-4 text-left border-blue-200">
-                 <div className="flex justify-between items-start mb-4">
-                   <div>
-                     <h4 className="font-black text-blue-900">⭐ Premium</h4>
-                     <p className="text-[10px] text-blue-600 font-bold">Todo el Mundial</p>
-                   </div>
-                   <span className="font-bebas text-2xl text-blue-900">USD 15</span>
-                 </div>
-                 <button className="w-full bg-[#002B72] text-white py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-900/20">Activar Premium →</button>
-               </div>
+              {/* FREE */}
+              <div className="border-2 border-slate-200 rounded-2xl p-4 text-left">
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-black text-[#0D1A3A]">🎮 Free</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para jugar con amigos</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bebas text-2xl text-slate-400">$0</div>
+                    <div className="text-[10px] text-slate-400 font-bold">gratis</div>
+                  </div>
+                </div>
+                <div className="space-y-1.5 mb-3">
+                  {['Hasta 5 jugadores', 'Link y QR del prode', 'Ranking básico'].map(f => (
+                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
+                  ))}
+                  {['Sin panel de datos', 'Sin notificaciones'].map(f => (
+                    <div key={f} className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>{f}</div>
+                  ))}
+                </div>
+                <div className="bg-slate-100 rounded-xl py-2 text-center text-[12px] font-black text-slate-400">Tu plan actual ✓</div>
+              </div>
+
+              {/* PREMIUM */}
+              <div className="border-2 border-[#002B72] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(0,48,135,0.03),rgba(116,172,223,0.04))' }}>
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-black text-[#002B72]">⭐ Premium</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para empresas que juegan en serio</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bebas text-2xl text-[#002B72]">USD 15</div>
+                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                  </div>
+                </div>
+                <div className="space-y-1.5 mb-4">
+                  {['Jugadores ilimitados', 'Panel con datos completos', 'Notificaciones por email', 'Exportar ranking CSV', 'Estadísticas de participación'].map(f => (
+                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
+                  ))}
+                  <div className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>Sin promos geolocalizadas</div>
+                </div>
+                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Activar Premium — USD 15 →</button>
+              </div>
+
+              {/* PRO */}
+              <div className="border-2 rounded-2xl p-4 text-left" style={{ borderColor: '#2d1a6e', background: 'linear-gradient(135deg,rgba(45,26,110,0.04),rgba(0,48,135,0.04))' }}>
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <h4 className="font-black" style={{ color: '#2d1a6e' }}>📍 Pro</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para negocios que quieren clientes del barrio</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bebas text-2xl" style={{ color: '#2d1a6e' }}>USD 25</div>
+                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                  </div>
+                </div>
+                <div className="space-y-1.5 mb-4">
+                  {[
+                    ['✅', 'Todo lo de Premium'],
+                    ['📍', 'Promos geolocalizadas entre prodes'],
+                    ['💬', 'Notificaciones por WhatsApp'],
+                    ['🏷️', 'Sin marca ProdeApp'],
+                    ['📊', 'Estadísticas avanzadas'],
+                    ['🎯', 'Soporte prioritario'],
+                  ].map(([icon, text]) => (
+                    <div key={text} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>{icon}</span>{text}</div>
+                  ))}
+                </div>
+                <button className="w-full py-3 rounded-full text-white text-[13px] font-black shadow-lg" style={{ background: 'linear-gradient(135deg,#2d1a6e,#003087)', boxShadow: '0 4px 20px rgba(45,26,110,0.28)' }}>Activar Pro — USD 25 →</button>
+              </div>
             </div>
           )}
 
@@ -206,7 +237,7 @@ export function OnboardingWizard() {
               IR AL PANEL →
             </button>
             <button 
-              onClick={() => setStep('config')}
+              onClick={() => router.push('/empresa/configuracion')}
               className="w-full bg-white border-2 border-[#002B72] text-[#002B72] py-4 rounded-2xl font-black text-sm active:scale-95 transition-all"
             >
               EDITAR CONFIGURACIÓN

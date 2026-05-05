@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class StorageService {
@@ -15,6 +14,9 @@ export class StorageService {
     this.s3Client = new S3Client({
       region: 'auto',
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      forcePathStyle: true,
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
       credentials: {
         accessKeyId: accessKey,
         secretAccessKey: secretKey,
@@ -22,24 +24,22 @@ export class StorageService {
     });
   }
 
-  async generatePresignedUrl(filename: string, contentType: string) {
+  async uploadFile(buffer: Buffer, contentType: string, filename: string, businessId?: string): Promise<string> {
     const bucket = this.config.get<string>('app.cloudflareR2Bucket')!;
     const publicUrlBase = this.config.get<string>('app.cloudflareR2PublicUrl')!;
-    
-    // Create a unique key using timestamp
+
     const timestamp = Date.now();
-    const cleanFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const objectKey = `${timestamp}-${cleanFilename}`;
+    const clean = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const objectName = `${timestamp}-${clean}`;
+    const key = businessId ? `businesses/${businessId}/${objectName}` : objectName;
 
-    const command = new PutObjectCommand({
+    await this.s3Client.send(new PutObjectCommand({
       Bucket: bucket,
-      Key: objectKey,
+      Key: key,
+      Body: buffer,
       ContentType: contentType,
-    });
+    }));
 
-    const presignedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
-    const publicUrl = `${publicUrlBase}/${objectKey}`;
-
-    return { presignedUrl, publicUrl, objectKey };
+    return `${publicUrlBase}/${key}`;
   }
 }

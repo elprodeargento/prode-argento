@@ -10,7 +10,7 @@ import { usePathname } from 'next/navigation'
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
-  const isOnboarding = pathname === '/empresa/configuracion'
+  const isOnboarding = pathname === '/empresa/onboarding'
 
   if (isOnboarding) {
     return <div className="min-h-screen bg-[#F1F3F9]">{children}</div>

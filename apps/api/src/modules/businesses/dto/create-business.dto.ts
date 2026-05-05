@@ -14,6 +14,10 @@ export class CreateBusinessDto {
   @IsUUID()
   admin_user_id: string;
 
+  @ApiProperty()
+  @IsString()
+  admin_email: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()

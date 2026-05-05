@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
+import { apiPost } from '@/lib/api'
 
 export function RegistroEmpresaForm() {
   const router = useRouter()
@@ -17,13 +18,13 @@ export function RegistroEmpresaForm() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/empresa/dashboard` },
+      options: { redirectTo: `${window.location.origin}/empresa/onboarding` },
     })
     if (error) setError(error.message)
     setLoading(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -43,27 +44,24 @@ export function RegistroEmpresaForm() {
     }
 
     if (data.user) {
-      // Create business record
       const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substring(2, 7)
-      
-      const { error: bizError } = await supabase
-        .from('businesses')
-        .insert({
+
+      try {
+        await apiPost('/businesses', {
           name: form.name,
           slug,
           admin_user_id: data.user.id,
-          admin_email: form.email,
+          admin_email: data.user.email ?? form.email,
         })
-
-      if (bizError) {
-        console.error('Error creating business:', bizError)
-        setError('Cuenta creada, pero hubo un error al registrar la empresa. Contactá a soporte.')
+      } catch (bizErr: any) {
+        console.error('Error creating business:', bizErr)
+        setError(`Error al registrar la empresa: ${bizErr?.message ?? bizErr}`)
         setLoading(false)
         return
       }
     }
 
-    router.push('/empresa/configuracion')
+    router.push('/empresa/onboarding')
   }
 
   return (

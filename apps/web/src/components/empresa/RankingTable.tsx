@@ -46,8 +46,17 @@ export function RankingTable({ items }: RankingTableProps) {
             {items.map((p) => (
               <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
                 <td className="px-5 py-3.5">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F3F9] font-bebas text-[18px] text-[#0D1A3A] border border-[#DDE1EF]">
-                    {p.position}
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F3F9] font-bebas text-[18px] text-[#0D1A3A] border border-[#DDE1EF]">
+                      {p.position}
+                    </div>
+                    {p.change === undefined || p.change === null ? null : p.change === 0 ? (
+                      <span className="text-[11px] font-bold text-slate-400">—</span>
+                    ) : p.change > 0 ? (
+                      <span className="text-[11px] font-black text-emerald-500">↑{p.change}</span>
+                    ) : (
+                      <span className="text-[11px] font-black text-red-500">↓{Math.abs(p.change)}</span>
+                    )}
                   </div>
                 </td>
                 <td className="px-5 py-3.5">

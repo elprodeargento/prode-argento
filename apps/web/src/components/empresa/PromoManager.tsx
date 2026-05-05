@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -32,29 +31,25 @@ const CATEGORIES = [
   '🔧 Servicios',
 ]
 
-export function PromoManager({ businessId }: { businessId: string }) {
+export function PromoManager() {
   const [promos, setPromos] = useState<Promo[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const supabase = createClient()
 
   useEffect(() => {
     async function fetchPromos() {
-      const { data, error } = await supabase
-        .from('promos')
-        .select('*')
-        .eq('business_id', businessId)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching promos:', error)
-      } else {
+      try {
+        const { apiGet } = await import('@/lib/api')
+        const data = await apiGet<Promo[]>('/promos/me')
         setPromos(data || [])
+      } catch (error) {
+        console.error('Error fetching promos:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
     fetchPromos()
-  }, [businessId])
+  }, [])
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">

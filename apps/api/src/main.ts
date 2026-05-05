@@ -1,5 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify'
+import multipart from '@fastify/multipart'
+import cors from '@fastify/cors'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config'
@@ -12,11 +14,13 @@ async function bootstrap() {
   )
 
   const config = app.get(ConfigService)
+  const webUrl = config.get<string>('app.webUrl') || 'http://localhost:3000'
 
-  // Security
-  app.enableCors({
-    origin: [config.get('WEB_URL', 'http://localhost:3000')],
+  await app.register(cors, {
+    origin: [webUrl],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 
   // Global validation
@@ -48,6 +52,8 @@ async function bootstrap() {
       swaggerOptions: { persistAuthorization: true },
     })
   }
+
+  await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } })
 
   const port = config.get<number>('PORT', 4000)
   await app.listen(port, '0.0.0.0')

@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { LogOut } from 'lucide-react'
+import { createClient } from '@/utils/supabase/client'
 
 const navGroups = [
   {
@@ -31,6 +33,13 @@ const navGroups = [
 
 export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const path = usePathname()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/empresa/login')
+  }
   return (
     <>
       {/* Mobile Overlay */}
@@ -93,13 +102,15 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
         </nav>
 
         <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3.5 cursor-pointer hover:bg-white/15 transition-all">
+          <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3.5">
             <div className="w-[38px] h-[38px] rounded-full bg-[#F5C518] flex items-center justify-center font-black text-[#002B72] text-[16px]">DG</div>
             <div className="flex-1 min-w-0">
               <div className="text-white text-[13px] font-bold truncate">Daniel García</div>
               <div className="text-white/50 text-[11px] font-semibold">Administrador</div>
             </div>
-            <span className="text-white/40 text-[14px]">⋮</span>
+            <button onClick={handleLogout} title="Cerrar sesión" className="text-white/40 hover:text-white transition-colors p-1">
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </aside>

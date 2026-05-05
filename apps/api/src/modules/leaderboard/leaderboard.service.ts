@@ -49,6 +49,16 @@ export class LeaderboardService {
     return results
   }
 
+  async getLeaderboardByAdminId(adminUserId: string, limit = 50) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .single()
+    if (!business) return []
+    return this.getLeaderboard(business.id, limit)
+  }
+
   async getLeaderboard(businessId: string, limit = 50) {
     const { data } = await this.supabase.client
       .from('leaderboard_cache')
