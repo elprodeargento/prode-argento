@@ -13,3 +13,275 @@ body {
 }
 
 .font-bebas { font-family: 'Bebas Neue', cursive; }
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Sidebar transition */
+.sidebar-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ════════════════════════════════
+   GLOBAL UI COMPONENTS (Prototype Parity)
+════════════════════════════════ */
+
+.card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0, 43, 114, 0.08);
+  border: 1px solid #DDE1EF;
+  overflow: hidden;
+}
+
+.config-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.config-section {
+  border: 1.5px solid #DDE1EF;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.config-section-head {
+  padding: 14px 18px;
+  background: #F1F3F9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1.5px solid #DDE1EF;
+}
+
+.config-section-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0D1A3A;
+}
+
+.field-input {
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1.5px solid #DDE1EF;
+  background: #F1F3F9;
+  font-family: inherit;
+  font-size: 15px;
+  color: #0D1A3A;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.field-input:focus {
+  border-color: #003FA3;
+  background: white;
+}
+
+/* TOGGLE */
+.toggle {
+  width: 48px;
+  height: 26px;
+  border-radius: 13px;
+  background: #C8CEDF;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.2s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle.on {
+  background: #003FA3;
+}
+
+.toggle.on::after {
+  left: 25px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field-hint {
+  font-size: 12px;
+  color: #8E96AE;
+  font-weight: 500;
+}
+
+.logo-upload {
+  border: 2px dashed #C8CEDF;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.logo-upload:hover {
+  border-color: #003FA3;
+  background: #EBF4FC;
+}
+
+.logo-upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.logo-upload-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.logo-upload-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #003FA3;
+}
+
+.logo-upload-hint {
+  font-size: 12px;
+  color: #8E96AE;
+  margin-top: 4px;
+}
+
+.logo-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.color-palette {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.color-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.sel {
+  border-color: #0D1A3A;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #0D1A3A;
+}
+
+input[type="color"] {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #DDE1EF;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.config-section-icon {
+  font-size: 20px;
+}
+
+.config-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0D1A3A;
+}
+
+.config-section-sub {
+  font-size: 12px;
+  color: #5A6480;
+  font-weight: 500;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.toggle-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0D1A3A;
+}
+
+.toggle-desc {
+  font-size: 12px;
+  color: #8E96AE;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

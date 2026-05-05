@@ -13,7 +13,7 @@ create type match_stage  as enum ('group','r32','r16','qf','sf','final');
 
 -- ── BUSINESSES ──
 create table businesses (
-  id                  uuid primary key default uuid_generate_v4(),
+  id                  uuid primary key default gen_random_uuid(),
   slug                text unique not null,
   name                text not null,
   admin_user_id       uuid references auth.users(id) on delete cascade,
@@ -39,7 +39,7 @@ create index idx_businesses_admin on businesses(admin_user_id);
 
 -- ── PARTICIPANTS ──
 create table participants (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   business_id     uuid not null references businesses(id) on delete cascade,
   google_uid      text,
   name            text not null,
@@ -78,7 +78,7 @@ create index idx_matches_kickoff   on matches(kickoff_at);
 
 -- ── PREDICTIONS ──
 create table predictions (
-  id              uuid primary key default uuid_generate_v4(),
+  id              uuid primary key default gen_random_uuid(),
   participant_id  uuid not null references participants(id) on delete cascade,
   business_id     uuid not null references businesses(id) on delete cascade,
   match_id        int  not null references matches(id) on delete cascade,
@@ -95,7 +95,7 @@ create index idx_predictions_match       on predictions(match_id);
 
 -- ── PRIZES ──
 create table prizes (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   business_id uuid not null references businesses(id) on delete cascade,
   rank        int  not null,
   description text not null,
@@ -105,7 +105,7 @@ create table prizes (
 
 -- ── PROMOS ──
 create table promos (
-  id          uuid primary key default uuid_generate_v4(),
+  id          uuid primary key default gen_random_uuid(),
   business_id uuid not null references businesses(id) on delete cascade,
   category    text not null,
   description text not null,

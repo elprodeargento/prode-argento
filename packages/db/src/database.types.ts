@@ -133,7 +133,7 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['leaderboard_cache']['Row']>
       }
     }
-    Views: { [_ in never]: never }
+    Views: Record<string, never>
     Functions: {
       get_empresa_stats: {
         Args: { business_id: string }

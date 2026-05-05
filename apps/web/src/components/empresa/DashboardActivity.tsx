@@ -3,27 +3,29 @@ const max = Math.max(...data)
 
 export function DashboardActivity() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <div className="font-black text-slate-900">📈 Participantes por día</div>
-        <button className="text-xs font-bold text-[#002B72]">Ver más</button>
+    <div className="card">
+      <div className="px-[20px] py-[14px] border-b border-[#DDE1EF] flex items-center justify-between">
+        <div className="text-[14px] font-extrabold text-[#0D1A3A] flex items-center gap-2">
+          <span className="text-[18px]">📈</span> Participantes por día
+        </div>
+        <button className="text-[13px] font-bold text-[#003FA3] hover:underline">Ver más</button>
       </div>
-      <div className="p-5">
-        <div className="text-xs font-semibold text-slate-400 mb-3">Últimos 7 días</div>
-        <div className="flex items-end gap-2 h-16">
+      <div className="p-[20px]">
+        <div className="text-[12px] font-bold text-[#8E96AE] mb-[12px] uppercase tracking-wider">Últimos 7 días</div>
+        <div className="flex items-end gap-2 h-[64px]">
           {data.map((v, i) => (
             <div key={i} className="flex-1 flex flex-col justify-end gap-1">
               <div
-                className={`rounded-t-md transition-all ${i === data.length - 1 ? 'bg-[#F5C518]' : 'bg-[#002B72]/20 hover:bg-[#002B72]/40'}`}
+                className={`rounded-t-[4px] transition-all ${i === data.length - 1 ? 'bg-[#F5C518]' : 'bg-[#DDE1EF] hover:bg-[#B0B8CC]'}`}
                 style={{ height: `${(v / max) * 100}%`, minHeight: 4 }}
                 title={`${v} personas`}
               />
             </div>
           ))}
         </div>
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-slate-300">Jun 8</span>
-          <span className="text-xs text-slate-300">Hoy</span>
+        <div className="flex justify-between mt-[8px]">
+          <span className="text-[11px] font-bold text-[#B0B8CC]">Jun 8</span>
+          <span className="text-[11px] font-bold text-[#B0B8CC]">Hoy</span>
         </div>
       </div>
     </div>

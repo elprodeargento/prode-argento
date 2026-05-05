@@ -3,27 +3,64 @@ import { DashboardLink } from '@/components/empresa/DashboardLink'
 import { DashboardRanking } from '@/components/empresa/DashboardRanking'
 import { DashboardNextMatch } from '@/components/empresa/DashboardNextMatch'
 import { DashboardActivity } from '@/components/empresa/DashboardActivity'
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export const metadata = { title: 'Dashboard' }
 
-export default function EmpresaDashboardPage() {
-  const empresa = { id: '1', slug: 'distribuidoragarcia', name: 'Distribuidora García' }
-  const stats = { total_participants: 87, predictions_loaded: 82, coverage_pct: 94 }
+export default async function EmpresaDashboardPage() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch current business
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('admin_user_id', user.id)
+    .single()
+
+  if (!business) {
+    // If no business yet, redirect to creation or show empty state
+    // For now, we'll assume they have one if they are in this layout
+    return (
+      <div className="p-8 text-center bg-white rounded-2xl shadow-sm border border-slate-200">
+        <h2 className="text-xl font-black text-slate-900 mb-2">No se encontró tu empresa</h2>
+        <p className="text-slate-500">Asegurate de haber completado el registro correctamente.</p>
+      </div>
+    )
+  }
+
+  // Fetch real stats via RPC
+  const { data: stats } = await supabase.rpc('get_empresa_stats', { 
+    business_id: business.id 
+  })
+
+  const dashboardStats = stats?.[0] || { total_participants: 0, predictions_loaded: 0, coverage_pct: 0 }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 mb-1">¡Buen día, Daniel! 👋</h1>
-        <p className="text-slate-400 text-sm">Acá está todo lo que pasa en tu prode hoy</p>
+      <div className="page-header">
+        <div>
+          <h1 className="text-[26px] font-[900] text-[#0D1A3A] mb-1">
+            ¡Buen día, {user.user_metadata?.full_name?.split(' ')[0] || 'Daniel'}! 👋
+          </h1>
+          <p className="text-[14px] text-[#5A6480] font-medium">Acá está todo lo que pasa en tu prode hoy</p>
+        </div>
       </div>
-      <DashboardStats stats={stats} empresa={empresa} />
+      <DashboardStats stats={dashboardStats} empresa={business} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardLink empresa={empresa} />
+        <DashboardLink empresa={business} />
         <DashboardNextMatch />
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardActivity />
-        <DashboardRanking empresaId={empresa.id} />
+        <DashboardRanking empresaId={business.id} />
       </div>
     </div>
   )

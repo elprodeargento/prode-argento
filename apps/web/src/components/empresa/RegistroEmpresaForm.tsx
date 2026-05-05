@@ -17,7 +17,7 @@ export function RegistroEmpresaForm() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/empresa/configuracion` },
+      options: { redirectTo: `${window.location.origin}/empresa/dashboard` },
     })
     if (error) setError(error.message)
     setLoading(false)
@@ -27,7 +27,7 @@ export function RegistroEmpresaForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
@@ -35,7 +35,34 @@ export function RegistroEmpresaForm() {
         emailRedirectTo: `${window.location.origin}/empresa/configuracion`,
       },
     })
-    if (error) { setError(error.message); setLoading(false); return }
+    
+    if (error) { 
+      setError(error.message)
+      setLoading(false)
+      return 
+    }
+
+    if (data.user) {
+      // Create business record
+      const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substring(2, 7)
+      
+      const { error: bizError } = await supabase
+        .from('businesses')
+        .insert({
+          name: form.name,
+          slug,
+          admin_user_id: data.user.id,
+          admin_email: form.email,
+        })
+
+      if (bizError) {
+        console.error('Error creating business:', bizError)
+        setError('Cuenta creada, pero hubo un error al registrar la empresa. Contactá a soporte.')
+        setLoading(false)
+        return
+      }
+    }
+
     router.push('/empresa/configuracion')
   }
 

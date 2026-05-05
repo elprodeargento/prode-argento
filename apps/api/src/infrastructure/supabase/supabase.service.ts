@@ -17,7 +17,7 @@ export class SupabaseService implements OnModuleInit {
     )
   }
 
-  get client(): SupabaseClient<Database> {
-    return this._client
+  get client(): SupabaseClient<any> {
+    return this._client as any
   }
 }

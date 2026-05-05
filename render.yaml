@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: prode-api
+    env: docker
+    dockerfilePath: apps/api/Dockerfile
+    healthCheckPath: /api/
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: WEB_URL
+        value: https://prode.ar
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: FOOTBALL_DATA_API_KEY
+        sync: false
+      - key: META_WA_TOKEN
+        sync: false
+      - key: META_PHONE_NUMBER_ID
+        sync: false
+      - key: META_VERIFY_TOKEN
+        sync: false
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: MERCADOPAGO_WEBHOOK_SECRET
+        sync: false
+      - key: CLOUDFLARE_R2_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_R2_ACCESS_KEY
+        sync: false
+      - key: CLOUDFLARE_R2_SECRET_KEY
+        sync: false
+      - key: CLOUDFLARE_R2_BUCKET
+        sync: false
+      - key: CLOUDFLARE_R2_PUBLIC_URL
+        sync: false

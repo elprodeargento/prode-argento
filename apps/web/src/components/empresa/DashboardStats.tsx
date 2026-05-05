@@ -1,23 +1,34 @@
-interface StatCardProps { icon: string; value: string | number; label: string; badge?: string; color?: string }
-function StatCard({ icon, value, label, badge, color = 'bg-blue-50' }: StatCardProps) {
+interface StatCardProps { icon: string; value: string | number; label: string; badge?: string; color?: string; badgeType?: 'up' | 'down' | 'neutral' }
+function StatCard({ icon, value, label, badge, color = 'bg-[#E6EEF9]', badgeType = 'neutral' }: StatCardProps) {
+  const badgeColors = {
+    up: 'text-[#18A06A] bg-[#E8F8F1]',
+    down: 'text-[#D93025] bg-[#FDECEB]',
+    neutral: 'text-[#5A6480] bg-[#F1F3F9]',
+  }
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-      <div className="flex items-start justify-between mb-4">
-        <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center text-2xl`}>{icon}</div>
-        {badge && <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full">{badge}</span>}
+    <div className="bg-white rounded-[16px] p-[22px] border border-[#DDE1EF] shadow-sm transition-all hover:shadow-md group flex flex-col gap-[14px]">
+      <div className="flex items-start justify-between">
+        <div className={`w-[48px] h-[48px] ${color} rounded-[14px] flex items-center justify-center text-[22px] transition-transform group-hover:scale-110`}>{icon}</div>
+        {badge && <span className={`text-[12px] font-extrabold px-[10px] py-[4px] rounded-full ${badgeColors[badgeType]}`}>{badge}</span>}
       </div>
-      <div className="font-bebas text-4xl text-slate-900 leading-none mb-1">{value}</div>
-      <div className="text-sm font-semibold text-slate-400">{label}</div>
+      <div className="flex flex-col">
+        <div className="font-bebas text-[44px] text-[#0D1A3A] leading-none">{value}</div>
+        <div className="text-[13px] font-semibold text-[#5A6480] mt-1">{label}</div>
+      </div>
     </div>
   )
 }
 export function DashboardStats({ stats, empresa }: { stats: any; empresa: any }) {
+  const coverage = stats?.total_participants > 0 
+    ? Math.round((stats.predictions_loaded / stats.total_participants) * 100) 
+    : 0
+
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard icon="👥" value={stats?.total_participants ?? 87} label="Participantes" badge="↑ +12 hoy" color="bg-blue-50" />
-      <StatCard icon="✅" value={stats?.predictions_loaded ?? 82} label="Cargaron pronósticos" badge="94%" color="bg-green-50" />
-      <StatCard icon="⚽" value={48} label="Partidos jugados" badge="Fecha 1" color="bg-yellow-50" />
-      <StatCard icon="📊" value="1.8K" label="Pronósticos" badge="activo" color="bg-purple-50" />
+      <StatCard icon="👥" value={stats?.total_participants || 0} label="Participantes" color="bg-[#E6EEF9]" />
+      <StatCard icon="✅" value={stats?.predictions_loaded || 0} label="Participantes activos" badge={`${coverage}%`} color="bg-[#E8F8F1]" badgeType="up" />
+      <StatCard icon="⚽" value={0} label="Partidos jugados" color="bg-[#FEF8D8]" />
+      <StatCard icon="📊" value={stats?.predictions_loaded || 0} label="Pronósticos cargados" color="bg-[#EBF4FC]" />
     </div>
   )
 }

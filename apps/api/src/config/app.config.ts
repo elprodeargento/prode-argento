@@ -12,4 +12,9 @@ export default registerAs('app', () => ({
   metaVerifyToken: process.env.META_VERIFY_TOKEN!,
   mercadopagoToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
   mercadopagoWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET!,
+  cloudflareR2AccountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID!,
+  cloudflareR2AccessKey: process.env.CLOUDFLARE_R2_ACCESS_KEY!,
+  cloudflareR2SecretKey: process.env.CLOUDFLARE_R2_SECRET_KEY!,
+  cloudflareR2Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
+  cloudflareR2PublicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL!,
 }))

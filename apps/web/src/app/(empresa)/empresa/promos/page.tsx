@@ -1,23 +1,25 @@
 import type { Metadata } from 'next'
+import { PromoManager } from '@/components/empresa/PromoManager'
+import { createClient } from '@/utils/supabase/server'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = { title: 'Mis Promos' }
 
-export default function MisPromosPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 mb-1">
-          🏷️ Mis Promos
-        </h1>
-        <p className="text-sm text-slate-400">Conectado a Supabase en producción</p>
-      </div>
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
-        <div className="text-5xl mb-4">🚧</div>
-        <div className="font-black text-slate-900 mb-2">En desarrollo</div>
-        <div className="text-sm text-slate-400">
-          Esta sección se construye sobre la lógica del panel HTML existente
-        </div>
-      </div>
-    </div>
-  )
+export default async function MisPromosPage() {
+  const cookieStore = await cookies()
+  const supabase = createClient(cookieStore)
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('id')
+    .eq('admin_user_id', user.id)
+    .single()
+
+  if (!business) redirect('/empresa/dashboard')
+
+  return <PromoManager businessId={business.id} />
 }

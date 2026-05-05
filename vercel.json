@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/web && npm run build",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://api.prode.ar/api/v1/:path*"
+    }
+  ]
+}

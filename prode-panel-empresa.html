@@ -1,0 +1,4148 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Panel de Empresa — Prode Mundial 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --azul: #002B72;
+      --azul-mid: #003FA3;
+      --azul-hover: #00318A;
+      --celeste: #5BA3D9;
+      --celeste-light: #EBF4FC;
+      --dorado: #F5C518;
+      --dorado-dark: #C49A00;
+      --blanco: #FFFFFF;
+      --gris-bg: #F1F3F9;
+      --gris-card: #FAFBFF;
+      --gris-borde: #DDE1EF;
+      --gris-borde2: #C8CEDF;
+      --texto: #0D1A3A;
+      --texto2: #5A6480;
+      --texto3: #8E96AE;
+      --verde: #18A06A;
+      --verde-light: #E8F8F1;
+      --rojo: #D93025;
+      --rojo-light: #FDECEB;
+      --naranja: #F07B1D;
+      --naranja-light: #FEF3E8;
+      --sidebar-w: 260px;
+      --header-h: 64px;
+      --radio: 16px;
+      --radio-sm: 10px;
+      --radio-xs: 8px;
+      --sombra: 0 2px 16px rgba(0, 43, 114, 0.08);
+      --sombra-md: 0 4px 24px rgba(0, 43, 114, 0.12);
+      --sombra-lg: 0 8px 48px rgba(0, 43, 114, 0.16);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--gris-bg);
+      color: var(--texto);
+      min-height: 100vh;
+      font-size: 15px;
+    }
+
+    /* ════════════════════════════════
+   SIDEBAR
+════════════════════════════════ */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--azul);
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 4px 0 32px rgba(0, 43, 114, 0.25);
+    }
+
+    .sidebar-logo {
+      padding: 24px 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-logo-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sidebar-logo-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px;
+      color: var(--blanco);
+      letter-spacing: 1px;
+      line-height: 1.1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar-logo-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.55);
+      font-weight: 600;
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 14px 12px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      border: none;
+      background: none;
+      color: rgba(255, 255, 255, 0.65);
+      font-family: inherit;
+      width: 100%;
+      text-align: left;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .nav-item.active {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--blanco);
+      box-shadow: inset 3px 0 0 var(--dorado);
+    }
+
+    .nav-item .ni-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .nav-item .ni-label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .nav-item .ni-badge {
+      margin-left: auto;
+      background: var(--dorado);
+      color: var(--azul);
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 2px 8px;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    .sidebar-bottom {
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .user-card:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--dorado);
+      color: var(--azul);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--blanco);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 600;
+    }
+
+    .user-menu-icon {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 14px;
+    }
+
+    /* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+    .header {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: var(--sidebar-w);
+      height: var(--header-h);
+      background: var(--blanco);
+      border-bottom: 1px solid var(--gris-borde);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      z-index: 100;
+      box-shadow: var(--sombra);
+      gap: 16px;
+    }
+
+    .hamburger {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 22px;
+      color: var(--texto2);
+    }
+
+    .page-breadcrumb {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texto2);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-breadcrumb .current {
+      color: var(--texto);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+    }
+
+    .header-btn.primary {
+      background: var(--azul);
+      color: #fff;
+    }
+
+    .header-btn.primary:hover {
+      background: var(--azul-hover);
+    }
+
+    .header-btn.ghost {
+      background: var(--gris-bg);
+      color: var(--texto2);
+      border: 1.5px solid var(--gris-borde);
+    }
+
+    .header-btn.ghost:hover {
+      background: var(--gris-borde);
+    }
+
+    .notif-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gris-bg);
+      border: 1.5px solid var(--gris-borde);
+      cursor: pointer;
+      font-size: 18px;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .notif-btn:hover {
+      background: var(--gris-borde);
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rojo);
+      border: 2px solid var(--blanco);
+    }
+
+    /* ════════════════════════════════
+   MAIN CONTENT
+════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      margin-top: var(--header-h);
+      padding: 28px;
+      min-height: calc(100vh - var(--header-h));
+    }
+
+    /* TABS */
+    .tab-page {
+      display: none;
+    }
+
+    .tab-page.active {
+      display: block;
+      animation: pgIn 0.3s ease;
+    }
+
+    @keyframes pgIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* PAGE HEADER */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .page-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--texto);
+      margin-bottom: 4px;
+    }
+
+    .page-sub {
+      font-size: 14px;
+      color: var(--texto2);
+      font-weight: 500;
+    }
+
+    .page-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* ════════════════════════════════
+   CARDS / GRID
+════════════════════════════════ */
+    .cards-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cols-2-1 {
+      grid-template-columns: 2fr 1fr;
+    }
+
+    .cols-1-2 {
+      grid-template-columns: 1fr 2fr;
+    }
+
+    .card {
+      background: var(--blanco);
+      border-radius: var(--radio);
+      box-shadow: var(--sombra);
+      border: 1px solid var(--gris-borde);
+      overflow: hidden;
+    }
+
+    .card-pad {
+      padding: 22px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--gris-borde);
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--texto);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title .icon {
+      font-size: 18px;
+    }
+
+    .card-action {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--azul-mid);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+    }
+
+    .card-action:hover {
+      text-decoration: underline;
+    }
+
+    /* ════════════════════════════════
+   STAT CARDS
+════════════════════════════════ */
+    .stat-card {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .stat-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .stat-icon-wrap.azul {
+      background: #E6EEF9;
+    }
+
+    .stat-icon-wrap.verde {
+      background: var(--verde-light);
+    }
+
+    .stat-icon-wrap.dorado {
+      background: #FEF8D8;
+    }
+
+    .stat-icon-wrap.celeste {
+      background: var(--celeste-light);
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .stat-badge.up {
+      background: var(--verde-light);
+      color: var(--verde);
+    }
+
+    .stat-badge.neutral {
+      background: var(--gris-bg);
+      color: var(--texto2);
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 44px;
+      color: var(--texto);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--texto2);
+    }
+
+    /* ════════════════════════════════
+   LINK / QR PANEL
+════════════════════════════════ */
+    .link-panel {
+      background: linear-gradient(135deg, var(--azul) 0%, var(--azul-mid) 100%);
+      border-radius: var(--radio);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      box-shadow: var(--sombra-md);
+    }
+
+    .link-panel::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      pointer-events: none;
+    }
+
+    .link-panel::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 20px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+    }
+
+    .link-inner {
+      position: relative;
+      z-index: 2;
+    }
+
+    .link-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+
+    .link-url-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(8px);
+    }
+
+    .link-url-text {
+      flex: 1;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--blanco);
+      word-break: break-all;
+    }
+
+    .link-copy-btn {
+      background: var(--dorado);
+      color: var(--azul);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .link-copy-btn:hover {
+      background: #FFD740;
+      transform: scale(1.03);
+    }
+
+    .link-copy-btn.copied {
+      background: var(--verde);
+      color: #fff;
+    }
+
+    .link-share-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .share-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .share-pill:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    .qr-box {
+      width: 110px;
+      height: 110px;
+      background: var(--blanco);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.15s;
+      gap: 6px;
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      box-shadow: var(--sombra-md);
+    }
+
+    .qr-box:hover {
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .qr-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 8px);
+      gap: 2px;
+    }
+
+    .qr-cell {
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      background: var(--azul);
+    }
+
+    .qr-cell.w {
+      background: var(--blanco);
+    }
+
+    .qr-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--texto2);
+    }
+
+    /* ════════════════════════════════
+   PARTICIPANTS TABLE
+════════════════════════════════ */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--gris-borde);
+      align-items: center;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--texto3);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 10px 14px 10px 40px;
+      border-radius: var(--radio-sm);
+      border: 1.5px solid var(--gris-borde);
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--texto);
+      background: var(--gris-bg);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--azul-mid);
+      background: var(--blanco);
+    }
+
+    .filter-btn {
+      padding: 10px 16px;
+      border-radius: var(--radio-sm);
+      border: 1.5px solid var(--gris-borde);
+      background: var(--gris-bg);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-btn:hover {
+      background: var(--gris-borde);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      padding: 12px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--texto3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--gris-bg);
+      border-bottom: 1px solid var(--gris-borde);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--gris-borde);
+      font-size: 14px;
+      color: var(--texto);
+      vertical-align: middle;
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tr:hover td {
+      background: var(--gris-bg);
+    }
+
+    .participant-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .part-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--azul);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .part-name {
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .part-email {
+      font-size: 12px;
+      color: var(--texto3);
+      font-weight: 500;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .badge.verde {
+      background: var(--verde-light);
+      color: var(--verde);
+    }
+
+    .badge.gris {
+      background: var(--gris-bg);
+      color: var(--texto3);
+      border: 1px solid var(--gris-borde);
+    }
+
+    .badge.dorado {
+      background: #FEF8D8;
+      color: var(--dorado-dark);
+    }
+
+    .badge.rojo {
+      background: var(--rojo-light);
+      color: var(--rojo);
+    }
+
+    .rank-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      color: var(--azul);
+    }
+
+    .pts-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--texto);
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .row-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1.5px solid var(--gris-borde);
+      background: var(--blanco);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .row-btn:hover {
+      background: var(--gris-bg);
+      border-color: var(--gris-borde2);
+    }
+
+    .table-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px;
+      border-top: 1px solid var(--gris-borde);
+      font-size: 13px;
+      color: var(--texto2);
+      font-weight: 600;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 6px;
+    }
+
+    .page-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1.5px solid var(--gris-borde);
+      background: var(--blanco);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .page-btn:hover {
+      background: var(--gris-bg);
+    }
+
+    .page-btn.active {
+      background: var(--azul);
+      color: #fff;
+      border-color: var(--azul);
+    }
+
+    /* ════════════════════════════════
+   RANKING
+════════════════════════════════ */
+    .ranking-podium {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      padding: 24px 22px 0;
+    }
+
+    .podium-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .podium-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      color: var(--azul);
+      border: 3px solid transparent;
+    }
+
+    .podium-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--texto);
+      text-align: center;
+    }
+
+    .podium-pts {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+    }
+
+    .podium-base {
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.6);
+      padding: 10px 0;
+    }
+
+    .p1 .podium-avatar {
+      border-color: var(--dorado);
+      background: #FEF8D8;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+    }
+
+    .p1 .podium-base {
+      background: var(--dorado);
+      height: 70px;
+      color: var(--azul);
+    }
+
+    .p1 .podium-pts {
+      color: var(--dorado-dark);
+    }
+
+    .p2 .podium-avatar {
+      border-color: #B0B8CC;
+      background: #F0F2F8;
+    }
+
+    .p2 .podium-base {
+      background: #9BA5BE;
+      height: 56px;
+    }
+
+    .p2 .podium-pts {
+      color: #7A839E;
+    }
+
+    .p3 .podium-avatar {
+      border-color: #CD9B6A;
+      background: #FBF0E8;
+    }
+
+    .p3 .podium-base {
+      background: #CD9B6A;
+      height: 44px;
+    }
+
+    .p3 .podium-pts {
+      color: #9B6B3A;
+    }
+
+    .ranking-simple {
+      padding: 0 22px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .rank-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: var(--gris-bg);
+      border: 1.5px solid var(--gris-borde);
+      transition: all 0.15s;
+    }
+
+    .rank-row:hover {
+      border-color: var(--azul-mid);
+      background: var(--celeste-light);
+    }
+
+    .rank-pos-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 20px;
+      color: var(--texto3);
+      width: 24px;
+      text-align: center;
+    }
+
+    .rank-name {
+      flex: 1;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .rank-pts-badge {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      color: var(--azul);
+    }
+
+    .rank-pts-label {
+      font-size: 11px;
+      color: var(--texto3);
+      font-weight: 700;
+    }
+
+    /* ════════════════════════════════
+   MATCHES
+════════════════════════════════ */
+    .matches-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px 22px;
+    }
+
+    .match-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: var(--gris-bg);
+      border: 1.5px solid var(--gris-borde);
+      transition: all 0.15s;
+    }
+
+    .match-row:hover {
+      border-color: var(--azul-mid);
+    }
+
+    .match-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--texto3);
+      width: 90px;
+      flex-shrink: 0;
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .match-flag {
+      font-size: 22px;
+    }
+
+    .match-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .match-score {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      color: var(--texto);
+      padding: 0 14px;
+    }
+
+    .match-score-sep {
+      color: var(--texto3);
+    }
+
+    .match-status-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .ms-live {
+      background: #FEE2E2;
+      color: var(--rojo);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .ms-done {
+      background: var(--verde-light);
+      color: var(--verde);
+    }
+
+    .ms-next {
+      background: var(--celeste-light);
+      color: var(--azul-mid);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.6;
+      }
+    }
+
+    .coverage-bar-wrap {
+      width: 80px;
+      flex-shrink: 0;
+    }
+
+    .coverage-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--texto3);
+      margin-bottom: 3px;
+    }
+
+    .coverage-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--gris-borde);
+    }
+
+    .coverage-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--azul-mid);
+    }
+
+    /* ════════════════════════════════
+   CONFIG PANEL
+════════════════════════════════ */
+    .config-form {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .config-section {
+      border: 1.5px solid var(--gris-borde);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .config-section-head {
+      padding: 14px 18px;
+      background: var(--gris-bg);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1.5px solid var(--gris-borde);
+    }
+
+    .config-section-icon {
+      font-size: 20px;
+    }
+
+    .config-section-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--texto);
+    }
+
+    .config-section-sub {
+      font-size: 12px;
+      color: var(--texto3);
+      font-weight: 500;
+    }
+
+    .config-section-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texto);
+    }
+
+    .field-hint {
+      font-size: 12px;
+      color: var(--texto3);
+      font-weight: 500;
+    }
+
+    .field-input {
+      padding: 12px 16px;
+      border-radius: var(--radio-sm);
+      border: 1.5px solid var(--gris-borde);
+      background: var(--gris-bg);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--texto);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .field-input:focus {
+      border-color: var(--azul-mid);
+      background: var(--blanco);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .logo-upload {
+      border: 2px dashed var(--gris-borde2);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .logo-upload:hover {
+      border-color: var(--azul-mid);
+      background: var(--celeste-light);
+    }
+
+    .logo-upload input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .logo-upload-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .logo-upload-text {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--azul-mid);
+    }
+
+    .logo-upload-hint {
+      font-size: 12px;
+      color: var(--texto3);
+      margin-top: 4px;
+    }
+
+    .logo-preview-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-prev {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      border: 2px solid var(--gris-borde);
+      object-fit: cover;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .color-swatch {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .color-swatch:hover {
+      transform: scale(1.1);
+    }
+
+    .color-swatch.sel {
+      border-color: var(--texto);
+      transform: scale(1.15);
+      box-shadow: 0 0 0 2px var(--blanco), 0 0 0 4px var(--texto);
+    }
+
+    input[type="color"] {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--gris-borde);
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    /* PRIZES CONFIG */
+    .prize-config-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .prize-config-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--gris-bg);
+      border-radius: 10px;
+      border: 1.5px solid var(--gris-borde);
+    }
+
+    .prize-medal-lg {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .prize-field {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radio-sm);
+      border: 1.5px solid var(--gris-borde);
+      background: var(--blanco);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--texto);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .prize-field:focus {
+      border-color: var(--azul-mid);
+    }
+
+    .prize-delete {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: var(--rojo-light);
+      color: var(--rojo);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .prize-delete:hover {
+      background: var(--rojo);
+      color: #fff;
+    }
+
+    .prize-add-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px dashed var(--gris-borde2);
+      background: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+      width: 100%;
+    }
+
+    .prize-add-btn:hover {
+      border-color: var(--azul-mid);
+      color: var(--azul-mid);
+      background: var(--celeste-light);
+    }
+
+    /* TOGGLE */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--texto);
+    }
+
+    .toggle-desc {
+      font-size: 12px;
+      color: var(--texto3);
+    }
+
+    .toggle {
+      width: 48px;
+      height: 26px;
+      border-radius: 13px;
+      background: var(--gris-borde2);
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--blanco);
+      transition: left 0.2s;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle.on {
+      background: var(--azul-mid);
+    }
+
+    .toggle.on::after {
+      left: 25px;
+    }
+
+    /* SAVE BAR */
+    .save-bar {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: calc(var(--sidebar-w) + 20px);
+      right: 20px;
+      background: var(--azul);
+      color: #fff;
+      border-radius: 14px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--sombra-lg);
+      z-index: 150;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: none;
+        opacity: 1;
+      }
+    }
+
+    .save-bar-text {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .save-bar-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .save-bar-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .save-bar-btn.primary {
+      background: var(--dorado);
+      color: var(--azul);
+    }
+
+    .save-bar-btn.primary:hover {
+      background: #FFD740;
+    }
+
+    .save-bar-btn.ghost {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .save-bar-btn.ghost:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 52px;
+    }
+
+    .empty-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--texto);
+    }
+
+    .empty-desc {
+      font-size: 14px;
+      color: var(--texto2);
+      max-width: 280px;
+      line-height: 1.5;
+    }
+
+    /* ════════════════════════════════
+   MINI CHARTS
+════════════════════════════════ */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 48px;
+    }
+
+    .bar {
+      flex: 1;
+      border-radius: 4px 4px 0 0;
+      background: var(--azul-mid);
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .bar:hover {
+      opacity: 1;
+    }
+
+    .bar.today {
+      background: var(--dorado);
+      opacity: 1;
+    }
+
+    /* ════════════════════════════════
+   MOBILE OVERLAY
+════════════════════════════════ */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 190;
+    }
+
+    /* ════════════════════════════════
+   RESPONSIVE
+════════════════════════════════ */
+    @media (max-width: 1100px) {
+      .cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .cols-2-1 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      :root {
+        --sidebar-w: 0px;
+      }
+
+      .sidebar {
+        transform: translateX(-260px);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        --sidebar-w: 260px;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 16px;
+      }
+
+      .header {
+        left: 0;
+        padding: 0 16px;
+      }
+
+      .hamburger {
+        display: flex;
+      }
+
+      .cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .cols-3 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cols-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .cols-2-1 {
+        grid-template-columns: 1fr;
+      }
+
+      .save-bar {
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .qr-box {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .cols-4 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .cols-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .data-table th:nth-child(n+4),
+      .data-table td:nth-child(n+4) {
+        display: none;
+      }
+
+      .match-time {
+        display: none;
+      }
+
+      .coverage-bar-wrap {
+        display: none;
+      }
+    }
+
+    /* ════════════════════════════════
+   UTIL
+════════════════════════════════ */
+    .text-right {
+      text-align: right;
+    }
+
+    .mt-4 {
+      margin-top: 4px;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
+
+    .mt-16 {
+      margin-top: 16px;
+    }
+
+    .fw-700 {
+      font-weight: 700;
+    }
+
+    .gap-12 {
+      gap: 12px;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .ai-c {
+      align-items: center;
+    }
+
+    .jc-sb {
+      justify-content: space-between;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--azul);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--azul-hover);
+    }
+
+    .btn-outline {
+      background: var(--blanco);
+      color: var(--azul);
+      border: 1.5px solid var(--azul);
+    }
+
+    .btn-outline:hover {
+      background: var(--celeste-light);
+    }
+
+    .btn-danger {
+      background: var(--rojo-light);
+      color: var(--rojo);
+    }
+
+    .btn-danger:hover {
+      background: var(--rojo);
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--verde-light);
+      color: var(--verde);
+    }
+
+    /* ══════════════════════════════
+   MODAL INSTAGRAM PODIO
+══════════════════════════════ */
+    .ig-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .ig-modal-overlay.open {
+      display: flex;
+      animation: igFadeIn 0.2s ease;
+    }
+
+    @keyframes igFadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .ig-modal {
+      background: var(--blanco);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 94vh;
+      overflow-y: auto;
+      animation: igSlideIn 0.3s cubic-bezier(0.34, 1.1, 0.64, 1);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+    }
+
+    @keyframes igSlideIn {
+      from {
+        transform: scale(0.92) translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: none;
+        opacity: 1;
+      }
+    }
+
+    /* Header del modal */
+    .ig-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gris-borde);
+    }
+
+    .ig-modal-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--texto);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ig-modal-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--gris-bg);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--texto2);
+      transition: background 0.15s;
+    }
+
+    .ig-modal-close:hover {
+      background: var(--gris-borde);
+    }
+
+    /* Wrapper del phone mockup */
+    .ig-phone-wrap {
+      padding: 20px 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Phone frame */
+    .ig-phone {
+      width: 100%;
+      max-width: 320px;
+      background: #000;
+      border-radius: 36px;
+      padding: 10px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .ig-phone-notch {
+      width: 90px;
+      height: 22px;
+      background: #000;
+      border-radius: 0 0 16px 16px;
+      margin: 0 auto 4px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .ig-phone-screen {
+      background: #fafafa;
+      border-radius: 28px;
+      overflow: hidden;
+    }
+
+    /* App chrome de Instagram */
+    .ig-app-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px 6px;
+      background: #fff;
+      border-bottom: 1px solid #efefef;
+    }
+
+    .ig-app-logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: #000;
+      font-family: Georgia, serif;
+      letter-spacing: -0.5px;
+    }
+
+    .ig-app-icons {
+      display: flex;
+      gap: 14px;
+      font-size: 18px;
+    }
+
+    /* Post header */
+    .ig-post-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px 8px;
+      background: #fff;
+    }
+
+    .ig-account-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .ig-account-avatar-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--azul);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      color: #fff;
+      border: 2px solid #fff;
+    }
+
+    .ig-account-info {
+      flex: 1;
+    }
+
+    .ig-account-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: #000;
+    }
+
+    .ig-account-handle {
+      font-size: 10px;
+      color: #8e8e8e;
+    }
+
+    .ig-post-more {
+      font-size: 18px;
+      color: #000;
+      font-weight: 900;
+    }
+
+    /* La imagen del post = el podio */
+    /* ── Post image: estilo editorial IG actual ── */
+    .ig-post-image {
+      width: 100%;
+      aspect-ratio: 1/1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      background: #0a0a0a;
+    }
+
+    /* Fondo: gradiente oscuro tipo editorial */
+    .ig-post-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(160deg, #001040 0%, #002B72 35%, #0a0a1a 70%, #000 100%);
+    }
+
+    /* Textura de puntos sutiles */
+    .ig-post-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 18px 18px;
+      pointer-events: none;
+    }
+
+    /* Franja de color AFA abajo */
+    .ig-post-stripes {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #74ACDF 0%, #74ACDF 50%, #fff 50%, #fff 100%);
+      background-size: 10px 6px;
+      z-index: 3;
+    }
+
+    /* Contenido: ocupa toda la imagen, layout vertical centrado */
+    .ig-post-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 12px 18px;
+      height: 100%;
+    }
+
+    /* Header pequeño de la empresa */
+    .ig-post-empresa-logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+    }
+
+    .ig-post-logo-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .ig-post-empresa-name {
+      font-size: 9px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Bloque central: título grande */
+    .ig-post-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      text-align: center;
+      flex: 1;
+      justify-content: center;
+      padding: 8px 0;
+    }
+
+    .ig-post-trophy {
+      font-size: 28px;
+      margin-bottom: 2px;
+    }
+
+    .ig-post-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      color: #fff;
+      letter-spacing: 4px;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .ig-post-subtitle {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* Podio rediseñado — más limpio, más IG */
+    .ig-podio {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .ig-podio-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .ig-podio-crown {
+      font-size: 12px;
+      line-height: 1;
+    }
+
+    .ig-podio-avatar {
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+      backdrop-filter: blur(4px);
+    }
+
+    .ig-podio-name {
+      font-size: 8px;
+      font-weight: 800;
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      line-height: 1.2;
+      max-width: 56px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ig-podio-pts {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+
+    .ig-podio-base {
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+      width: 100%;
+      letter-spacing: 1px;
+    }
+
+    /* Tamaños por posición */
+    .ig-p1 .ig-podio-avatar {
+      width: 40px;
+      height: 40px;
+      font-size: 14px;
+      border-color: var(--dorado);
+      border-width: 2.5px;
+    }
+
+    .ig-p1 .ig-podio-pts {
+      color: var(--dorado);
+    }
+
+    .ig-p1 .ig-podio-base {
+      height: 44px;
+      background: rgba(245, 197, 24, 0.85);
+      color: #002B72;
+      font-size: 15px;
+    }
+
+    .ig-p2 .ig-podio-avatar {
+      width: 32px;
+      height: 32px;
+      font-size: 11px;
+      border-color: #A0A8C0;
+    }
+
+    .ig-p2 .ig-podio-pts {
+      color: #A0A8C0;
+    }
+
+    .ig-p2 .ig-podio-base {
+      height: 34px;
+      background: rgba(100, 115, 150, 0.7);
+    }
+
+    .ig-p3 .ig-podio-avatar {
+      width: 28px;
+      height: 28px;
+      font-size: 10px;
+      border-color: #B07850;
+    }
+
+    .ig-p3 .ig-podio-pts {
+      color: #B07850;
+    }
+
+    .ig-p3 .ig-podio-base {
+      height: 26px;
+      background: rgba(120, 80, 50, 0.7);
+    }
+
+    /* Chrome inferior IG */
+    .ig-post-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px 4px;
+      background: #fff;
+    }
+
+    .ig-action-icon {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .ig-action-save {
+      margin-left: auto;
+      font-size: 20px;
+    }
+
+    .ig-post-likes {
+      padding: 0 12px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #000;
+      background: #fff;
+    }
+
+    .ig-post-caption {
+      padding: 2px 12px 10px;
+      font-size: 11px;
+      color: #000;
+      line-height: 1.4;
+      background: #fff;
+    }
+
+    .ig-caption-name {
+      font-weight: 800;
+    }
+
+    .ig-post-date {
+      padding: 0 12px 10px;
+      font-size: 9px;
+      color: #8e8e8e;
+      background: #fff;
+    }
+
+    /* Bottom nav del phone */
+    .ig-bottom-nav {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 8px 0 4px;
+      background: #fff;
+      border-top: 1px solid #efefef;
+      font-size: 20px;
+    }
+
+    /* Opciones debajo del mockup */
+    .ig-options {
+      padding: 16px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .ig-options-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--texto2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .ig-caption-edit {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radio-sm);
+      border: 1.5px solid var(--gris-borde);
+      background: var(--gris-bg);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 13px;
+      color: var(--texto);
+      outline: none;
+      resize: none;
+      line-height: 1.5;
+      transition: border-color 0.2s;
+    }
+
+    .ig-caption-edit:focus {
+      border-color: var(--azul-mid);
+      background: var(--blanco);
+    }
+
+    .ig-hashtags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .ig-tag-chip {
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--gris-bg);
+      border: 1.5px solid var(--gris-borde);
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ig-tag-chip.active {
+      background: var(--celeste-light);
+      border-color: var(--azul-mid);
+      color: var(--azul-mid);
+    }
+
+    .ig-connect-notice {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--naranja-light);
+      border-radius: var(--radio-sm);
+      padding: 12px 14px;
+      border: 1.5px solid rgba(240, 123, 29, 0.2);
+    }
+
+    .ig-connect-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .ig-connect-text {
+      font-size: 12px;
+      color: var(--naranja);
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .ig-connect-text strong {
+      font-weight: 800;
+    }
+
+    .ig-connect-text a {
+      color: var(--naranja);
+      font-weight: 800;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .ig-modal-footer {
+      display: flex;
+      gap: 10px;
+      padding: 0 24px 24px;
+    }
+
+    .ig-btn-cancel {
+      flex: 1;
+      padding: 13px;
+      border-radius: 10px;
+      border: 1.5px solid var(--gris-borde);
+      background: var(--blanco);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--texto2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ig-btn-cancel:hover {
+      background: var(--gris-bg);
+    }
+
+    .ig-btn-post {
+      flex: 2;
+      padding: 13px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(220, 39, 67, 0.3);
+    }
+
+    .ig-btn-post:hover {
+      opacity: 0.92;
+      transform: scale(1.01);
+    }
+
+    .ig-btn-post:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Overlay móvil -->
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ════════ SIDEBAR ════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon" id="sb-logo">⚽</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-name" id="sb-empresa">DISTRIBUIDORA<br>GARCÍA</div>
+        <div class="sidebar-logo-sub">Panel de empresa</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <button class="nav-item active" onclick="showPage('p-dashboard', this)">
+        <span class="ni-icon">🏠</span>
+        <span class="ni-label">Inicio</span>
+      </button>
+      <button class="nav-item" onclick="showPage('p-participantes', this)">
+        <span class="ni-icon">👥</span>
+        <span class="ni-label">Participantes</span>
+        <span class="ni-badge" id="badge-part">87</span>
+      </button>
+      <button class="nav-item" onclick="showPage('p-ranking', this)">
+        <span class="ni-icon">🏆</span>
+        <span class="ni-label">Ranking</span>
+      </button>
+      <button class="nav-item" onclick="showPage('p-partidos', this)">
+        <span class="ni-icon">⚽</span>
+        <span class="ni-label">Partidos</span>
+      </button>
+
+      <div class="nav-section-label">Gestión</div>
+      <button class="nav-item" onclick="showPage('p-config', this)">
+        <span class="ni-icon">⚙️</span>
+        <span class="ni-label">Configuración</span>
+      </button>
+      <button class="nav-item" onclick="showPage('p-premios', this)">
+        <span class="ni-icon">🎁</span>
+        <span class="ni-label">Premios</span>
+      </button>
+      <button class="nav-item" onclick="showPage('p-notifs', this)">
+        <span class="ni-icon">🔔</span>
+        <span class="ni-label">Notificaciones</span>
+      </button>
+
+      <button class="nav-item" onclick="showPage('p-promos', this)">
+        <span class="ni-icon">🏷️</span>
+        <span class="ni-label">Mis Promos</span>
+      </button>
+
+      <div class="nav-section-label">Cuenta</div>
+      <button class="nav-item" onclick="showPage('p-ayuda', this)">
+        <span class="ni-icon">❓</span>
+        <span class="ni-label">Ayuda</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar">DG</div>
+        <div class="user-info">
+          <div class="user-name">Daniel García</div>
+          <div class="user-role">Administrador</div>
+        </div>
+        <span class="user-menu-icon">⋮</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════ HEADER ════════ -->
+  <header class="header mb-5">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <div class="page-breadcrumb">
+      <span>Prode 2026</span>
+      <span>›</span>
+      <span class="current" id="breadcrumb-title">Inicio</span>
+    </div>
+    <div class="header-actions">
+      <div class="notif-btn" onclick="alert('Notificaciones')">
+        🔔 <div class="notif-dot"></div>
+      </div>
+      <button class="header-btn ghost" onclick="window.open('#','_blank')">👁️ Ver prode</button>
+      <button class="header-btn primary" onclick="copyLink()">🔗 Compartir link</button>
+    </div>
+  </header>
+
+  <!-- ════════ MAIN ════════ -->
+  <main class="main">
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="tab-page active" id="p-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">¡Buen día, Daniel! 👋</div>
+          <div class="page-sub">Acá está todo lo que pasa en tu prode hoy</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline"
+            onclick="showPage('p-notifs', document.querySelector('[onclick*=p-notifs]'))">📢 Enviar
+            notificación</button>
+          <button class="btn btn-primary" onclick="copyLink()">🔗 Compartir link</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="cards-grid cols-4" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon-wrap azul">👥</div>
+              <div class="stat-badge up">↑ +12 hoy</div>
+            </div>
+            <div class="stat-value">87</div>
+            <div class="stat-label">Participantes</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon-wrap verde">✅</div>
+              <div class="stat-badge up">94%</div>
+            </div>
+            <div class="stat-value">82</div>
+            <div class="stat-label">Cargaron pronósticos</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon-wrap dorado">⚽</div>
+              <div class="stat-badge neutral">Fecha 1 finalizada</div>
+            </div>
+            <div class="stat-value">48</div>
+            <div class="stat-label">Partidos jugados</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="stat-card">
+            <div class="stat-top">
+              <div class="stat-icon-wrap celeste">📊</div>
+              <div class="stat-badge up">↑ activo</div>
+            </div>
+            <div class="stat-value">1.8K</div>
+            <div class="stat-label">Pronósticos cargados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINK + RANKING -->
+      <div class="cards-grid cols-2-1" style="margin-bottom:20px;">
+        <!-- LINK PANEL -->
+        <div class="link-panel" style="position:relative;min-height:160px;">
+          <div class="link-inner" style="max-width:calc(100% - 140px);">
+            <div class="link-label">Tu link del prode</div>
+            <div class="link-url-row">
+              <span class="link-url-text">distribuidoragarcia.prode.ar</span>
+              <button class="link-copy-btn" id="main-copy-btn" onclick="copyLink()">Copiar</button>
+            </div>
+            <div class="link-share-row">
+              <button class="share-pill" onclick="shareWA()">💬 WhatsApp</button>
+              <button class="share-pill" onclick="shareEmail()">📧 Email</button>
+              <button class="share-pill" onclick="copyLink()">🔗 Copiar</button>
+              <button class="share-pill" onclick="downloadQR()">📲 QR</button>
+            </div>
+          </div>
+          <div class="qr-box" onclick="downloadQR()">
+            <div class="qr-grid" id="qr-grid"></div>
+            <span class="qr-label">Descargar QR</span>
+          </div>
+        </div>
+
+        <!-- PRÓXIMO PARTIDO -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">⏰</span>Próximo partido</div>
+            <div class="stat-badge up" style="animation:pulse 1.5s infinite;">🔴 En 4 días</div>
+          </div>
+          <div style="padding:20px;text-align:center;">
+            <div style="font-size:32px;margin-bottom:10px;">🇦🇷 🆚 🇪🇸</div>
+            <div style="font-size:16px;font-weight:800;color:var(--texto);margin-bottom:6px;">Argentina vs España</div>
+            <div style="font-size:13px;color:var(--texto2);margin-bottom:14px;">Fecha 2 · 18 Jun · 18:00 hs</div>
+            <div
+              style="background:var(--naranja-light);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--naranja);">
+              ⚠️ 5 participantes sin cargar aún
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:12px;"
+              onclick="alert('Enviar recordatorio a los que no cargaron')">
+              📢 Recordar a los 5
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVIDAD + TOP RANKING -->
+      <div class="cards-grid cols-2" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📈</span>Participantes por día</div>
+            <button class="card-action">Ver más</button>
+          </div>
+          <div style="padding:20px;">
+            <div style="font-size:12px;font-weight:700;color:var(--texto3);margin-bottom:10px;">Últimos 7 días</div>
+            <div class="mini-chart" id="mini-chart"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:6px;">
+              <span style="font-size:11px;color:var(--texto3);">Jun 8</span>
+              <span style="font-size:11px;color:var(--texto3);">Hoy</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🏆</span>Top 5 del ranking</div>
+            <button class="card-action"
+              onclick="showPage('p-ranking', document.querySelector('[onclick*=p-ranking]'))">Ver completo</button>
+          </div>
+          <div class="ranking-simple" style="padding:14px 18px;">
+            <div class="rank-row" style="background:var(--verde-light);border-color:var(--verde);">
+              <span class="rank-pos-num" style="color:var(--dorado-dark);">🥇</span>
+              <span class="rank-name">Martina López</span>
+              <span class="rank-pts-badge">22</span>
+              <span class="rank-pts-label" style="margin-left:-6px;">pts</span>
+            </div>
+            <div class="rank-row">
+              <span class="rank-pos-num" style="color:#9BA5BE;">🥈</span>
+              <span class="rank-name">Carlos Ruiz</span>
+              <span class="rank-pts-badge">18</span>
+              <span class="rank-pts-label" style="margin-left:-6px;">pts</span>
+            </div>
+            <div class="rank-row">
+              <span class="rank-pos-num" style="color:#CD9B6A;">🥉</span>
+              <span class="rank-name">Lucas Fernández</span>
+              <span class="rank-pts-badge">14</span>
+              <span class="rank-pts-label" style="margin-left:-6px;">pts</span>
+            </div>
+            <div class="rank-row">
+              <span class="rank-pos-num">4</span>
+              <span class="rank-name">Ana García</span>
+              <span class="rank-pts-badge">12</span>
+              <span class="rank-pts-label" style="margin-left:-6px;">pts</span>
+            </div>
+            <div class="rank-row">
+              <span class="rank-pos-num">5</span>
+              <span class="rank-name">Pedro Sánchez</span>
+              <span class="rank-pts-badge">10</span>
+              <span class="rank-pts-label" style="margin-left:-6px;">pts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PARTICIPANTES ═══ -->
+    <div class="tab-page" id="p-participantes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Participantes</div>
+          <div class="page-sub">87 personas juegan en tu prode</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">📥 Exportar CSV</button>
+          <button class="btn btn-primary">📢 Notificar a todos</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input class="search-input" type="text" placeholder="Buscar por nombre o email..."
+              oninput="filterTable(this.value)">
+          </div>
+          <button class="filter-btn">🔽 Filtrar</button>
+          <button class="filter-btn">📊 Estado</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="part-table">
+            <thead>
+              <tr>
+                <th>Participante</th>
+                <th>Celular</th>
+                <th>Estado</th>
+                <th>Posición</th>
+                <th>Puntos</th>
+                <th>Pronósticos</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="part-tbody"></tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="table-count">Mostrando 1-10 de 87 participantes</span>
+          <div class="pagination">
+            <button class="page-btn">‹</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RANKING ═══ -->
+    <div class="tab-page" id="p-ranking">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Ranking completo</div>
+          <div class="page-sub">Actualizado en tiempo real</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">📥 Exportar</button>
+        </div>
+      </div>
+      <div class="cards-grid cols-2" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">🏆</span>Podio</div>
+            <button class="card-action" onclick="openIgModal()"
+              style="display:flex;align-items:center;gap:6px;background:linear-gradient(135deg,#f09433,#dc2743,#cc2366);color:#fff;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:800;border:none;cursor:pointer;">
+              <span>📸</span> Publicar en Instagram
+            </button>
+          </div>
+          <div class="ranking-podium">
+            <div class="podium-item p2">
+              <div class="podium-avatar">👨</div>
+              <div class="podium-name">Carlos Ruiz</div>
+              <div class="podium-pts" style="color:#9BA5BE;">18 pts</div>
+              <div class="podium-base">2°</div>
+            </div>
+            <div class="podium-item p1">
+              <div class="podium-avatar">👩</div>
+              <div class="podium-name">Martina López</div>
+              <div class="podium-pts" style="color:var(--dorado-dark);">22 pts</div>
+              <div class="podium-base">1°</div>
+            </div>
+            <div class="podium-item p3">
+              <div class="podium-avatar">🧑</div>
+              <div class="podium-name">Lucas Fernández</div>
+              <div class="podium-pts" style="color:#9B6B3A;">14 pts</div>
+              <div class="podium-base">3°</div>
+            </div>
+          </div>
+          <div style="height:16px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📊</span>Distribución de puntos</div>
+          </div>
+          <div style="padding:20px;">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span
+                    style="font-weight:700;">15-22 pts</span><span style="color:var(--texto3);">8 personas</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--gris-borde);">
+                  <div style="height:100%;width:9%;border-radius:4px;background:var(--verde);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span
+                    style="font-weight:700;">8-14 pts</span><span style="color:var(--texto3);">34 personas</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--gris-borde);">
+                  <div style="height:100%;width:39%;border-radius:4px;background:var(--azul-mid);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span
+                    style="font-weight:700;">1-7 pts</span><span style="color:var(--texto3);">40 personas</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--gris-borde);">
+                  <div style="height:100%;width:46%;border-radius:4px;background:var(--celeste);"></div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span
+                    style="font-weight:700;">0 pts</span><span style="color:var(--texto3);">5 personas</span></div>
+                <div style="height:8px;border-radius:4px;background:var(--gris-borde);">
+                  <div style="height:100%;width:6%;border-radius:4px;background:var(--gris-borde2);"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📋</span>Tabla completa</div>
+          <button class="card-action">📥 Exportar</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Pos.</th>
+                <th>Participante</th>
+                <th>Puntos</th>
+                <th>Exactos</th>
+                <th>Ganadores</th>
+                <th>Pronósticos</th>
+              </tr>
+            </thead>
+            <tbody id="ranking-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ PARTIDOS ═══ -->
+    <div class="tab-page" id="p-partidos">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Partidos del Mundial</div>
+          <div class="page-sub">Resultados y cobertura de pronósticos</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">📋</span>Fecha 1 — Finalizada</div>
+          <div class="badge verde">✓ Completa</div>
+        </div>
+        <div class="matches-grid" id="matches-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">⏰</span>Fecha 2 — Próxima</div>
+          <div class="badge dorado">18-22 Jun</div>
+        </div>
+        <div class="matches-grid">
+          <div class="match-row">
+            <div class="match-time">18 Jun 18:00</div>
+            <div class="match-teams">
+              <span class="match-flag">🇦🇷</span>
+              <span class="match-name">Argentina</span>
+            </div>
+            <div class="match-score">
+              <span style="color:var(--texto3);font-size:18px;">vs</span>
+            </div>
+            <div class="match-teams">
+              <span class="match-name">España</span>
+              <span class="match-flag">🇪🇸</span>
+            </div>
+            <div class="match-status-badge ms-next">Próximamente</div>
+            <div class="coverage-bar-wrap">
+              <div class="coverage-label">Pronósticos: 82/87</div>
+              <div class="coverage-bar">
+                <div class="coverage-fill" style="width:94%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ CONFIGURACIÓN ═══ -->
+    <div class="tab-page" id="p-config">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Configuración</div>
+          <div class="page-sub">Personalizá tu prode y ajustá las reglas</div>
+        </div>
+      </div>
+      <div class="config-form">
+
+        <!-- IDENTIDAD -->
+        <div class="config-section">
+          <div class="config-section-head">
+            <span class="config-section-icon">🎨</span>
+            <div>
+              <div class="config-section-title">Identidad visual</div>
+              <div class="config-section-sub">Logo y colores de tu empresa</div>
+            </div>
+          </div>
+          <div class="config-section-body">
+            <div class="field">
+              <div class="field-label">Logo de la empresa</div>
+              <div class="logo-preview-row">
+                <div
+                  style="width:64px;height:64px;border-radius:12px;border:2px solid var(--gris-borde);background:var(--gris-bg);display:flex;align-items:center;justify-content:center;font-size:30px;">
+                  ⚽</div>
+                <div class="logo-upload" style="flex:1;">
+                  <input type="file" accept="image/*" onchange="handleLogoConfig(event)">
+                  <div class="logo-upload-icon">📁</div>
+                  <div class="logo-upload-text">Subir nuevo logo</div>
+                  <div class="logo-upload-hint">PNG, SVG, JPG · máx 2MB</div>
+                </div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Nombre de la empresa</div>
+                <input class="field-input" type="text" value="Distribuidora García" oninput="markChanged()">
+              </div>
+              <div class="field">
+                <div class="field-label">Slug / URL</div>
+                <input class="field-input" type="text" value="distribuidoragarcia" oninput="markChanged()">
+                <div class="field-hint">distribuidoragarcia.prode.ar</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Color principal</div>
+              <div class="color-palette">
+                <div class="color-swatch sel" style="background:#002B72;" onclick="selColor(this,'#002B72')"></div>
+                <div class="color-swatch" style="background:#5BA3D9;" onclick="selColor(this,'#5BA3D9')"></div>
+                <div class="color-swatch" style="background:#F5C518;" onclick="selColor(this,'#F5C518')"></div>
+                <div class="color-swatch" style="background:#C8102E;" onclick="selColor(this,'#C8102E')"></div>
+                <div class="color-swatch" style="background:#18A06A;" onclick="selColor(this,'#18A06A')"></div>
+                <div class="color-swatch" style="background:#111111;" onclick="selColor(this,'#111111')"></div>
+                <input type="color" value="#002B72" oninput="selColorCustom(this.value)" title="Color personalizado">
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Mensaje de bienvenida</div>
+              <input class="field-input" type="text" value="¡Bienvenido al prode del Mundial de Distribuidora García!"
+                oninput="markChanged()">
+            </div>
+          </div>
+        </div>
+
+        <!-- REGLAS -->
+        <div class="config-section">
+          <div class="config-section-head">
+            <span class="config-section-icon">📋</span>
+            <div>
+              <div class="config-section-title">Reglas del prode</div>
+              <div class="config-section-sub">Fechas y condiciones de juego</div>
+            </div>
+          </div>
+          <div class="config-section-body">
+            <div class="field-row">
+              <div class="field">
+                <div class="field-label">Fecha límite de inscripción</div>
+                <input class="field-input" type="date" value="2026-06-10" oninput="markChanged()">
+              </div>
+              <div class="field">
+                <div class="field-label">Minutos de cierre antes del partido</div>
+                <input class="field-input" type="number" value="5" min="0" max="60" oninput="markChanged()">
+                <div class="field-hint">Los pronósticos se bloquean 5 min antes</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Sistema de puntos</div>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+                <div
+                  style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--verde-light);border-radius:10px;border:1.5px solid rgba(24,160,106,0.2);">
+                  <div style="font-size:20px;">🎯</div>
+                  <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:700;">Resultado exacto</div>
+                    <div style="font-size:12px;color:var(--texto3);">Adivinás el marcador exacto</div>
+                  </div>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--verde);">3 pts</div>
+                </div>
+                <div
+                  style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--naranja-light);border-radius:10px;border:1.5px solid rgba(240,123,29,0.2);">
+                  <div style="font-size:20px;">👍</div>
+                  <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:700;">Ganador correcto</div>
+                    <div style="font-size:12px;color:var(--texto3);">Adivinás quién gana o si es empate</div>
+                  </div>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--naranja);">1 pt</div>
+                </div>
+                <div
+                  style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--gris-bg);border-radius:10px;border:1.5px solid var(--gris-borde);">
+                  <div style="font-size:20px;">❌</div>
+                  <div style="flex:1;">
+                    <div style="font-size:14px;font-weight:700;">Error o sin cargar</div>
+                    <div style="font-size:12px;color:var(--texto3);">No se suma nada</div>
+                  </div>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--texto3);">0 pts</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- INSTAGRAM -->
+        <div class="config-section">
+          <div class="config-section-head">
+            <span class="config-section-icon">📸</span>
+            <div>
+              <div class="config-section-title">Instagram</div>
+              <div class="config-section-sub">Conectá tu cuenta para publicar el podio directo</div>
+            </div>
+          </div>
+          <div class="config-section-body">
+            <div id="ig-connected-state" style="display:none;">
+              <div
+                style="display:flex;align-items:center;gap:12px;padding:14px;background:linear-gradient(135deg,rgba(240,148,51,0.08),rgba(204,35,102,0.06));border-radius:12px;border:1.5px solid rgba(220,39,67,0.15);margin-bottom:12px;">
+                <div
+                  style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#f09433,#dc2743,#cc2366);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
+                  📸</div>
+                <div style="flex:1;">
+                  <div style="font-size:14px;font-weight:800;color:var(--texto);">@distribuidoragarcia</div>
+                  <div style="font-size:12px;color:var(--verde);font-weight:700;">✓ Cuenta conectada</div>
+                </div>
+                <button onclick="disconnectIG()"
+                  style="font-size:12px;font-weight:700;color:var(--rojo);background:var(--rojo-light);border:none;border-radius:8px;padding:6px 12px;cursor:pointer;">Desconectar</button>
+              </div>
+              <div class="field">
+                <div class="field-label">Hashtags por defecto</div>
+                <input class="field-input" type="text" id="ig-hashtags-config"
+                  value="#ProdeMundial2026 #Mundial2026 #DistribuidoraGarcia" oninput="markChanged()">
+                <div class="field-hint">Se agregan automáticamente a cada publicación</div>
+              </div>
+              <div class="toggle-row" style="margin-top:4px;">
+                <div>
+                  <div class="toggle-label">Publicar automáticamente al terminar cada fecha</div>
+                  <div class="toggle-desc">El podio parcial se postea solo cuando terminan los partidos</div>
+                </div>
+                <button class="toggle" onclick="this.classList.toggle('on');markChanged()"></button>
+              </div>
+            </div>
+            <div id="ig-disconnected-state">
+              <div style="text-align:center;padding:20px 0 8px;">
+                <div style="font-size:40px;margin-bottom:12px;">📸</div>
+                <div style="font-size:15px;font-weight:800;color:var(--texto);margin-bottom:6px;">Conectá tu Instagram
+                </div>
+                <div style="font-size:13px;color:var(--texto2);margin-bottom:20px;line-height:1.5;">Publicá el podio de
+                  tu prode directamente en tu cuenta con un solo toque</div>
+                <button onclick="connectIG()"
+                  style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border-radius:999px;border:none;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366);color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(220,39,67,0.3);">
+                  <span>📸</span> Conectar con Instagram
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NOTIFICACIONES AUTOMÁTICAS -->
+        <div class="config-section">
+          <div class="config-section-head">
+            <span class="config-section-icon">🔔</span>
+            <div>
+              <div class="config-section-title">Notificaciones automáticas</div>
+              <div class="config-section-sub">Configurá cuándo le avisamos a tus participantes</div>
+            </div>
+          </div>
+          <div class="config-section-body">
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Recordatorio antes de cada partido</div>
+                <div class="toggle-desc">Se envía 24hs antes del primer partido de cada fecha</div>
+              </div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div style="height:1px;background:var(--gris-borde);"></div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Resultado de cada fecha</div>
+                <div class="toggle-desc">Notificamos cómo les fue al terminar los partidos</div>
+              </div>
+              <button class="toggle on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div style="height:1px;background:var(--gris-borde);"></div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Actualización del ranking</div>
+                <div class="toggle-desc">Les avisamos cuando cambia su posición</div>
+              </div>
+              <button class="toggle" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div style="height:1px;background:var(--gris-borde);"></div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">WhatsApp</div>
+                <div class="toggle-desc">Enviar notificaciones por WhatsApp (requiere integración)</div>
+              </div>
+              <button class="toggle" onclick="this.classList.toggle('on')"></button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══ PREMIOS ═══ -->
+    <div class="tab-page" id="p-premios">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Premios</div>
+          <div class="page-sub">Definí qué gana cada puesto del ranking</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🏆</span>Premios configurados</div>
+          <button class="card-action" onclick="addPrize()">+ Agregar puesto</button>
+        </div>
+        <div style="padding:20px;">
+          <div class="prize-config-list" id="prizes-config-list">
+            <div class="prize-config-item">
+              <span class="prize-medal-lg">🥇</span>
+              <input class="prize-field" type="text" value="AirPods Pro + Diploma del Campeón">
+              <button class="prize-delete"
+                onclick="this.closest('.prize-config-item').remove();markChanged()">×</button>
+            </div>
+            <div class="prize-config-item">
+              <span class="prize-medal-lg">🥈</span>
+              <input class="prize-field" type="text" value="Voucher Shopping $30.000">
+              <button class="prize-delete"
+                onclick="this.closest('.prize-config-item').remove();markChanged()">×</button>
+            </div>
+            <div class="prize-config-item">
+              <span class="prize-medal-lg">🥉</span>
+              <input class="prize-field" type="text" value="Almuerzo para 2 en el restaurante de la empresa">
+              <button class="prize-delete"
+                onclick="this.closest('.prize-config-item').remove();markChanged()">×</button>
+            </div>
+          </div>
+          <button class="prize-add-btn" style="margin-top:12px;" onclick="addPrize()">
+            + Agregar otro premio
+          </button>
+          <div
+            style="margin-top:20px;padding:16px;background:var(--gris-bg);border-radius:12px;border:1.5px solid var(--gris-borde);">
+            <div style="font-size:13px;font-weight:700;color:var(--texto2);margin-bottom:8px;">💡 ¿Sin premios físicos?
+              Podés usar:</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="font-size:13px;color:var(--texto2);">• "El campeón elige a dónde va el equipo a almorzar"
+              </div>
+              <div style="font-size:13px;color:var(--texto2);">• "Un día de home office extra"</div>
+              <div style="font-size:13px;color:var(--texto2);">• "El ganador elige la música de la oficina por una
+                semana"</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ NOTIFICACIONES ═══ -->
+    <div class="tab-page" id="p-notifs">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Notificaciones</div>
+          <div class="page-sub">Enviá mensajes a tus participantes</div>
+        </div>
+      </div>
+      <div class="cards-grid cols-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📢</span>Enviar mensaje</div>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div class="field">
+              <div class="field-label">¿A quién enviás?</div>
+              <select class="field-input" style="cursor:pointer;">
+                <option>Todos los participantes (87)</option>
+                <option>Solo los que no cargaron fecha 2 (5)</option>
+                <option>El top 10 del ranking</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label">Canal</div>
+              <div style="display:flex;gap:8px;">
+                <button class="filter-btn"
+                  style="flex:1;justify-content:center;background:var(--celeste-light);border-color:var(--azul-mid);color:var(--azul-mid);">📧
+                  Email</button>
+                <button class="filter-btn" style="flex:1;justify-content:center;">💬 WhatsApp</button>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label">Mensaje</div>
+              <textarea class="field-input" rows="4"
+                style="resize:vertical;line-height:1.5;">¡Che! ¿Ya cargaste tus pronósticos para la Fecha 2? Quedan solo 4 días. No te quedes sin tus puntos 😅⚽</textarea>
+            </div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;"
+              onclick="alert('Mensaje enviado a 87 participantes ✅')">
+              📤 Enviar mensaje
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span class="icon">📋</span>Historial de envíos</div>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+            <div
+              style="padding:14px;background:var(--gris-bg);border-radius:10px;border:1.5px solid var(--gris-borde);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <div style="font-size:13px;font-weight:800;">Recordatorio Fecha 2</div>
+                <div class="badge verde">Enviado</div>
+              </div>
+              <div style="font-size:12px;color:var(--texto3);">87 destinatarios · Email · Hace 1 día</div>
+            </div>
+            <div
+              style="padding:14px;background:var(--gris-bg);border-radius:10px;border:1.5px solid var(--gris-borde);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <div style="font-size:13px;font-weight:800;">Resultado Fecha 1</div>
+                <div class="badge verde">Enviado</div>
+              </div>
+              <div style="font-size:12px;color:var(--texto3);">87 destinatarios · Email · Hace 3 días</div>
+            </div>
+            <div
+              style="padding:14px;background:var(--gris-bg);border-radius:10px;border:1.5px solid var(--gris-borde);">
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <div style="font-size:13px;font-weight:800;">Bienvenida al prode</div>
+                <div class="badge verde">Enviado</div>
+              </div>
+              <div style="font-size:12px;color:var(--texto3);">87 destinatarios · Email + WhatsApp · Hace 7 días</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ AYUDA ═══ -->
+    <div class="tab-page" id="p-ayuda">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Ayuda</div>
+          <div class="page-sub">¿Tenés dudas? Acá encontrás las respuestas</div>
+        </div>
+      </div>
+      <div class="card card-pad">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="padding:16px;border:1.5px solid var(--gris-borde);border-radius:12px;cursor:pointer;"
+            onclick="this.querySelector('.faq-body').style.display=this.querySelector('.faq-body').style.display==='none'?'block':'none'">
+            <div style="font-size:15px;font-weight:800;color:var(--texto);display:flex;justify-content:space-between;">
+              ¿Cómo se calculan los puntos? <span>⌄</span></div>
+            <div class="faq-body"
+              style="display:none;margin-top:10px;font-size:14px;color:var(--texto2);line-height:1.6;">Resultado exacto
+              = 3 puntos · Ganador correcto = 1 punto · Error o sin cargar = 0 puntos. El ranking se actualiza
+              automáticamente al terminar cada partido.</div>
+          </div>
+          <div style="padding:16px;border:1.5px solid var(--gris-borde);border-radius:12px;cursor:pointer;"
+            onclick="this.querySelector('.faq-body').style.display=this.querySelector('.faq-body').style.display==='none'?'block':'none'">
+            <div style="font-size:15px;font-weight:800;color:var(--texto);display:flex;justify-content:space-between;">
+              ¿Qué pasa si alguien no carga sus pronósticos? <span>⌄</span></div>
+            <div class="faq-body"
+              style="display:none;margin-top:10px;font-size:14px;color:var(--texto2);line-height:1.6;">Si no carga antes
+              de los 5 minutos del partido, se omite esa fecha y no suma puntos. Podés enviarles un recordatorio desde
+              la sección Notificaciones.</div>
+          </div>
+          <div style="padding:16px;border:1.5px solid var(--gris-borde);border-radius:12px;cursor:pointer;"
+            onclick="this.querySelector('.faq-body').style.display=this.querySelector('.faq-body').style.display==='none'?'block':'none'">
+            <div style="font-size:15px;font-weight:800;color:var(--texto);display:flex;justify-content:space-between;">
+              ¿Puedo cambiar los premios mientras corre el torneo? <span>⌄</span></div>
+            <div class="faq-body"
+              style="display:none;margin-top:10px;font-size:14px;color:var(--texto2);line-height:1.6;">Sí, podés
+              editarlos en cualquier momento desde la sección Premios. Los cambios se ven reflejados de inmediato en el
+              prode de los participantes.</div>
+          </div>
+        </div>
+        <div style="margin-top:24px;text-align:center;padding:24px;background:var(--gris-bg);border-radius:12px;">
+          <div style="font-size:24px;margin-bottom:8px;">💬</div>
+          <div style="font-size:16px;font-weight:800;margin-bottom:4px;">¿Necesitás más ayuda?</div>
+          <div style="font-size:14px;color:var(--texto2);margin-bottom:16px;">Nuestro equipo responde en menos de 24hs
+          </div>
+          <button class="btn btn-primary" style="justify-content:center;"
+            onclick="alert('Abre chat de soporte')">Contactar soporte</button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ PROMOS ═══ -->
+    <div class="tab-page" id="p-promos">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Mis Promociones</div>
+          <div class="page-sub">Las promos que cargues aparecen en el carrusel del prode, geolocalizadas para los
+            participantes cercanos</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="showNewPromoForm()">+ Nueva promo</button>
+        </div>
+      </div>
+
+      <!-- PLAN NOTICE -->
+      <div
+        style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#002B72,#003FA3);border-radius:var(--radio);padding:18px 22px;margin-bottom:20px;box-shadow:var(--sombra-md);">
+        <div style="font-size:32px;flex-shrink:0;">⭐</div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:3px;">Función disponible en Plan Pro</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.7);">Tus promos llegan a todos los participantes de la
+            zona que estén jugando en cualquier prode de la plataforma</div>
+        </div>
+        <div
+          style="background:var(--dorado);color:var(--azul);font-size:12px;font-weight:900;padding:8px 16px;border-radius:999px;white-space:nowrap;cursor:pointer;"
+          onclick="alert('Actualizar al Plan Pro')">Plan Pro →</div>
+      </div>
+
+      <!-- FORMULARIO NUEVA PROMO (oculto por defecto) -->
+      <div class="card" id="new-promo-form" style="display:none;margin-bottom:20px;">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">✏️</span>Nueva promoción</div>
+          <button class="card-action" onclick="hideNewPromoForm()">Cancelar</button>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div class="field">
+              <div class="field-label">Nombre del negocio</div>
+              <input class="field-input" type="text" id="promo-nombre" placeholder="Ej: Pizzería Don Carlo"
+                oninput="updatePromoPreview()">
+            </div>
+            <div class="field">
+              <div class="field-label">Categoría</div>
+              <select class="field-input" id="promo-cat" onchange="updatePromoPreview()">
+                <option>🍕 Gastronomía</option>
+                <option>☕ Cafetería</option>
+                <option>🛒 Supermercado</option>
+                <option>💊 Farmacia</option>
+                <option>👗 Indumentaria</option>
+                <option>💆 Bienestar</option>
+                <option>📚 Librería</option>
+                <option>🎬 Entretenimiento</option>
+                <option>🔧 Servicios</option>
+                <option>🏠 Hogar</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Texto de la promo</div>
+            <input class="field-input" type="text" id="promo-texto" placeholder="Ej: 2x1 en pizzas todos los miércoles"
+              oninput="updatePromoPreview()" maxlength="60">
+            <div class="field-hint">Máximo 60 caracteres · Sé directo y concreto</div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+            <div class="field">
+              <div class="field-label">Válida desde</div>
+              <input class="field-input" type="date" id="promo-desde" value="2026-06-01">
+            </div>
+            <div class="field">
+              <div class="field-label">Válida hasta</div>
+              <input class="field-input" type="date" id="promo-hasta" value="2026-07-15">
+            </div>
+            <div class="field">
+              <div class="field-label">Radio de alcance</div>
+              <select class="field-input" id="promo-radio">
+                <option value="500">500 metros</option>
+                <option value="1000" selected>1 km</option>
+                <option value="2000">2 km</option>
+                <option value="5000">5 km</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Imagen de fondo <span
+                style="font-weight:500;color:var(--texto3);">(opcional)</span></div>
+            <div
+              style="border:2px dashed var(--gris-borde2);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;"
+              onmouseover="this.style.borderColor='var(--azul-mid)'"
+              onmouseout="this.style.borderColor='var(--gris-borde2)'">
+              <input type="file" accept="image/*" style="position:absolute;inset:0;opacity:0;cursor:pointer;"
+                onchange="handlePromoImg(event)">
+              <div style="font-size:28px;margin-bottom:6px;">🖼️</div>
+              <div style="font-size:13px;font-weight:700;color:var(--azul-mid);">Subir imagen</div>
+              <div style="font-size:11px;color:var(--texto3);margin-top:3px;">JPG o PNG · 1200×400px recomendado</div>
+            </div>
+          </div>
+
+          <!-- PREVIEW -->
+          <div class="field">
+            <div class="field-label">Preview en el carrusel</div>
+            <div id="promo-preview-card"
+              style="height:88px;border-radius:14px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1a3a5c,#2d6a8f);display:flex;align-items:center;">
+              <div id="promo-preview-overlay"
+                style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 60%,transparent 100%);">
+              </div>
+              <div style="position:relative;z-index:2;padding:0 16px;display:flex;flex-direction:column;gap:3px;">
+                <div
+                  style="display:inline-flex;align-items:center;gap:4px;background:var(--dorado);color:var(--azul);font-size:9px;font-weight:900;padding:2px 8px;border-radius:999px;width:fit-content;text-transform:uppercase;letter-spacing:0.06em;">
+                  📍 1 km</div>
+                <div id="promo-prev-name" style="font-size:14px;font-weight:900;color:#fff;line-height:1.2;">Tu negocio
+                </div>
+                <div id="promo-prev-texto" style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.85);">El texto
+                  de tu promo aparece acá</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;" onclick="savePromo()">
+            ✅ Publicar promo
+          </button>
+        </div>
+      </div>
+
+      <!-- LISTA DE PROMOS ACTIVAS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="icon">🏷️</span>Promos activas</div>
+          <div class="badge verde">3 activas</div>
+        </div>
+        <div style="padding:16px;display:flex;flex-direction:column;gap:12px;" id="promos-list">
+
+          <div style="border:1.5px solid var(--gris-borde);border-radius:12px;overflow:hidden;">
+            <div
+              style="height:72px;background:linear-gradient(135deg,#1a3a5c,#2d6a8f);position:relative;display:flex;align-items:center;padding:0 16px;">
+              <div
+                style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.5) 0%,transparent 70%);">
+              </div>
+              <div style="position:relative;z-index:2;">
+                <div style="font-size:13px;font-weight:900;color:#fff;">Pizzería Don Carlo</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.8);">2x1 en pizzas todos los miércoles</div>
+              </div>
+            </div>
+            <div
+              style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="badge verde">✓ Activa</span>
+                <span class="badge gris">📍 1 km de alcance</span>
+                <span class="badge gris">⏰ Hasta 15 Jul</span>
+                <span class="badge gris">👁️ 234 vistas</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="row-btn">✏️ Editar</button>
+                <button class="row-btn" style="color:var(--rojo);border-color:var(--rojo);"
+                  onclick="if(confirm('¿Desactivar esta promo?'))this.closest('div').parentElement.parentElement.remove()">Desactivar</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1.5px solid var(--gris-borde);border-radius:12px;overflow:hidden;">
+            <div
+              style="height:72px;background:linear-gradient(135deg,#3d1a00,#8B4513);position:relative;display:flex;align-items:center;padding:0 16px;">
+              <div
+                style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.5) 0%,transparent 70%);">
+              </div>
+              <div style="position:relative;z-index:2;">
+                <div style="font-size:13px;font-weight:900;color:#fff;">Café Central</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.8);">Café + medialuna $800 hasta las 11hs</div>
+              </div>
+            </div>
+            <div
+              style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="badge verde">✓ Activa</span>
+                <span class="badge gris">📍 2 km de alcance</span>
+                <span class="badge gris">⏰ Hasta 20 Jun</span>
+                <span class="badge gris">👁️ 187 vistas</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="row-btn">✏️ Editar</button>
+                <button class="row-btn" style="color:var(--rojo);border-color:var(--rojo);"
+                  onclick="if(confirm('¿Desactivar esta promo?'))this.closest('div').parentElement.parentElement.remove()">Desactivar</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1.5px solid var(--gris-borde);border-radius:12px;overflow:hidden;opacity:0.6;">
+            <div
+              style="height:72px;background:linear-gradient(135deg,#0d3b2e,#1a7a5e);position:relative;display:flex;align-items:center;padding:0 16px;">
+              <div
+                style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.5) 0%,transparent 70%);">
+              </div>
+              <div style="position:relative;z-index:2;">
+                <div style="font-size:13px;font-weight:900;color:#fff;">Farmacia del Sol</div>
+                <div style="font-size:11px;color:rgba(255,255,255,0.8);">15% OFF en vitaminas y suplementos</div>
+              </div>
+            </div>
+            <div
+              style="padding:12px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <span class="badge rojo">⏸ Vencida</span>
+                <span class="badge gris">📍 500 m de alcance</span>
+                <span class="badge gris">⏰ Venció 1 Jun</span>
+                <span class="badge gris">👁️ 312 vistas</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="row-btn">♻️ Renovar</button>
+                <button class="row-btn" style="color:var(--rojo);border-color:var(--rojo);"
+                  onclick="this.closest('div').parentElement.parentElement.remove()">Eliminar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- INFO ALCANCE -->
+      <div
+        style="margin-top:16px;background:var(--gris-bg);border:1.5px solid var(--gris-borde);border-radius:var(--radio);padding:18px 20px;">
+        <div style="font-size:13px;font-weight:800;color:var(--texto);margin-bottom:10px;">ℹ️ ¿Cómo funciona el alcance
+          geo?</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:13px;color:var(--texto2);">• Tus promos aparecen en el carrusel de <strong
+              style="color:var(--texto);">todos los prodes de la plataforma</strong>, no solo el tuyo</div>
+          <div style="font-size:13px;color:var(--texto2);">• Solo las ven participantes que estén a menos del radio que
+            configuraste</div>
+          <div style="font-size:13px;color:var(--texto2);">• El carrusel rota automáticamente, mostrando primero las
+            promos más cercanas</div>
+          <div style="font-size:13px;color:var(--texto2);">• Podés ver cuántas vistas tuvo cada promo en tiempo real
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ MODAL INSTAGRAM PODIO ═══ -->
+    <div class="ig-modal-overlay" id="ig-modal" onclick="closeIgModal(event)">
+      <div class="ig-modal" onclick="event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="ig-modal-header">
+          <div class="ig-modal-title">
+            <span style="font-size:20px;">📸</span>
+            Preview del post
+          </div>
+          <button class="ig-modal-close" onclick="closeIgModal()">✕</button>
+        </div>
+
+        <!-- Phone mockup -->
+        <div class="ig-phone-wrap">
+          <div class="ig-phone">
+            <div class="ig-phone-notch"></div>
+            <div class="ig-phone-screen">
+
+              <!-- App bar Instagram -->
+              <div class="ig-app-bar">
+                <div class="ig-app-logo">Instagram</div>
+                <div class="ig-app-icons">
+                  <span>♡</span>
+                  <span>✈</span>
+                </div>
+              </div>
+
+              <!-- Post header -->
+              <div class="ig-post-header">
+                <div class="ig-account-avatar">
+                  <div class="ig-account-avatar-inner" id="ig-avatar-initials">DG</div>
+                </div>
+                <div class="ig-account-info">
+                  <div class="ig-account-name" id="ig-account-name">distribuidoragarcia</div>
+                  <div class="ig-account-handle">Patrocinado</div>
+                </div>
+                <div class="ig-post-more">···</div>
+              </div>
+
+              <!-- LA IMAGEN: el podio del prode — estilo editorial IG -->
+              <div class="ig-post-image">
+                <div class="ig-post-content">
+
+                  <!-- Empresa arriba izquierda -->
+                  <div class="ig-post-empresa-logo">
+                    <div class="ig-post-logo-circle" id="ig-post-logo">⚽</div>
+                    <div class="ig-post-empresa-name" id="ig-post-empresa">Distribuidora García</div>
+                  </div>
+
+                  <!-- Centro: trofeo + título grande -->
+                  <div class="ig-post-center">
+                    <div class="ig-post-trophy">🏆</div>
+                    <div class="ig-post-title">PODIO FINAL</div>
+                    <div class="ig-post-subtitle" id="ig-post-subtitle">Prode Mundial 2026 · Fecha 2</div>
+                  </div>
+
+                  <!-- Podio abajo -->
+                  <div class="ig-podio">
+                    <div class="ig-podio-item ig-p2">
+                      <div class="ig-podio-avatar" id="ig-p2-avatar">CR</div>
+                      <div class="ig-podio-name" id="ig-p2-name">Carlos Ruiz</div>
+                      <div class="ig-podio-pts" id="ig-p2-pts">18 pts</div>
+                      <div class="ig-podio-base">2°</div>
+                    </div>
+                    <div class="ig-podio-item ig-p1">
+                      <div class="ig-podio-crown">👑</div>
+                      <div class="ig-podio-avatar" id="ig-p1-avatar">ML</div>
+                      <div class="ig-podio-name" id="ig-p1-name">Martina López</div>
+                      <div class="ig-podio-pts" id="ig-p1-pts">22 pts</div>
+                      <div class="ig-podio-base">1°</div>
+                    </div>
+                    <div class="ig-podio-item ig-p3">
+                      <div class="ig-podio-avatar" id="ig-p3-avatar">LF</div>
+                      <div class="ig-podio-name" id="ig-p3-name">Lucas Fernández</div>
+                      <div class="ig-podio-pts" id="ig-p3-pts">14 pts</div>
+                      <div class="ig-podio-base">3°</div>
+                    </div>
+                  </div>
+
+                </div>
+                <div class="ig-post-stripes"></div>
+              </div>
+
+              <!-- Acciones IG -->
+              <div class="ig-post-actions">
+                <span class="ig-action-icon">♡</span>
+                <span class="ig-action-icon">💬</span>
+                <span class="ig-action-icon">✈</span>
+                <span class="ig-action-save">🔖</span>
+              </div>
+              <div class="ig-post-likes">A <strong>248 personas</strong> les gusta esto</div>
+              <div class="ig-post-caption">
+                <span class="ig-caption-name" id="ig-caption-account">distribuidoragarcia</span>
+                <span id="ig-caption-text"> 🏆 ¡Ya tenemos los ganadores del prode del Mundial! Felicitaciones a los 3
+                  primeros. ¡El año que viene la revancha! ⚽🇦🇷</span>
+                <span id="ig-caption-tags" style="color:#00376B;"> #ProdeMundial2026 #Mundial2026 #Argentina</span>
+              </div>
+              <div class="ig-post-date">Hace un momento</div>
+
+              <!-- Bottom nav -->
+              <div class="ig-bottom-nav">
+                <span>🏠</span><span>🔍</span><span>➕</span><span>🎬</span><span>👤</span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Opciones editables -->
+        <div class="ig-options">
+          <div class="ig-options-title">Personalizá el post</div>
+
+          <!-- Caption -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--texto2);margin-bottom:6px;">Texto del post</div>
+            <textarea class="ig-caption-edit" id="ig-caption-input" rows="3"
+              oninput="updateIgCaption(this.value)">🏆 ¡Ya tenemos los ganadores del prode del Mundial! Felicitaciones a los 3 primeros. ¡El año que viene la revancha! ⚽🇦🇷</textarea>
+          </div>
+
+          <!-- Hashtags -->
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--texto2);margin-bottom:8px;">Hashtags</div>
+            <div class="ig-hashtags-row" id="ig-tags-row">
+              <div class="ig-tag-chip active" onclick="toggleTag(this,'#ProdeMundial2026')">#ProdeMundial2026</div>
+              <div class="ig-tag-chip active" onclick="toggleTag(this,'#Mundial2026')">#Mundial2026</div>
+              <div class="ig-tag-chip active" onclick="toggleTag(this,'#Argentina')">#Argentina</div>
+              <div class="ig-tag-chip" onclick="toggleTag(this,'#Prode')">#Prode</div>
+              <div class="ig-tag-chip" onclick="toggleTag(this,'#Fútbol')">#Fútbol</div>
+              <div class="ig-tag-chip" onclick="toggleTag(this,'#DistribuidoraGarcia')">#DistribuidoraGarcia</div>
+            </div>
+          </div>
+
+          <!-- Aviso de conexión si no está conectado -->
+          <div class="ig-connect-notice" id="ig-not-connected-notice">
+            <div class="ig-connect-icon">⚠️</div>
+            <div class="ig-connect-text">
+              <strong>No tenés Instagram conectado.</strong> Para publicar directo, <a
+                onclick="closeIgModal();showPage('p-config',document.querySelector('[onclick*=p-config]'))">conectá tu
+                cuenta en Configuración</a>. O podés descargar la imagen y publicarla vos.
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer con acciones -->
+        <div class="ig-modal-footer">
+          <button class="ig-btn-cancel" onclick="downloadIgPost()">⬇️ Descargar imagen</button>
+          <button class="ig-btn-post" id="ig-post-btn" onclick="publishToIG()">
+            <span>📸</span> Publicar en Instagram
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- SAVE BAR -->
+  <div class="save-bar" id="save-bar">
+    <div class="save-bar-text">💡 Tenés cambios sin guardar</div>
+    <div class="save-bar-actions">
+      <button class="save-bar-btn ghost" onclick="discardChanges()">Descartar</button>
+      <button class="save-bar-btn primary" onclick="saveChanges()">Guardar cambios</button>
+    </div>
+  </div>
+
+  <script>
+    // ════ DATA ════
+    const PARTS = [
+      { name: 'Martina López', email: 'martina@mail.com', phone: '11 2345-6789', estado: 'verde', pos: 1, pts: 22, pronos: 48 },
+      { name: 'Carlos Ruiz', email: 'carlos@mail.com', phone: '11 3456-7890', estado: 'verde', pos: 2, pts: 18, pronos: 48 },
+      { name: 'Lucas Fernández', email: 'lucas@mail.com', phone: '11 4567-8901', estado: 'verde', pos: 3, pts: 14, pronos: 47 },
+      { name: 'Ana García', email: 'ana@mail.com', phone: '11 5678-9012', estado: 'verde', pos: 4, pts: 12, pronos: 48 },
+      { name: 'Pedro Sánchez', email: 'pedro@mail.com', phone: '11 6789-0123', estado: 'verde', pos: 5, pts: 10, pronos: 46 },
+      { name: 'Sofía Torres', email: 'sofia@mail.com', phone: '11 7890-1234', estado: 'verde', pos: 6, pts: 9, pronos: 45 },
+      { name: 'Diego Morales', email: 'diego@mail.com', phone: '11 8901-2345', estado: 'verde', pos: 7, pts: 7, pronos: 44 },
+      { name: 'Laura Méndez', email: 'laura@mail.com', phone: '11 9012-3456', estado: 'gris', pos: 8, pts: 0, pronos: 0 },
+    ];
+
+    const MATCHES = [
+      { time: '12 Jun 18:00', home: '🇦🇷', hName: 'Argentina', away: '🇲🇦', aName: 'Marruecos', sh: 2, sa: 0, cov: 94 },
+      { time: '12 Jun 21:00', home: '🇧🇷', hName: 'Brasil', away: '🇩🇪', aName: 'Alemania', sh: 1, sa: 1, cov: 90 },
+      { time: '13 Jun 15:00', home: '🇫🇷', hName: 'Francia', away: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', aName: 'Inglaterra', sh: 2, sa: 1, cov: 88 },
+    ];
+
+    // ════ NAV ════
+    const breadcrumbs = {
+      'p-dashboard': 'Inicio', 'p-participantes': 'Participantes',
+      'p-ranking': 'Ranking', 'p-partidos': 'Partidos',
+      'p-config': 'Configuración', 'p-premios': 'Premios',
+      'p-notifs': 'Notificaciones', 'p-promos': 'Mis Promos', 'p-ayuda': 'Ayuda'
+    };
+
+    function showPage(id, btn) {
+      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      document.getElementById('breadcrumb-title').textContent = breadcrumbs[id] || id;
+      closeSidebar();
+    }
+
+    // ════ SIDEBAR MOBILE ════
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('open');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+    // ════ LINK ════
+    function copyLink() {
+      navigator.clipboard?.writeText('https://distribuidoragarcia.prode.ar').catch(() => { });
+      const btn = document.getElementById('main-copy-btn');
+      if (btn) { btn.textContent = '✓ Copiado'; btn.classList.add('copied'); setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000); }
+    }
+    function shareWA() {
+      window.open('https://wa.me/?text=' + encodeURIComponent('¡Entráte al prode del Mundial de Distribuidora García! 🏆⚽\nhttps://distribuidoragarcia.prode.ar'), '_blank');
+    }
+    function shareEmail() {
+      window.location.href = 'mailto:?subject=Prode%20Mundial%202026&body=¡Participá del prode! https://distribuidoragarcia.prode.ar';
+    }
+    function downloadQR() { alert('QR descargado ✅ (en producción genera un PNG real)'); }
+
+    // ════ TABLE ════
+    function renderTable(filter = '') {
+      const tbody = document.getElementById('part-tbody');
+      const data = filter ? PARTS.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()) || p.email.toLowerCase().includes(filter.toLowerCase())) : PARTS;
+      tbody.innerHTML = data.map(p => `
+    <tr>
+      <td>
+        <div class="participant-row">
+          <div class="part-avatar">${p.name.charAt(0)}</div>
+          <div>
+            <div class="part-name">${p.name}</div>
+            <div class="part-email">${p.email}</div>
+          </div>
+        </div>
+      </td>
+      <td style="color:var(--texto2);font-size:13px;">${p.phone}</td>
+      <td><span class="badge ${p.estado}">${p.estado === 'verde' ? '✓ Activo' : '⏳ Sin cargar'}</span></td>
+      <td><span class="rank-num">${p.pos}°</span></td>
+      <td><span class="pts-num">${p.pts}</span></td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;">${p.pronos}/48</span>
+          <div style="width:60px;height:6px;border-radius:3px;background:var(--gris-borde);">
+            <div style="height:100%;width:${Math.round(p.pronos / 48 * 100)}%;border-radius:3px;background:var(--azul-mid);"></div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="row-actions">
+          <button class="row-btn" onclick="alert('Ver perfil de ${p.name}')">Ver</button>
+          <button class="row-btn" onclick="alert('Notificar a ${p.name}')">✉️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+      document.getElementById('table-count').textContent = `Mostrando ${data.length} de ${PARTS.length} participantes`;
+    }
+    function filterTable(val) { renderTable(val); }
+
+    // ════ RANKING TABLE ════
+    function renderRanking() {
+      const tbody = document.getElementById('ranking-tbody');
+      tbody.innerHTML = PARTS.sort((a, b) => a.pos - b.pos).map(p => `
+    <tr>
+      <td><span class="rank-num">${p.pos === 1 ? '🥇' : p.pos === 2 ? '🥈' : p.pos === 3 ? '🥉' : p.pos + '°'}</span></td>
+      <td>
+        <div class="participant-row">
+          <div class="part-avatar" style="width:30px;height:30px;font-size:12px;">${p.name.charAt(0)}</div>
+          <div class="part-name">${p.name}</div>
+        </div>
+      </td>
+      <td><span class="pts-num">${p.pts}</span></td>
+      <td style="color:var(--verde);font-weight:800;">${Math.floor(p.pts / 3)}</td>
+      <td style="color:var(--naranja);font-weight:800;">${p.pts % 3}</td>
+      <td><span style="font-size:13px;font-weight:700;">${p.pronos}/48</span></td>
+    </tr>
+  `).join('');
+    }
+
+    // ════ MATCHES ════
+    function renderMatches() {
+      const el = document.getElementById('matches-list');
+      el.innerHTML = MATCHES.map(m => `
+    <div class="match-row">
+      <div class="match-time">${m.time}</div>
+      <div class="match-teams">
+        <span class="match-flag">${m.home}</span>
+        <span class="match-name">${m.hName}</span>
+      </div>
+      <div class="match-score">
+        <span>${m.sh}</span>
+        <span class="match-score-sep">-</span>
+        <span>${m.sa}</span>
+      </div>
+      <div class="match-teams">
+        <span class="match-name">${m.aName}</span>
+        <span class="match-flag">${m.away}</span>
+      </div>
+      <div class="match-status-badge ms-done">✓ Final</div>
+      <div class="coverage-bar-wrap">
+        <div class="coverage-label">Cobertura: ${m.cov}%</div>
+        <div class="coverage-bar"><div class="coverage-fill" style="width:${m.cov}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+    }
+
+    // ════ MINI CHART ════
+    function renderMiniChart() {
+      const vals = [4, 8, 12, 6, 22, 18, 17];
+      const max = Math.max(...vals);
+      const el = document.getElementById('mini-chart');
+      el.innerHTML = vals.map((v, i) => `
+    <div class="bar${i === vals.length - 1 ? ' today' : ''}" style="height:${Math.round(v / max * 100)}%;" title="${v} personas"></div>
+  `).join('');
+    }
+
+    // ════ QR MOCK ════
+    function renderQR() {
+      const pattern = [1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1];
+      const el = document.getElementById('qr-grid');
+      if (el) el.innerHTML = pattern.map(v => `<div class="qr-cell${v ? '' : ' w'}"></div>`).join('');
+    }
+
+    // ════ CONFIG ════
+    let hasChanges = false;
+    function markChanged() {
+      hasChanges = true;
+      document.getElementById('save-bar').style.display = 'flex';
+    }
+    function saveChanges() {
+      hasChanges = false;
+      document.getElementById('save-bar').style.display = 'none';
+      // feedback visual
+      const bar = document.getElementById('save-bar');
+      bar.style.display = 'flex';
+      bar.querySelector('.save-bar-text').textContent = '✅ Cambios guardados';
+      setTimeout(() => { bar.style.display = 'none'; bar.querySelector('.save-bar-text').textContent = '💡 Tenés cambios sin guardar'; }, 2000);
+    }
+    function discardChanges() {
+      hasChanges = false;
+      document.getElementById('save-bar').style.display = 'none';
+    }
+    function selColor(el, hex) {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('sel'));
+      el.classList.add('sel');
+      markChanged();
+    }
+    function selColorCustom(hex) { markChanged(); }
+    function handleLogoConfig(e) { markChanged(); }
+
+    // ════ PRIZES ════
+    const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣'];
+    function addPrize() {
+      const list = document.getElementById('prizes-config-list');
+      const count = list.children.length;
+      const item = document.createElement('div');
+      item.className = 'prize-config-item';
+      item.innerHTML = `
+    <span class="prize-medal-lg">${medals[count] || '🎖️'}</span>
+    <input class="prize-field" type="text" placeholder="Describí el premio para el puesto ${count + 1}..." oninput="markChanged()">
+    <button class="prize-delete" onclick="this.closest('.prize-config-item').remove();markChanged()">×</button>
+  `;
+      list.appendChild(item);
+      markChanged();
+    }
+
+    // ════ INIT ════
+    renderTable();
+    renderRanking();
+    renderMatches();
+    renderMiniChart();
+    renderQR();
+
+    // ---- PROMOS JS ----
+    function showNewPromoForm() {
+      document.getElementById('new-promo-form').style.display = 'block';
+      document.getElementById('new-promo-form').scrollIntoView({ behavior: 'smooth' });
+    }
+    function hideNewPromoForm() {
+      document.getElementById('new-promo-form').style.display = 'none';
+    }
+    function updatePromoPreview() {
+      const nombre = document.getElementById('promo-nombre')?.value || 'Tu negocio';
+      const texto = document.getElementById('promo-texto')?.value || 'El texto de tu promo aparece acá';
+      const radio = document.getElementById('promo-radio')?.value || '1000';
+      const radioLabel = radio >= 1000 ? (radio / 1000) + ' km' : radio + ' m';
+      const el = document.getElementById('promo-prev-name');
+      const el2 = document.getElementById('promo-prev-texto');
+      if (el) el.textContent = nombre;
+      if (el2) el2.textContent = texto;
+    }
+    function handlePromoImg(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const card = document.getElementById('promo-preview-card');
+        if (card) card.style.backgroundImage = `url(${ev.target.result})`;
+      };
+      reader.readAsDataURL(file);
+    }
+    function savePromo() {
+      const nombre = document.getElementById('promo-nombre')?.value;
+      const texto = document.getElementById('promo-texto')?.value;
+      if (!nombre || !texto) { alert('Completá el nombre y el texto de la promo'); return; }
+      hideNewPromoForm();
+      alert('✅ Promo publicada correctamente. Ya está visible en el carrusel.');
+    }
+
+
+    // ═══════════════════════════════
+    // INSTAGRAM MODAL
+    // ═══════════════════════════════
+    let igConnected = false; // en producción: leer del backend
+    let igTags = ['#ProdeMundial2026', '#Mundial2026', '#Argentina'];
+
+    function openIgModal() {
+      updateIgModalState();
+      document.getElementById('ig-modal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeIgModal(e) {
+      if (e && e.target !== document.getElementById('ig-modal')) return;
+      document.getElementById('ig-modal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function updateIgModalState() {
+      const notice = document.getElementById('ig-not-connected-notice');
+      const postBtn = document.getElementById('ig-post-btn');
+      if (igConnected) {
+        notice.style.display = 'none';
+        postBtn.disabled = false;
+        postBtn.style.opacity = '1';
+      } else {
+        notice.style.display = 'flex';
+        postBtn.disabled = true;
+        postBtn.style.opacity = '0.45';
+      }
+    }
+
+    function updateIgCaption(val) {
+      document.getElementById('ig-caption-text').textContent = ' ' + val;
+    }
+
+    function toggleTag(el, tag) {
+      el.classList.toggle('active');
+      if (el.classList.contains('active')) {
+        if (!igTags.includes(tag)) igTags.push(tag);
+      } else {
+        igTags = igTags.filter(t => t !== tag);
+      }
+      // Hashtags van SOLO en la descripción, no en la imagen
+      const tagsEl = document.getElementById('ig-caption-tags');
+      if (tagsEl) tagsEl.textContent = igTags.length ? ' ' + igTags.join(' ') : '';
+    }
+
+    function publishToIG() {
+      if (!igConnected) return;
+      const btn = document.getElementById('ig-post-btn');
+      btn.textContent = '⏳ Publicando...';
+      btn.disabled = true;
+      setTimeout(() => {
+        closeIgModal();
+        // Feedback de éxito
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#18A06A;color:#fff;padding:14px 24px;border-radius:12px;font-weight:800;font-size:14px;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,0.2);white-space:nowrap;animation:igFadeIn 0.3s ease;';
+        toast.textContent = '✅ Publicado en Instagram';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+        btn.textContent = '📸 Publicar en Instagram';
+        btn.disabled = false;
+      }, 1800);
+    }
+
+    function downloadIgPost() {
+      alert('📥 En producción: se genera un PNG del podio y se descarga automáticamente usando html2canvas.');
+    }
+
+    // Conectar / desconectar IG desde Settings
+    function connectIG() {
+      igConnected = true;
+      document.getElementById('ig-connected-state').style.display = 'block';
+      document.getElementById('ig-disconnected-state').style.display = 'none';
+      markChanged();
+    }
+    function disconnectIG() {
+      if (!confirm('¿Desconectar la cuenta de Instagram?')) return;
+      igConnected = false;
+      document.getElementById('ig-connected-state').style.display = 'none';
+      document.getElementById('ig-disconnected-state').style.display = 'block';
+      markChanged();
+    }
+
+  </script>
+</body>
+
+</html>

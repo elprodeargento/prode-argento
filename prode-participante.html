@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prode Mundial 2026 — Participante</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #003087;
+    --celeste: #74ACDF;
+    --dorado: #F6C543;
+    --blanco: #FFFFFF;
+    --gris: #F4F5F7;
+    --gris2: #E8EAF0;
+    --texto: #1A1A2E;
+    --texto2: #6B7280;
+    --verde: #2D9E75;
+    --rojo: #E53E3E;
+    --naranja: #F97316;
+    --radio: 16px;
+    --radio-sm: 10px;
+    --shadow: 0 4px 24px rgba(0,48,135,0.10);
+    --shadow-lg: 0 8px 40px rgba(0,48,135,0.16);
+
+    /* brand overrideable */
+    --brand: #003087;
+    --brand-light: rgba(0,48,135,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Nunito', sans-serif; background: var(--gris); color: var(--texto); min-height: 100vh; }
+
+  /* ---- SCREENS ---- */
+  .screen { display: none; min-height: 100vh; flex-direction: column; }
+  .screen.active { display: flex; }
+  .fade-in { animation: fadeIn 0.35s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+  /* ---- HEADER BRAND ---- */
+  .brand-header {
+    background: var(--brand); padding: 0 0 20px;
+    position: relative; overflow: hidden;
+  }
+  .brand-header-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 90% 0%, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .brand-header-inner { position: relative; z-index: 2; }
+  .brand-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px 0; }
+  .brand-logo-sm { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .brand-empresa { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: #fff; letter-spacing: 1px; }
+  .brand-tag { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+  .avatar-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+
+  /* ---- LOGIN ---- */
+  #s-login { background: var(--brand); align-items: center; justify-content: center; padding: 24px; }
+  .login-card {
+    background: var(--blanco); border-radius: 24px; box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 380px; overflow: hidden;
+  }
+  .login-hero {
+    background: var(--brand); padding: 32px 24px; text-align: center;
+    position: relative;
+  }
+  .login-hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(116,172,223,0.3) 0%, transparent 70%);
+  }
+  .login-hero-inner { position: relative; z-index: 2; }
+  .login-ball { font-size: 52px; margin-bottom: 8px; animation: float 3s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .login-company { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #fff; letter-spacing: 1px; margin-bottom: 2px; }
+  .login-sub { font-size: 13px; color: rgba(255,255,255,0.75); font-weight: 600; }
+  .login-body { padding: 28px 24px; }
+  .login-title { font-size: 18px; font-weight: 900; color: var(--texto); margin-bottom: 20px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label { display: block; font-size: 11px; font-weight: 900; color: var(--texto); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .form-input {
+    width: 100%; padding: 14px 16px; border-radius: var(--radio-sm);
+    border: 2px solid var(--gris2); font-family: 'Nunito', sans-serif;
+    font-size: 15px; color: var(--texto); background: var(--gris);
+    transition: border-color 0.2s; outline: none;
+  }
+  .form-input:focus { border-color: var(--brand); background: #fff; }
+  .form-input::placeholder { color: #b0b8c9; }
+  .form-input-row { display: flex; gap: 8px; }
+  .form-input-row .form-group { flex: 1; }
+  .phone-prefix {
+    padding: 14px 12px; border-radius: var(--radio-sm); border: 2px solid var(--gris2);
+    background: var(--gris); font-family: 'Nunito', sans-serif; font-size: 15px;
+    color: var(--texto2); width: 70px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-weight: 800;
+  }
+
+  .btn-primary {
+    width: 100%; padding: 16px; border-radius: 999px;
+    background: var(--brand); color: var(--blanco);
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 16px;
+    border: none; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.9; transform: scale(1.01); }
+  .btn-google {
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    width: 100%; padding: 14px 20px; border-radius: 999px;
+    border: 2px solid var(--gris2); background: var(--blanco);
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px;
+    color: var(--texto); cursor: pointer; transition: all 0.2s; margin-bottom: 14px;
+  }
+  .btn-google:hover { border-color: var(--brand); background: #f0f4ff; }
+  .divider-text { font-size: 12px; color: var(--texto2); margin-bottom: 14px; position: relative; text-align: center; }
+  .divider-text::before, .divider-text::after {
+    content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--gris2);
+  }
+  .divider-text::before { left: 0; } .divider-text::after { right: 0; }
+
+  /* ---- TABS NAV ---- */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--blanco); border-top: 1px solid var(--gris2);
+    display: flex; padding: 8px 0 env(safe-area-inset-bottom, 8px);
+    z-index: 100; box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 4px; cursor: pointer; transition: all 0.15s; border: none; background: none;
+  }
+  .nav-icon { font-size: 22px; transition: transform 0.15s; }
+  .nav-label { font-size: 10px; font-weight: 800; color: var(--texto2); transition: color 0.15s; letter-spacing: 0.04em; }
+  .nav-item.active .nav-icon { transform: scale(1.15); }
+  .nav-item.active .nav-label { color: var(--brand); }
+
+  /* ---- CONTENT AREA ---- */
+  .content-area { flex: 1; padding-bottom: 80px; }
+
+  /* ---- TABS ---- */
+  .tab-view { display: none; }
+  .tab-view.active { display: block; }
+
+  /* ---- HOME TAB ---- */
+  .home-stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+  .stat-card {
+    background: var(--blanco); border-radius: var(--radio); padding: 16px; box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--brand); }
+  .stat-label { font-size: 11px; font-weight: 800; color: var(--texto2); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .next-match-card {
+    margin: 0 16px 16px; background: var(--brand);
+    border-radius: var(--radio); padding: 18px; position: relative; overflow: hidden;
+  }
+  .next-match-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 80% 50%, rgba(116,172,223,0.3) 0%, transparent 60%); pointer-events: none; }
+  .next-match-inner { position: relative; z-index: 2; }
+  .next-match-tag { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dorado); animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .next-match-teams { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .nm-team { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .nm-flag { font-size: 36px; }
+  .nm-name { font-size: 13px; font-weight: 900; color: #fff; text-align: center; }
+  .nm-vs { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--dorado); }
+  .next-match-info { display: flex; justify-content: space-between; margin-top: 14px; }
+  .nm-info-item { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+  .btn-predict-now {
+    width: 100%; margin-top: 14px; padding: 14px; border-radius: 999px;
+    background: var(--dorado); color: var(--azul);
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 15px;
+    border: none; cursor: pointer; transition: transform 0.15s;
+  }
+  .btn-predict-now:hover { transform: scale(1.02); }
+
+  .section-title { font-size: 13px; font-weight: 900; color: var(--texto); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 16px; margin-bottom: 10px; }
+
+  .prizes-scroll { display: flex; gap: 10px; padding: 0 16px 16px; overflow-x: auto; scrollbar-width: none; }
+  .prizes-scroll::-webkit-scrollbar { display: none; }
+  .prize-card {
+    flex-shrink: 0; background: var(--blanco); border-radius: var(--radio);
+    padding: 16px 14px; text-align: center; min-width: 120px; box-shadow: var(--shadow);
+    border: 2px solid var(--gris2);
+  }
+  .prize-medal-lg { font-size: 32px; margin-bottom: 6px; }
+  .prize-pos { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: var(--brand); }
+  .prize-desc { font-size: 11px; color: var(--texto2); font-weight: 700; margin-top: 4px; line-height: 1.4; }
+
+  /* ---- PRONOSTICOS TAB ---- */
+  .fecha-selector { display: flex; gap: 8px; padding: 14px 16px; overflow-x: auto; scrollbar-width: none; }
+  .fecha-selector::-webkit-scrollbar { display: none; }
+  .fecha-chip {
+    flex-shrink: 0; padding: 8px 16px; border-radius: 999px;
+    border: 2px solid var(--gris2); background: var(--blanco);
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap; color: var(--texto2);
+  }
+  .fecha-chip.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .fecha-chip.done { border-color: var(--verde); color: var(--verde); }
+  .fecha-chip.done::after { content: ' ✓'; }
+
+  .match-card {
+    background: var(--blanco); border-radius: var(--radio); margin: 0 12px 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+    border: 2px solid var(--gris2); transition: border-color 0.2s;
+  }
+  .match-card.filled { border-color: var(--brand); }
+  .match-card.locked { opacity: 0.6; }
+  .match-head {
+    background: var(--gris); padding: 8px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .match-head-left { font-size: 11px; font-weight: 900; color: var(--texto2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .match-head-right { font-size: 11px; font-weight: 700; color: var(--texto2); }
+  .match-body { padding: 16px 14px; }
+  .match-teams-row { display: flex; align-items: center; gap: 10px; }
+  .match-team { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .match-team.right { flex-direction: row-reverse; }
+  .match-flag { font-size: 28px; }
+  .match-name { font-size: 14px; font-weight: 900; color: var(--texto); }
+  .score-row { display: flex; gap: 6px; align-items: center; }
+  .score-input {
+    width: 42px; height: 42px; text-align: center; border-radius: 10px;
+    border: 2px solid var(--gris2); font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: var(--texto); background: var(--gris); outline: none;
+    transition: border-color 0.2s;
+  }
+  .score-input:focus { border-color: var(--brand); background: #fff; }
+  .score-input::-webkit-inner-spin-button { display: none; }
+  .score-sep { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--texto2); }
+  .match-footer {
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--gris2);
+  }
+  .points-tag { font-size: 12px; font-weight: 800; color: var(--texto2); display: flex; align-items: center; gap: 4px; }
+  .points-tag.exact { color: var(--verde); }
+  .points-tag.winner { color: var(--naranja); }
+  .save-indicator { font-size: 11px; color: var(--verde); font-weight: 800; display: none; }
+
+  .lock-banner {
+    background: #FEF3C7; border-radius: var(--radio-sm); padding: 8px 12px; margin: 0 12px 8px;
+    font-size: 12px; font-weight: 800; color: #92400E; display: flex; align-items: center; gap: 6px;
+  }
+
+  .save-all-btn {
+    position: fixed; bottom: 72px; left: 12px; right: 12px;
+    background: var(--brand); color: #fff;
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 16px;
+    border: none; border-radius: 999px; padding: 16px; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,48,135,0.3); transition: transform 0.15s;
+    display: none; z-index: 50;
+  }
+  .save-all-btn.visible { display: block; }
+  .save-all-btn:hover { transform: scale(1.02); }
+
+  /* ---- RANKING TAB ---- */
+  .ranking-header-card {
+    background: var(--brand); margin: 0 12px 16px; border-radius: var(--radio);
+    padding: 16px; display: flex; align-items: center; gap: 14px;
+  }
+  .mi-posicion {
+    font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--dorado);
+    line-height: 1; min-width: 56px;
+  }
+  .mi-pos-info { flex: 1; }
+  .mi-pos-label { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .mi-pos-pts { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #fff; }
+  .mi-pos-sub { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 700; }
+
+  .ranking-list { padding: 0 12px; display: flex; flex-direction: column; gap: 8px; }
+  .ranking-item {
+    background: var(--blanco); border-radius: var(--radio-sm); padding: 14px;
+    display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow);
+    border: 2px solid var(--gris2); transition: all 0.15s;
+  }
+  .ranking-item.me { border-color: var(--brand); background: var(--brand-light); }
+  .ranking-item.top { border-color: var(--dorado); }
+  .rank-pos { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--texto2); min-width: 28px; text-align: center; }
+  .rank-pos.gold { color: #D4A017; }
+  .rank-pos.silver { color: #9BA4B5; }
+  .rank-pos.bronze { color: #CD7F32; }
+  .rank-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--gris2); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .rank-name { flex: 1; font-size: 15px; font-weight: 800; color: var(--texto); }
+  .rank-pts-col { text-align: right; }
+  .rank-pts { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--brand); }
+  .rank-pts-label { font-size: 10px; font-weight: 800; color: var(--texto2); text-transform: uppercase; }
+
+  /* ---- RESULTADOS TAB ---- */
+  .resultado-card {
+    background: var(--blanco); border-radius: var(--radio); margin: 0 12px 12px;
+    box-shadow: var(--shadow); overflow: hidden; border: 2px solid var(--gris2);
+  }
+  .result-head { padding: 10px 14px; background: var(--gris); display: flex; align-items: center; justify-content: space-between; }
+  .result-head-label { font-size: 11px; font-weight: 900; color: var(--texto2); text-transform: uppercase; letter-spacing: 0.05em; }
+  .result-pts-badge {
+    font-size: 12px; font-weight: 900; border-radius: 999px; padding: 4px 10px;
+  }
+  .result-pts-badge.exact { background: #D1FAE5; color: var(--verde); }
+  .result-pts-badge.winner { background: #FEF3C7; color: #92400E; }
+  .result-pts-badge.miss { background: var(--gris2); color: var(--texto2); }
+  .result-body { padding: 14px; }
+  .result-teams { display: flex; align-items: center; gap: 10px; }
+  .result-team { display: flex; align-items: center; gap: 6px; flex: 1; }
+  .result-team.right { flex-direction: row-reverse; }
+  .result-flag { font-size: 24px; }
+  .result-name { font-size: 13px; font-weight: 900; }
+  .score-display { display: flex; gap: 4px; align-items: center; }
+  .score-real { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--texto); background: var(--gris); border-radius: 8px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; }
+  .score-pred { font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--texto2); }
+  .result-pred-row { margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+  .pred-label { font-size: 11px; color: var(--texto2); font-weight: 700; }
+  .pred-val { font-size: 12px; font-weight: 900; color: var(--texto); }
+
+  /* profile */
+  .profile-card { background: var(--blanco); border-radius: var(--radio); margin: 16px 12px; padding: 24px; box-shadow: var(--shadow); text-align: center; }
+  .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--gris2); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 36px; border: 3px solid var(--brand); }
+  .profile-name { font-size: 20px; font-weight: 900; color: var(--texto); margin-bottom: 4px; }
+  .profile-email { font-size: 13px; color: var(--texto2); font-weight: 600; }
+  .profile-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+  .profile-stat { text-align: center; }
+  .profile-stat-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--brand); }
+  .profile-stat-label { font-size: 11px; font-weight: 800; color: var(--texto2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .notif-card { background: var(--blanco); border-radius: var(--radio); margin: 0 12px 10px; padding: 16px; box-shadow: var(--shadow); display: flex; gap: 12px; align-items: flex-start; }
+  .notif-icon { font-size: 24px; flex-shrink: 0; }
+  .notif-text { flex: 1; }
+  .notif-title { font-size: 14px; font-weight: 800; color: var(--texto); margin-bottom: 2px; }
+  .notif-body { font-size: 13px; color: var(--texto2); line-height: 1.4; }
+  .notif-time { font-size: 11px; color: var(--texto2); font-weight: 700; margin-top: 4px; }
+
+  /* top padding for content after sticky header */
+  .page-top-pad { padding-top: 16px; }
+
+  /* ---- CARRUSEL PROMOS ---- */
+  .promos-wrap {
+    padding: 12px 16px 4px;
+    position: relative;
+  }
+  .promos-label {
+    font-size: 10px; font-weight: 900; color: var(--texto2);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .promos-label .geo-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--verde); flex-shrink: 0;
+  }
+  .promos-track-wrap {
+    overflow: hidden; border-radius: 14px;
+    position: relative;
+  }
+  .promos-track {
+    display: flex;
+    transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+  }
+  .promo-slide {
+    flex-shrink: 0; width: 100%;
+    height: 88px;
+    border-radius: 14px; overflow: hidden;
+    position: relative; cursor: pointer;
+    background: var(--gris2);
+    display: flex; align-items: center;
+  }
+  .promo-slide-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+  }
+  .promo-slide-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, transparent 100%);
+  }
+  .promo-slide-content {
+    position: relative; z-index: 2;
+    padding: 0 16px;
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  .promo-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--dorado); color: var(--azul);
+    font-size: 9px; font-weight: 900; padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    width: fit-content;
+  }
+  .promo-name { font-size: 14px; font-weight: 900; color: #fff; line-height: 1.2; }
+  .promo-desc { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.85); }
+  .promo-distance {
+    position: absolute; right: 12px; bottom: 10px; z-index: 2;
+    font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.3); border-radius: 999px; padding: 3px 8px;
+    backdrop-filter: blur(4px);
+  }
+  .promos-dots {
+    display: flex; justify-content: center; gap: 5px;
+    margin-top: 8px;
+  }
+  .promo-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--gris2); transition: all 0.25s; cursor: pointer;
+  }
+  .promo-dot.active { background: var(--brand); width: 16px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div class="screen active" id="s-login">
+  <div class="login-card fade-in" style="margin:auto;">
+    <div class="login-hero">
+      <div class="login-hero-bg"></div>
+      <div class="login-hero-inner">
+        <div class="login-ball">⚽</div>
+        <div class="login-company" id="company-name-hero">DISTRIBUIDORA<br>GARCÍA</div>
+        <div class="login-sub">Prode Mundial 2026 🏆</div>
+      </div>
+    </div>
+    <div class="login-body">
+      <div class="login-title">Ingresá para jugar</div>
+
+      <div class="form-group">
+        <label class="form-label">Tu nombre</label>
+        <input class="form-input" type="text" id="inp-name" placeholder="Ej: Lucas Fernández" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="inp-email" placeholder="tu@mail.com" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Celular</label>
+        <div style="display:flex;gap:8px;">
+          <div class="phone-prefix">🇦🇷 +54</div>
+          <input class="form-input" type="tel" id="inp-phone" placeholder="11 1234-5678" style="flex:1;" />
+        </div>
+      </div>
+
+      <!-- CHECKBOXES -->
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+
+        <!-- Recordarme -->
+        <label onclick="toggleChk('chk-remember')" style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:6px 2px;">
+          <input type="checkbox" id="chk-remember" style="display:none">
+          <div id="box-remember" style="width:22px;height:22px;border-radius:6px;border:2.5px solid var(--gris2);background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.18s;"></div>
+          <span style="font-size:14px;font-weight:700;color:var(--texto);">Recordarme en este dispositivo</span>
+        </label>
+
+        <!-- Términos -->
+        <label onclick="toggleChk('chk-terms')" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;user-select:none;padding:6px 2px;">
+          <input type="checkbox" id="chk-terms" style="display:none">
+          <div id="box-terms" style="width:22px;height:22px;border-radius:6px;border:2.5px solid var(--gris2);background:#fff;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.18s;"></div>
+          <span style="font-size:13px;font-weight:600;color:var(--texto2);line-height:1.55;">Acepto los <a href="#" onclick="event.stopPropagation();event.preventDefault();alert('Términos y Condiciones')" style="color:var(--brand);font-weight:800;text-decoration:underline;">Términos y Condiciones</a> y la <a href="#" onclick="event.stopPropagation();event.preventDefault();alert('Política de Privacidad')" style="color:var(--brand);font-weight:800;text-decoration:underline;">Política de Privacidad</a></span>
+        </label>
+        <div id="terms-err" style="display:none;font-size:12px;font-weight:700;color:#E53E3E;padding-left:32px;">⚠️ Tenés que aceptar los términos para continuar</div>
+
+      </div>
+
+      <button class="btn-primary" onclick="doLogin('email')">Entrar y jugar ⚽</button>
+      <div style="margin-top:12px;font-size:11px;color:var(--texto2);text-align:center;">Ya registrado? Usá tu mail para acceder</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP PRINCIPAL ===== -->
+<div class="screen" id="s-app">
+  <!-- HEADER -->
+  <div class="brand-header" id="app-header">
+    <div class="brand-header-bg"></div>
+    <div class="brand-header-inner">
+      <div class="brand-topbar">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="brand-logo-sm" id="app-logo">⚽</div>
+          <div>
+            <div class="brand-empresa" id="app-empresa">DISTRIBUIDORA GARCÍA</div>
+            <div class="brand-tag">Prode Mundial 2026</div>
+          </div>
+        </div>
+        <div class="avatar-btn" onclick="showTab('t-perfil')">👤</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+
+    <!-- HOME -->
+    <div class="tab-view active" id="t-home">
+      <!-- CARRUSEL PROMOS -->
+      <div class="promos-wrap" id="promos-section">
+        <div class="promos-label">
+          <span class="geo-dot"></span>
+          Promos cerca tuyo · Mar del Plata
+        </div>
+        <div class="promos-track-wrap">
+          <div class="promos-track" id="promos-track">
+            <!-- slides generados por JS -->
+          </div>
+        </div>
+        <div class="promos-dots" id="promos-dots"></div>
+      </div>
+
+      <div class="home-stat-row">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-pts">14</div>
+          <div class="stat-label">Mis puntos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-pos">3°</div>
+          <div class="stat-label">Posición</div>
+        </div>
+      </div>
+
+      <div class="next-match-card">
+        <div class="next-match-bg"></div>
+        <div class="next-match-inner">
+          <div class="next-match-tag">
+            <div class="tag-dot"></div>
+            Próximo partido · Fecha 2
+          </div>
+          <div class="next-match-teams">
+            <div class="nm-team">
+              <span class="nm-flag">🇦🇷</span>
+              <span class="nm-name">Argentina</span>
+            </div>
+            <span class="nm-vs">VS</span>
+            <div class="nm-team">
+              <span class="nm-flag">🇪🇸</span>
+              <span class="nm-name">España</span>
+            </div>
+          </div>
+          <div class="next-match-info">
+            <span class="nm-info-item">📅 18 Jun 2026</span>
+            <span class="nm-info-item">🕕 18:00 hs</span>
+            <span class="nm-info-item" id="countdown-text">⏰ 4d 12h</span>
+          </div>
+          <button class="btn-predict-now" onclick="showTab('t-prono')">⚡ Cargar mi pronóstico</button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-bottom:10px;">🏆 Premios</div>
+      <div class="prizes-scroll" id="prizes-home">
+        <!-- generado por JS -->
+      </div>
+
+      <div class="section-title" style="margin-bottom:10px;">📬 Novedades</div>
+      <div class="notif-card">
+        <div class="notif-icon">🎯</div>
+        <div class="notif-text">
+          <div class="notif-title">Resultado Fecha 1</div>
+          <div class="notif-body">Argentina 2-0 Marruecos. Tu pronóstico fue 2-0. ¡3 puntos! 🎉</div>
+          <div class="notif-time">Hace 2 horas</div>
+        </div>
+      </div>
+      <div class="notif-card">
+        <div class="notif-icon">⏰</div>
+        <div class="notif-text">
+          <div class="notif-title">Recordatorio</div>
+          <div class="notif-body">Faltan 4 días para la Fecha 2. ¡No te olvides de cargar tus pronósticos!</div>
+          <div class="notif-time">Hace 1 día</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRONOSTICOS -->
+    <div class="tab-view" id="t-prono">
+      <div class="fecha-selector" id="fecha-tabs">
+        <!-- generado por JS -->
+      </div>
+      <div id="matches-container"></div>
+      <button class="save-all-btn" id="save-all-btn" onclick="saveAll()">💾 Guardar pronósticos</button>
+    </div>
+
+    <!-- RANKING -->
+    <div class="tab-view" id="t-ranking">
+      <div class="page-top-pad"></div>
+      <div class="ranking-header-card">
+        <div class="mi-posicion">3°</div>
+        <div class="mi-pos-info">
+          <div class="mi-pos-label">Tu posición</div>
+          <div class="mi-pos-pts">14 puntos</div>
+          <div class="mi-pos-sub">5 exactos · 3 ganadores</div>
+        </div>
+      </div>
+      <div class="ranking-list" id="ranking-list">
+        <!-- generado por JS -->
+      </div>
+    </div>
+
+    <!-- RESULTADOS -->
+    <div class="tab-view" id="t-resultados">
+      <div class="page-top-pad"></div>
+      <div id="results-container"></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="tab-view" id="t-perfil">
+      <div class="page-top-pad"></div>
+      <div class="profile-card">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-name" id="profile-name">Lucas Fernández</div>
+        <div class="profile-email" id="profile-email">lucas@mail.com</div>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="profile-stat-val">14</div>
+            <div class="profile-stat-label">Puntos</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val">5</div>
+            <div class="profile-stat-label">Exactos</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val">3°</div>
+            <div class="profile-stat-label">Posición</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 12px;">
+        <div style="font-size:13px;font-weight:800;color:var(--texto2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Notificaciones</div>
+        <div class="notif-card">
+          <div class="notif-icon">🔔</div>
+          <div class="notif-text">
+            <div class="notif-title">Recordatorios activados</div>
+            <div class="notif-body">Te avisamos antes de cada fecha para que no pierdas tus pronósticos.</div>
+          </div>
+        </div>
+        <button class="btn-primary" style="margin-top:16px;background:#E53E3E;" onclick="goTo('s-login')">Cerrar sesión</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="nav-item active" id="nav-home" onclick="showTab('t-home');setNav('nav-home')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Inicio</span>
+    </button>
+    <button class="nav-item" id="nav-prono" onclick="showTab('t-prono');setNav('nav-prono')">
+      <span class="nav-icon">⚽</span>
+      <span class="nav-label">Pronosticar</span>
+    </button>
+    <button class="nav-item" id="nav-ranking" onclick="showTab('t-ranking');setNav('nav-ranking')">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Ranking</span>
+    </button>
+    <button class="nav-item" id="nav-resultados" onclick="showTab('t-resultados');setNav('nav-resultados')">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Resultados</span>
+    </button>
+    <button class="nav-item" id="nav-perfil" onclick="showTab('t-perfil');setNav('nav-perfil')">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Perfil</span>
+    </button>
+  </div>
+</div>
+
+<script>
+// ---- DATA ----
+const FECHAS = [
+  { id: 1, label: 'Fecha 1', locked: true, matches: [
+    { id: 101, home: '🇦🇷', hName:'Argentina', away:'🇲🇦', aName:'Marruecos', time:'12 Jun 18:00', realH:2, realA:0, predH:2, predA:0 },
+    { id: 102, home: '🇧🇷', hName:'Brasil', away:'🇩🇪', aName:'Alemania', time:'12 Jun 21:00', realH:1, realA:1, predH:2, predA:0 },
+    { id: 103, home: '🇫🇷', hName:'Francia', away:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', aName:'Inglaterra', time:'13 Jun 15:00', realH:2, realA:1, predH:1, predA:1 },
+  ]},
+  { id: 2, label: 'Fecha 2', locked: false, matches: [
+    { id: 201, home: '🇦🇷', hName:'Argentina', away:'🇪🇸', aName:'España', time:'18 Jun 18:00', realH:null, realA:null, predH:null, predA:null },
+    { id: 202, home: '🇺🇾', hName:'Uruguay', away:'🇵🇹', aName:'Portugal', time:'18 Jun 21:00', realH:null, realA:null, predH:null, predA:null },
+    { id: 203, home: '🇩🇪', hName:'Alemania', away:'🇯🇵', aName:'Japón', time:'19 Jun 15:00', realH:null, realA:null, predH:null, predA:null },
+  ]},
+  { id: 3, label: 'Fecha 3', locked: false, matches: [
+    { id: 301, home: '🇲🇽', hName:'México', away:'🇺🇸', aName:'USA', time:'24 Jun 20:00', realH:null, realA:null, predH:null, predA:null },
+    { id: 302, home: '🇳🇱', hName:'Holanda', away:'🇧🇪', aName:'Bélgica', time:'25 Jun 17:00', realH:null, realA:null, predH:null, predA:null },
+  ]},
+];
+
+const PRIZES = [
+  { medal:'🥇', pos:'1° Puesto', desc:'AirPods Pro + Diploma' },
+  { medal:'🥈', pos:'2° Puesto', desc:'Voucher $30.000' },
+  { medal:'🥉', pos:'3° Puesto', desc:'Almuerzo en la empresa' },
+];
+
+const RANKING_DATA = [
+  { pos:1, name:'Martina López', pts:22, avatar:'👩', me:false },
+  { pos:2, name:'Carlos Ruiz', pts:18, avatar:'👨', me:false },
+  { pos:3, name:'Lucas Fernández', pts:14, avatar:'🧑', me:true },
+  { pos:4, name:'Ana García', pts:12, avatar:'👩', me:false },
+  { pos:5, name:'Pedro Sánchez', pts:10, avatar:'🧔', me:false },
+  { pos:6, name:'Sofía Torres', pts:9, avatar:'👩', me:false },
+  { pos:7, name:'Diego Morales', pts:7, avatar:'👨', me:false },
+];
+
+let currentFecha = 2;
+let predictions = {}; // matchId -> {h, a}
+let hasChanges = false;
+
+// ---- SCREENS ----
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showTab(id) {
+  document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if (id === 't-prono') renderFechas();
+}
+
+function setNav(id) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ---- CHECKBOXES ----
+function toggleChk(chkId) {
+  const chk = document.getElementById(chkId);
+  chk.checked = !chk.checked;
+  const box = document.getElementById('box-' + chkId.replace('chk-',''));
+  if (chk.checked) {
+    box.style.background = 'var(--brand)';
+    box.style.borderColor = 'var(--brand)';
+    box.innerHTML = '<svg width="12" height="9" viewBox="0 0 12 9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  } else {
+    box.style.background = '#fff';
+    box.style.borderColor = 'var(--gris2)';
+    box.innerHTML = '';
+  }
+  if (chkId === 'chk-terms') document.getElementById('terms-err').style.display = 'none';
+}
+
+// ---- LOGIN ----
+function doLogin(method) {
+  // Validar términos
+  const terms = document.getElementById('chk-terms');
+  if (terms && !terms.checked) {
+    document.getElementById('terms-err').style.display = 'block';
+    document.getElementById('box-terms').style.borderColor = '#E53E3E';
+    return;
+  }
+  const name = document.getElementById('inp-name')?.value || 'Lucas Fernández';
+  document.getElementById('profile-name').textContent = name || 'Lucas Fernández';
+  const email = document.getElementById('inp-email')?.value || '';
+  if (email) document.getElementById('profile-email').textContent = email;
+  initApp();
+  goTo('s-app');
+}
+
+// ---- INIT APP ----
+function initApp() {
+  renderPrizes();
+  renderFechas();
+  renderRanking();
+  renderResults();
+  startCountdown();
+  renderPromos();
+}
+
+// ---- PRIZES ----
+function renderPrizes() {
+  const el = document.getElementById('prizes-home');
+  el.innerHTML = PRIZES.map(p => `
+    <div class="prize-card">
+      <div class="prize-medal-lg">${p.medal}</div>
+      <div class="prize-pos">${p.pos}</div>
+      <div class="prize-desc">${p.desc}</div>
+    </div>
+  `).join('');
+}
+
+// ---- FECHAS / MATCHES ----
+function renderFechas() {
+  const tabs = document.getElementById('fecha-tabs');
+  tabs.innerHTML = FECHAS.map(f => {
+    const done = f.locked;
+    return `<div class="fecha-chip${f.id===currentFecha?' active':''}${done?' done':''}" onclick="selectFecha(${f.id})">${f.label}</div>`;
+  }).join('');
+  renderMatches();
+}
+
+function selectFecha(id) {
+  currentFecha = id;
+  renderFechas();
+}
+
+function renderMatches() {
+  const fecha = FECHAS.find(f => f.id === currentFecha);
+  const container = document.getElementById('matches-container');
+  container.innerHTML = '';
+
+  if (fecha.locked) {
+    container.innerHTML += `<div class="lock-banner">🔒 Esta fecha ya cerró — los pronósticos están bloqueados</div>`;
+  }
+
+  fecha.matches.forEach(m => {
+    const pred = predictions[m.id] || {};
+    const h = pred.h !== undefined ? pred.h : (m.predH !== null ? m.predH : '');
+    const a = pred.a !== undefined ? pred.a : (m.predA !== null ? m.predA : '');
+    const filled = h !== '' && a !== '';
+    const locked = fecha.locked;
+    const card = document.createElement('div');
+    card.className = `match-card${filled?' filled':''}${locked?' locked':''}`;
+    card.id = `mc-${m.id}`;
+    card.innerHTML = `
+      <div class="match-head">
+        <span class="match-head-left">${m.hName} vs ${m.aName}</span>
+        <span class="match-head-right">⏰ ${m.time}</span>
+      </div>
+      <div class="match-body">
+        <div class="match-teams-row">
+          <div class="match-team">
+            <span class="match-flag">${m.home}</span>
+            <span class="match-name">${m.hName}</span>
+          </div>
+          <div class="score-row">
+            <input class="score-input" type="number" min="0" max="20" value="${h}" id="sh-${m.id}"
+              ${locked?'disabled':''} oninput="onPredInput(${m.id})" placeholder="-">
+            <span class="score-sep">:</span>
+            <input class="score-input" type="number" min="0" max="20" value="${a}" id="sa-${m.id}"
+              ${locked?'disabled':''} oninput="onPredInput(${m.id})" placeholder="-">
+          </div>
+          <div class="match-team right">
+            <span class="match-name">${m.aName}</span>
+            <span class="match-flag">${m.away}</span>
+          </div>
+        </div>
+      </div>
+      <div class="match-footer">
+        <span class="points-tag">🎯 Exacto = 3pts · Ganador = 1pt</span>
+        <span class="save-indicator" id="saved-${m.id}">✓ Guardado</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  document.getElementById('save-all-btn').className = 'save-all-btn' + (fecha.locked ? '' : ' visible');
+}
+
+function onPredInput(matchId) {
+  hasChanges = true;
+  const h = document.getElementById(`sh-${matchId}`)?.value;
+  const a = document.getElementById(`sa-${matchId}`)?.value;
+  predictions[matchId] = { h, a };
+  const card = document.getElementById(`mc-${matchId}`);
+  if (h !== '' && a !== '') card.classList.add('filled');
+  else card.classList.remove('filled');
+}
+
+function saveAll() {
+  const fecha = FECHAS.find(f => f.id === currentFecha);
+  fecha.matches.forEach(m => {
+    const h = document.getElementById(`sh-${m.id}`)?.value;
+    const a = document.getElementById(`sa-${m.id}`)?.value;
+    if (h !== '' && a !== '') {
+      predictions[m.id] = {h, a};
+      const ind = document.getElementById(`saved-${m.id}`);
+      if (ind) { ind.style.display='block'; }
+    }
+  });
+  const btn = document.getElementById('save-all-btn');
+  btn.textContent = '✅ Guardado';
+  btn.style.background = 'var(--verde)';
+  setTimeout(() => {
+    btn.textContent = '💾 Guardar pronósticos';
+    btn.style.background = 'var(--brand)';
+    hasChanges = false;
+  }, 2000);
+}
+
+// ---- RANKING ----
+function renderRanking() {
+  const el = document.getElementById('ranking-list');
+  el.innerHTML = RANKING_DATA.map(r => {
+    const posClass = r.pos===1?'gold':r.pos===2?'silver':r.pos===3?'bronze':'';
+    return `
+      <div class="ranking-item${r.me?' me':''}${r.pos<=3?' top':''}">
+        <span class="rank-pos ${posClass}">${r.pos===1?'🥇':r.pos===2?'🥈':r.pos===3?'🥉':r.pos}</span>
+        <div class="rank-avatar">${r.avatar}</div>
+        <span class="rank-name">${r.name}${r.me?' <span style="font-size:10px;background:var(--brand);color:#fff;border-radius:999px;padding:2px 8px;margin-left:4px;">Vos</span>':''}</span>
+        <div class="rank-pts-col">
+          <div class="rank-pts">${r.pts}</div>
+          <div class="rank-pts-label">pts</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ---- RESULTS ----
+function renderResults() {
+  const fecha1 = FECHAS[0];
+  const container = document.getElementById('results-container');
+  container.innerHTML = `<div class="page-top-pad"></div>
+    <div style="padding:0 12px 8px;font-size:13px;font-weight:900;color:var(--texto2);text-transform:uppercase;letter-spacing:0.06em;">Fecha 1 · Resultados</div>`;
+
+  fecha1.matches.forEach(m => {
+    let pts = 0, badgeClass = 'miss', badgeText = '0 pts';
+    if (m.predH !== null) {
+      if (m.predH === m.realH && m.predA === m.realA) {
+        pts = 3; badgeClass = 'exact'; badgeText = '+3 pts 🎯 Exacto';
+      } else {
+        const realWin = Math.sign(m.realH - m.realA);
+        const predWin = Math.sign(m.predH - m.predA);
+        if (realWin === predWin) { pts = 1; badgeClass = 'winner'; badgeText = '+1 pt 👍 Ganador'; }
+        else { badgeText = '0 pts · Erró'; }
+      }
+    }
+    container.innerHTML += `
+      <div class="resultado-card">
+        <div class="result-head">
+          <span class="result-head-label">⏰ ${m.time}</span>
+          <span class="result-pts-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="result-body">
+          <div class="result-teams">
+            <div class="result-team"><span class="result-flag">${m.home}</span><span class="result-name">${m.hName}</span></div>
+            <div class="score-display">
+              <div class="score-real">${m.realH}</div>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--texto2);margin:0 2px;">:</span>
+              <div class="score-real">${m.realA}</div>
+            </div>
+            <div class="result-team right"><span class="result-name">${m.aName}</span><span class="result-flag">${m.away}</span></div>
+          </div>
+          ${m.predH!==null?`<div class="result-pred-row"><span class="pred-label">Tu pronóstico:</span><span class="pred-val">${m.predH} - ${m.predA}</span></div>`:''}
+        </div>
+      </div>
+    `;
+  });
+}
+
+// ---- COUNTDOWN ----
+function startCountdown() {
+  const target = new Date('2026-06-18T18:00:00-03:00');
+  function tick() {
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) { document.getElementById('countdown-text').textContent = '🔴 En curso'; return; }
+    const d = Math.floor(diff/86400000);
+    const h = Math.floor((diff%86400000)/3600000);
+    document.getElementById('countdown-text').textContent = `⏰ ${d}d ${h}h`;
+  }
+  tick();
+  setInterval(tick, 60000);
+}
+
+
+// ---- CARRUSEL PROMOS ----
+const PROMOS = [
+  {
+    bg: 'linear-gradient(135deg, #1a3a5c 0%, #2d6a8f 100%)',
+    tag: '📍 350m',
+    name: 'Pizzería Don Carlo',
+    desc: '2x1 en pizzas todos los miércoles',
+    distance: '350 m',
+    color: '#1a3a5c'
+  },
+  {
+    bg: 'linear-gradient(135deg, #3d1a00 0%, #8B4513 100%)',
+    tag: '📍 580m',
+    name: 'Café Central',
+    desc: 'Café + medialuna $800 hasta las 11hs',
+    distance: '580 m',
+    color: '#3d1a00'
+  },
+  {
+    bg: 'linear-gradient(135deg, #0d3b2e 0%, #1a7a5e 100%)',
+    tag: '📍 1.2km',
+    name: 'Farmacia del Sol',
+    desc: '15% OFF en vitaminas y suplementos',
+    distance: '1.2 km',
+    color: '#0d3b2e'
+  },
+  {
+    bg: 'linear-gradient(135deg, #2c0a4b 0%, #6B3FA0 100%)',
+    tag: '📍 800m',
+    name: 'Librería Letras',
+    desc: 'Agenda 2026 gratis con compra +$5000',
+    distance: '800 m',
+    color: '#2c0a4b'
+  },
+];
+
+let promoIdx = 0;
+let promoTimer = null;
+
+function renderPromos() {
+  const track = document.getElementById('promos-track');
+  const dots = document.getElementById('promos-dots');
+  if (!track) return;
+
+  track.innerHTML = PROMOS.map((p, i) => `
+    <div class="promo-slide" onclick="alert('Ver promo: ' + '${p.name.replace(/'/g,"\'")}')">
+      <div class="promo-slide-bg" style="background:${p.bg};"></div>
+      <div class="promo-slide-overlay"></div>
+      <div class="promo-slide-content">
+        <div class="promo-tag">${p.tag}</div>
+        <div class="promo-name">${p.name}</div>
+        <div class="promo-desc">${p.desc}</div>
+      </div>
+      <div class="promo-distance">📍 ${p.distance}</div>
+    </div>
+  `).join('');
+
+  dots.innerHTML = PROMOS.map((_, i) =>
+    `<div class="promo-dot${i===0?' active':''}" onclick="goPromo(${i})"></div>`
+  ).join('');
+
+  startPromoAuto();
+}
+
+function goPromo(idx) {
+  promoIdx = idx;
+  const track = document.getElementById('promos-track');
+  if (track) track.style.transform = `translateX(-${idx * 100}%)`;
+  document.querySelectorAll('.promo-dot').forEach((d, i) => {
+    d.classList.toggle('active', i === idx);
+  });
+}
+
+function startPromoAuto() {
+  if (promoTimer) clearInterval(promoTimer);
+  promoTimer = setInterval(() => {
+    promoIdx = (promoIdx + 1) % PROMOS.length;
+    goPromo(promoIdx);
+  }, 4000);
+}
+
+// Touch swipe en el carrusel
+(function() {
+  let startX = 0;
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrap = document.querySelector('.promos-track-wrap');
+    if (!wrap) return;
+    wrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive:true});
+    wrap.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) {
+        promoIdx = dx < 0
+          ? Math.min(promoIdx + 1, PROMOS.length - 1)
+          : Math.max(promoIdx - 1, 0);
+        goPromo(promoIdx);
+        if (promoTimer) clearInterval(promoTimer);
+        startPromoAuto();
+      }
+    }, {passive:true});
+  });
+})();
+
+// ---- INIT ----
+initApp();
+</script>
+</body>
+</html>

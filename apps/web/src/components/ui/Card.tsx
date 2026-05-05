@@ -5,7 +5,7 @@ interface CardProps {
 }
 export function Card({ children, className = '', padding = true }: CardProps) {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 ${padding ? 'p-5' : ''} ${className}`}>
+    <div className={`bg-white rounded-[16px] shadow-[0_2px_16px_rgba(0,43,114,0.08)] border border-[#DDE1EF] overflow-hidden ${padding ? 'p-[22px]' : ''} ${className}`}>
       {children}
     </div>
   )

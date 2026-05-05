@@ -1,22 +1,24 @@
 import type { Metadata } from 'next'
+import { NotifForm } from '@/components/empresa/NotifForm'
+import { NotifHistory } from '@/components/empresa/NotifHistory'
 
 export const metadata: Metadata = { title: 'Notificaciones' }
 
 export default function NotificacionesPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 mb-1">
-          🔔 Notificaciones
-        </h1>
-        <p className="text-sm text-slate-400">Conectado a Supabase en producción</p>
-      </div>
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
-        <div className="text-5xl mb-4">🚧</div>
-        <div className="font-black text-slate-900 mb-2">En desarrollo</div>
-        <div className="text-sm text-slate-400">
-          Esta sección se construye sobre la lógica del panel HTML existente
+    <div className="flex flex-col gap-6">
+      <div className="page-header">
+        <div>
+          <h1 className="text-[26px] font-black text-[#0D1A3A] mb-1">
+            Notificaciones
+          </h1>
+          <p className="text-[14px] text-[#5A6480] font-medium">Enviá mensajes a tus participantes</p>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <NotifForm />
+        <NotifHistory />
       </div>
     </div>
   )

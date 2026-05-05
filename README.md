@@ -94,15 +94,19 @@ npm install
 
 # 2. Configurar variables de entorno
 cp .env.example .env.local
-# Completar con tus claves
+# Completar con tus claves (especialmente las de Supabase)
 
-# 3. Aplicar la migración en Supabase
+# 3. Vincular con Supabase
+npx supabase login
+npx supabase link --project-ref <TU_PROJECT_REF>
+
+# 4. Aplicar la migración
 npx supabase db push
 
-# 4. Deployar Edge Function de sync
+# 5. Deployar Edge Function de sync
 npx supabase functions deploy sync-matches
 
-# 5. Correr en modo dev
+# 6. Correr en modo dev
 npm run dev
 ```
 

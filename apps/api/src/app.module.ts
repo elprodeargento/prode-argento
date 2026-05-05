@@ -14,11 +14,17 @@ import { PromosModule } from './modules/promos/promos.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
 import { InstagramModule } from './modules/instagram/instagram.module'
 import { PaymentsModule } from './modules/payments/payments.module'
+import { StorageModule } from './modules/storage/storage.module'
 import appConfig from './config/app.config'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [appConfig], cache: true }),
+    ConfigModule.forRoot({ 
+      isGlobal: true, 
+      envFilePath: ['.env.local', '.env', '../../.env.local', '../../.env'],
+      load: [appConfig], 
+      cache: true 
+    }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     ScheduleModule.forRoot(),
     SupabaseModule,
@@ -33,6 +39,7 @@ import appConfig from './config/app.config'
     NotificationsModule,
     InstagramModule,
     PaymentsModule,
+    StorageModule,
   ],
 })
 export class AppModule {}

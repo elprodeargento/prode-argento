@@ -25,6 +25,15 @@ export function LoginEmpresaForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // MOCK LOGIN para desarrollo
+    if (form.email === 'admin@test.com' && form.password === 'admin123') {
+      setTimeout(() => {
+        router.push('/empresa/dashboard')
+      }, 800)
+      return
+    }
+
     const { error } = await supabase.auth.signInWithPassword(form)
     if (error) { setError(error.message); setLoading(false); return }
     router.push('/empresa/dashboard')
