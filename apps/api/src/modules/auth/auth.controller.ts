@@ -6,7 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(private readonly supabase: SupabaseService) { }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -47,5 +47,7 @@ export class AuthController {
     }
 
     return { userId: authData.user.id };
+
   }
 }
+
