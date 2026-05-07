@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch --entryFile apps/api/src/main",
-    "build": "npx nest build",
+    "build": "tsc -p tsconfig.build.json",
     "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "test": "jest",
