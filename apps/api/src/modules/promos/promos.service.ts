@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
 import { CreatePromoDto } from './dto/create-promo.dto';
 
@@ -19,10 +19,11 @@ export class PromosService {
   async create(adminUserId: string, dto: CreatePromoDto) {
     const { data: biz, error: bizErr } = await this.supabase.client
       .from('businesses')
-      .select('id')
+      .select('id, plan')
       .eq('admin_user_id', adminUserId)
       .single();
     if (bizErr || !biz) throw new NotFoundException('Business not found');
+    if (biz.plan !== 'pro') throw new ForbiddenException('Se requiere Plan Pro para crear promos');
 
     const { data, error } = await this.supabase.client
       .from('promos')

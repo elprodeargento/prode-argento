@@ -1,6 +1,8 @@
-import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common'
+import { Controller, Post, Body, UseGuards, Req, Headers, UnauthorizedException } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger'
 import { IsEnum } from 'class-validator'
+import { createHmac, timingSafeEqual } from 'crypto'
+import { ConfigService } from '@nestjs/config'
 import { PaymentsService, UpgradeablePlan } from './payments.service'
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
@@ -16,6 +18,7 @@ export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
     private readonly supabase: SupabaseService,
+    private readonly config: ConfigService,
   ) {}
 
   @Post('checkout')
@@ -36,7 +39,38 @@ export class PaymentsController {
 
   @Post('webhook')
   @ApiOperation({ summary: 'MercadoPago payment webhook (public)' })
-  webhook(@Body() body: any) {
+  webhook(
+    @Body() body: any,
+    @Headers('x-signature') xSignature: string,
+    @Headers('x-request-id') xRequestId: string,
+  ) {
+    const secret = this.config.get<string>('app.mercadopagoWebhookSecret')
+
+    // Skip validation if secret not configured (dev/testing)
+    if (secret) {
+      if (!xSignature || !xRequestId) {
+        throw new UnauthorizedException('Missing MP signature headers')
+      }
+
+      // Parse ts and v1 from "ts=...,v1=..."
+      const parts = Object.fromEntries(
+        xSignature.split(',').map(p => p.split('=') as [string, string])
+      )
+      const ts = parts['ts']
+      const v1 = parts['v1']
+
+      if (!ts || !v1) throw new UnauthorizedException('Malformed x-signature')
+
+      // MP signs: "id:<data.id>;request-id:<x-request-id>;ts:<ts>;"
+      const dataId = body?.data?.id ?? ''
+      const template = `id:${dataId};request-id:${xRequestId};ts:${ts};`
+
+      const expected = createHmac('sha256', secret).update(template).digest('hex')
+
+      const match = timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
+      if (!match) throw new UnauthorizedException('Invalid webhook signature')
+    }
+
     return this.paymentsService.handleWebhook(body)
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { X, Loader2, ImagePlus } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
+import { apiGet, apiPost } from '@/lib/api'
 
 interface Promo {
   id: string
@@ -86,9 +87,69 @@ const INITIAL_FORM = {
   valid_until: '',
 }
 
+function UpgradeModal({ onClose }: { onClose: () => void }) {
+  const [loading, setLoading] = useState(false)
+
+  const handleCheckout = async () => {
+    setLoading(true)
+    try {
+      const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan: 'pro' })
+      window.location.href = initPoint
+    } catch {
+      alert('Error al iniciar el pago. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose} />
+      <div className="relative bg-white rounded-[28px] p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+        <button onClick={onClose} className="absolute top-5 right-5 text-slate-300 hover:text-slate-600 transition-colors">
+          <X className="h-5 w-5" />
+        </button>
+
+        <div className="text-center mb-6">
+          <div className="text-4xl mb-3">⭐</div>
+          <div className="text-xs font-black text-[#F5C518] uppercase tracking-widest mb-1">Plan Pro</div>
+          <h3 className="text-2xl font-black text-[#0D1A3A] mb-2">Activá tus promos</h3>
+          <p className="text-sm text-[#5A6480] leading-snug">
+            Tus promos llegan a todos los participantes de la zona en cualquier prode de la plataforma.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border-2 border-[#F5C518] bg-[#FFFBEA] p-5 mb-6">
+          <div className="font-bebas text-4xl text-[#0D1A3A] mb-1">$9.999<span className="text-lg text-[#8E96AE] font-sans font-medium">/mes</span></div>
+          <div className="text-xs text-[#8E96AE] font-medium mb-4">IVA incluido</div>
+          <ul className="flex flex-col gap-2">
+            {['Participantes ilimitados', 'Promos geolocalizadas', 'Todo lo del plan Premium', 'Estadísticas avanzadas'].map(f => (
+              <li key={f} className="flex items-center gap-2 text-sm text-[#2D3A5A] font-medium">
+                <span className="text-green-500 font-black">✓</span> {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          className="w-full py-4 rounded-2xl font-black text-[#002B72] text-sm transition-all hover:opacity-90 disabled:opacity-60 shadow-lg"
+          style={{ background: '#F5C518' }}
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : '🚀 Contratar Plan Pro con Mercado Pago'}
+        </button>
+        <p className="text-center text-xs text-[#8E96AE] mt-3">Pago seguro · Podés cancelar cuando quieras</p>
+      </div>
+    </div>
+  )
+}
+
 export function PromoManager() {
   const [promos, setPromos] = useState<Promo[]>([])
   const [loading, setLoading] = useState(true)
+  const [plan, setPlan] = useState<string>('free')
+  const [showUpgrade, setShowUpgrade] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(INITIAL_FORM)
@@ -135,18 +196,21 @@ export function PromoManager() {
   }
 
   useEffect(() => {
-    async function fetchPromos() {
+    async function fetchData() {
       try {
-        const { apiGet } = await import('@/lib/api')
-        const data = await apiGet<Promo[]>('/promos/me')
+        const [data, biz] = await Promise.all([
+          apiGet<Promo[]>('/promos/me'),
+          apiGet<{ plan: string }>('/businesses/me'),
+        ])
         setPromos(data || [])
+        setPlan(biz.plan)
       } catch (error) {
         console.error('Error fetching promos:', error)
       } finally {
         setLoading(false)
       }
     }
-    fetchPromos()
+    fetchData()
   }, [])
   if (loading) {
     return (
@@ -158,6 +222,8 @@ export function PromoManager() {
 
   return (
     <div className="flex flex-col gap-6">
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+
       {/* HEADER */}
       <div className="page-header">
         <div>
@@ -168,8 +234,8 @@ export function PromoManager() {
         </div>
         <div className="page-actions">
           {!showForm && (
-            <button 
-              onClick={() => setShowForm(true)} 
+            <button
+              onClick={() => plan === 'pro' ? setShowForm(true) : setShowUpgrade(true)}
               className="flex items-center gap-2 bg-[#002B72] text-white rounded-xl px-5 py-[12px] text-[14px] font-black hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
             >
               + Nueva promo
@@ -178,19 +244,22 @@ export function PromoManager() {
         </div>
       </div>
 
-      {/* PLAN NOTICE */}
-      <div className="flex items-center gap-[14px] bg-gradient-to-br from-[#002B72] to-[#003FA3] rounded-[16px] p-[18px_22px] shadow-[0_8px_24px_rgba(0,43,114,0.15)]">
-        <div className="text-[32px] shrink-0">⭐</div>
-        <div className="flex-1">
-          <div className="text-[15px] font-black text-white mb-0.5">Función disponible en Plan Pro</div>
-          <div className="text-[13px] text-white/70 leading-tight">Tus promos llegan a todos los participantes de la zona que estén jugando en cualquier prode de la plataforma</div>
+      {/* PLAN NOTICE — solo si no es pro */}
+      {plan !== 'pro' && (
+        <div className="flex items-center gap-[14px] bg-gradient-to-br from-[#002B72] to-[#003FA3] rounded-[16px] p-[18px_22px] shadow-[0_8px_24px_rgba(0,43,114,0.15)]">
+          <div className="text-[32px] shrink-0">⭐</div>
+          <div className="flex-1">
+            <div className="text-[15px] font-black text-white mb-0.5">Función disponible en Plan Pro</div>
+            <div className="text-[13px] text-white/70 leading-tight">Tus promos llegan a todos los participantes de la zona que estén jugando en cualquier prode de la plataforma</div>
+          </div>
+          <button
+            onClick={() => setShowUpgrade(true)}
+            className="bg-[#F5C518] text-[#002B72] text-[12px] font-black px-4 py-2 rounded-full whitespace-nowrap hover:bg-[#FFD740] transition-all"
+          >
+            Plan Pro →
+          </button>
         </div>
-        <button 
-          className="bg-[#F5C518] text-[#002B72] text-[12px] font-black px-4 py-2 rounded-full whitespace-nowrap hover:bg-[#FFD740] transition-all"
-        >
-          Plan Pro →
-        </button>
-      </div>
+      )}
 
       {/* FORMULARIO NUEVA PROMO */}
       {showForm && (
