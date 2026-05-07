@@ -76,6 +76,105 @@ function getCurrentWCWeekIdx(weeks: WorldCupWeek[]): number {
 
 const WC_WEEKS = getWorldCupWeeks()
 
+// ── Tips slider ────────────────────────────────────────────────────────────
+
+const TIPS = [
+  {
+    emoji: '🎁',
+    titulo: 'Los premios convierten jugadores en clientes',
+    texto: 'Un 10% de descuento o un café gratis es suficiente para que el ganador tenga una razón concreta de volver a tu local esta semana.',
+  },
+  {
+    emoji: '📅',
+    titulo: 'Premios semanales = contacto semanal',
+    texto: 'Cada semana que termina es una oportunidad de comunicarte con tus clientes. El que gana se acuerda de vos. El que no gana quiere revancha.',
+  },
+  {
+    emoji: '💡',
+    titulo: 'No hace falta gastar mucho',
+    texto: 'Los premios más efectivos tienen valor percibido alto y costo real bajo: un postre, un descuento, prioridad en un turno, acceso anticipado a algo.',
+  },
+  {
+    emoji: '📸',
+    titulo: 'Publicar al ganador multiplica el efecto',
+    texto: 'Cuando publicás el podio en Instagram, los que no ganaron lo ven y quieren participar la próxima semana. Es publicidad gratis generada por el juego.',
+  },
+  {
+    emoji: '💬',
+    titulo: 'WhatsApp tiene 98% de tasa de apertura',
+    texto: 'El email se ignora, las redes se pierden en el feed. Un WhatsApp llega directo al bolsillo de tu cliente. Usalo para avisarle que ganó, para recordarle que cargue sus pronósticos.',
+  },
+]
+
+function TipsSlider() {
+  const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
+
+  const navigate = (idx: number) => {
+    setVisible(false)
+    setTimeout(() => {
+      setCurrent(((idx % TIPS.length) + TIPS.length) % TIPS.length)
+      setVisible(true)
+    }, 200)
+  }
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setCurrent(c => (c + 1) % TIPS.length)
+        setVisible(true)
+      }, 200)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const tip = TIPS[current]
+
+  return (
+    <div className="rounded-2xl px-6 py-5" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>
+      <div
+        className="flex flex-col gap-2 transition-opacity duration-200"
+        style={{ opacity: visible ? 1 : 0 }}
+      >
+        <span className="text-3xl">{tip.emoji}</span>
+        <div className="text-[15px] font-black text-white">{tip.titulo}</div>
+        <div className="text-[13px] font-medium leading-relaxed" style={{ color: 'rgba(255,255,255,0.8)' }}>{tip.texto}</div>
+      </div>
+      <div className="flex items-center justify-between mt-4">
+        <button
+          onClick={() => navigate(current - 1)}
+          className="w-7 h-7 rounded-full flex items-center justify-center transition-colors text-white"
+          style={{ background: 'rgba(255,255,255,0.2)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.3)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <div className="flex gap-1.5">
+          {TIPS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => navigate(i)}
+              className="w-1.5 h-1.5 rounded-full transition-colors"
+              style={{ background: i === current ? 'white' : 'rgba(255,255,255,0.3)' }}
+            />
+          ))}
+        </div>
+        <button
+          onClick={() => navigate(current + 1)}
+          className="w-7 h-7 rounded-full flex items-center justify-center transition-colors text-white"
+          style={{ background: 'rgba(255,255,255,0.2)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.3)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.2)')}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 
 export function PrizeManager() {
@@ -236,6 +335,9 @@ export function PrizeManager() {
 
   return (
     <div className="flex flex-col gap-6">
+      {/* TIPS SLIDER */}
+      <TipsSlider />
+
       {/* HEADER */}
       <div className="page-header">
         <div>
@@ -278,6 +380,18 @@ export function PrizeManager() {
               Siguiente <ChevronRight className="h-4 w-4" />
             </button>
           </div>
+
+          {/* Empty state — desaparece cuando el usuario empieza a escribir */}
+          {wpDraftPrizes.length === 1 && wpDraftPrizes[0].description === '' && (
+            <div className="rounded-xl border-2 border-dashed border-amber-200 bg-amber-50 p-4 mb-2">
+              <span>🎯</span>
+              <span className="font-black"> ¿Qué gana el cliente esta semana?</span>
+              <br />
+              <span className="text-[13px] text-[#5A6480]">
+                Definí un premio y dale a tus clientes una razón concreta de volver a tu local.
+              </span>
+            </div>
+          )}
 
           {/* Lista editable de premios para la semana */}
           <div className="flex flex-col gap-[10px]">
@@ -399,28 +513,38 @@ export function PrizeManager() {
             </button>
           </div>
           <div className="p-[20px] flex flex-col gap-[14px]">
-            <div className="flex flex-col gap-[10px]">
-              {prizes.map((prize) => (
-                <div key={prize.id} className="flex items-center gap-3 p-[12px_14px] bg-[#F1F3F9] rounded-[10px] border-[1.5px] border-[#DDE1EF]">
-                  <span className="text-[28px] shrink-0">
-                    {prize.rank === 1 ? '🥇' : prize.rank === 2 ? '🥈' : prize.rank === 3 ? '🥉' : '🎖️'}
-                  </span>
-                  <input
-                    type="text"
-                    value={prize.description}
-                    onChange={(e) => updatePrize(prize.id, e.target.value)}
-                    placeholder="Ej: Camiseta oficial..."
-                    className="flex-1 bg-white border-[1.5px] border-[#DDE1EF] rounded-[8px] px-[14px] py-[10px] text-[14px] font-semibold text-[#0D1A3A] outline-none focus:border-[#003FA3] transition-all"
-                  />
-                  <button
-                    onClick={() => removePrize(prize.id)}
-                    className="w-8 h-8 flex items-center justify-center bg-[#FDECEB] text-[#D93025] rounded-lg hover:bg-[#D93025] hover:text-white transition-all text-lg font-bold"
-                  >
-                    ×
-                  </button>
+            {prizes.length === 0 ? (
+              <div className="rounded-xl border-2 border-dashed border-[#DDE1EF] bg-[#F1F3F9] p-6 text-center">
+                <span className="text-3xl">🏆</span>
+                <div className="font-black text-[#0D1A3A] mt-2">¿Qué gana el campeón del mundial?</div>
+                <div className="text-[13px] text-[#5A6480] mt-1">
+                  El premio final es el gran motivador para que tus clientes participen durante todo el torneo.
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-[10px]">
+                {prizes.map((prize) => (
+                  <div key={prize.id} className="flex items-center gap-3 p-[12px_14px] bg-[#F1F3F9] rounded-[10px] border-[1.5px] border-[#DDE1EF]">
+                    <span className="text-[28px] shrink-0">
+                      {prize.rank === 1 ? '🥇' : prize.rank === 2 ? '🥈' : prize.rank === 3 ? '🥉' : '🎖️'}
+                    </span>
+                    <input
+                      type="text"
+                      value={prize.description}
+                      onChange={(e) => updatePrize(prize.id, e.target.value)}
+                      placeholder="Ej: Camiseta oficial..."
+                      className="flex-1 bg-white border-[1.5px] border-[#DDE1EF] rounded-[8px] px-[14px] py-[10px] text-[14px] font-semibold text-[#0D1A3A] outline-none focus:border-[#003FA3] transition-all"
+                    />
+                    <button
+                      onClick={() => removePrize(prize.id)}
+                      className="w-8 h-8 flex items-center justify-center bg-[#FDECEB] text-[#D93025] rounded-lg hover:bg-[#D93025] hover:text-white transition-all text-lg font-bold"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <button
               className="w-full py-3 px-4 rounded-xl border-2 border-dashed border-[#C8CEDF] bg-transparent text-[#5A6480] text-[14px] font-bold hover:border-[#003FA3] hover:text-[#003FA3] hover:bg-[#EBF4FC] transition-all"
