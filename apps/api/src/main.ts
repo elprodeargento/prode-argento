@@ -17,7 +17,15 @@ async function bootstrap() {
   const webUrl = config.get<string>('app.webUrl') || 'http://localhost:3000'
 
   await app.register(cors, {
-    origin: [webUrl],
+    origin: (origin: string | undefined, cb: (err: Error | null, allow: boolean) => void) => {
+      if (!origin) return cb(null, true) // server-to-server / curl
+      const allowed =
+        origin === webUrl ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.prode.ar') ||
+        origin === 'http://localhost:3000'
+      cb(allowed ? null : new Error('Not allowed by CORS'), allowed)
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
