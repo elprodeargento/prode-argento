@@ -84,6 +84,7 @@ export function PrizeManager() {
   const [saving, setSaving] = useState(false)
 
   const [igModalOpen, setIgModalOpen] = useState(false)
+  const [igFinalModalOpen, setIgFinalModalOpen] = useState(false)
   const [waModalOpen, setWaModalOpen] = useState(false)
 
   // ── Premios semanales state ──────────────────────────────────────────────
@@ -93,6 +94,7 @@ export function PrizeManager() {
   const [wpPrizesMap, setWpPrizesMap] = useState<Record<string, WeekPrize[]>>({})
   const [wpDraftPrizes, setWpDraftPrizes] = useState<WeekPrize[]>([{ rank: 1, description: '' }])
   const [savingWpPrizes, setSavingWpPrizes] = useState(false)
+  const [wpSaved, setWpSaved] = useState(false)
   const [wpWeeklyData, setWpWeeklyData] = useState<{ entries: WeeklyEntry[]; weekStart: string; weekEnd: string } | null>(null)
   const [wpWeeklyLoading, setWpWeeklyLoading] = useState(true)
   // ─────────────────────────────────────────────────────────────────────────
@@ -178,6 +180,8 @@ export function PrizeManager() {
     try {
       localStorage.setItem(`weekly-prizes-${businessId}`, JSON.stringify(updated))
       setWpPrizesMap(updated)
+      setWpSaved(true)
+      setTimeout(() => setWpSaved(false), 2500)
     } catch {}
     setSavingWpPrizes(false)
   }
@@ -309,10 +313,11 @@ export function PrizeManager() {
           <button
             disabled={savingWpPrizes}
             onClick={handleSaveWpPrizes}
-            className="w-full bg-[#002B72] text-white text-[14px] font-black p-[14px] rounded-xl hover:bg-[#00318A] transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full text-white text-[14px] font-black p-[14px] rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            style={{ background: wpSaved ? '#18A06A' : '#002B72' }}
           >
             {savingWpPrizes ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {savingWpPrizes ? 'Guardando...' : 'Guardar premios de la semana'}
+            {savingWpPrizes ? 'Guardando...' : wpSaved ? '✓ Guardado' : 'Guardar premios de la semana'}
           </button>
 
           {/* Divisor */}
@@ -443,6 +448,7 @@ export function PrizeManager() {
               <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">Vista previa del podio</h3>
             </div>
             <button
+              onClick={() => setIgFinalModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[11px] font-black hover:opacity-90 transition-all shadow-md"
               style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
             >
@@ -495,7 +501,7 @@ export function PrizeManager() {
         title="Enviar premio semanal"
       />
 
-      {/* IG Modal */}
+      {/* IG Modal — ranking semanal */}
       <IgPublishModal
         open={igModalOpen}
         onClose={() => setIgModalOpen(false)}
@@ -504,6 +510,18 @@ export function PrizeManager() {
           name: e.name,
           points: e.weekly_points,
           position: e.rank,
+        }))}
+      />
+
+      {/* IG Modal — podio final del mundial */}
+      <IgPublishModal
+        open={igFinalModalOpen}
+        onClose={() => setIgFinalModalOpen(false)}
+        empresa="MI EMPRESA"
+        podium={prizes.slice(0, 3).map((p, i) => ({
+          name: p.description || `Puesto ${i + 1}`,
+          points: 0,
+          position: i + 1,
         }))}
       />
     </div>
