@@ -101,7 +101,7 @@ export function PlanesClient() {
   return (
     <>
       {toast && (
-        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl font-bold text-white text-sm
+        <div className={`fixed top-6 right-6 z-[200] px-5 py-3 rounded-2xl shadow-xl font-bold text-white text-sm
           ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
           {toast.msg}
         </div>
