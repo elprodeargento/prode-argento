@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { PlanesClient } from '@/components/empresa/PlanesClient'
 
 export const metadata: Metadata = { title: 'Planes y precios' }
@@ -12,7 +13,9 @@ export default function PlanesPage() {
           <p className="text-[14px] text-[#5A6480] font-medium">Elegí el plan que mejor se adapta a tu empresa</p>
         </div>
       </div>
-      <PlanesClient />
+      <Suspense>
+        <PlanesClient />
+      </Suspense>
     </div>
   )
 }
