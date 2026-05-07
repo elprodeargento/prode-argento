@@ -28,37 +28,28 @@ export function RegistroEmpresaForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { data, error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        data: { company_name: form.name },
-        emailRedirectTo: `${window.location.origin}/empresa/configuracion`,
-      },
-    })
-    
-    if (error) { 
-      setError(error.message)
+
+    try {
+      await apiPost('/auth/register', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+      })
+    } catch (err: any) {
+      setError(err?.message ?? 'Error al registrar la empresa')
       setLoading(false)
-      return 
+      return
     }
 
-    if (data.user) {
-      const slug = form.name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.random().toString(36).substring(2, 7)
-
-      try {
-        await apiPost('/businesses', {
-          name: form.name,
-          slug,
-          admin_user_id: data.user.id,
-          admin_email: data.user.email ?? form.email,
-        })
-      } catch (bizErr: any) {
-        console.error('Error creating business:', bizErr)
-        setError(`Error al registrar la empresa: ${bizErr?.message ?? bizErr}`)
-        setLoading(false)
-        return
-      }
+    // Get client session after API created the user
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: form.email,
+      password: form.password,
+    })
+    if (signInError) {
+      setError(signInError.message)
+      setLoading(false)
+      return
     }
 
     router.push('/empresa/onboarding')
