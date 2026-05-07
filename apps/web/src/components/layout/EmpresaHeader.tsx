@@ -1,5 +1,7 @@
 'use client'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { apiGet } from '@/lib/api'
 
 const titles: Record<string, string> = {
   '/empresa/dashboard': 'Inicio',
@@ -15,6 +17,22 @@ const titles: Record<string, string> = {
 export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) {
   const path = usePathname()
   const title = titles[path] ?? 'Panel'
+  const [prodeUrl, setProdeUrl] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    apiGet<{ slug: string }>('/businesses/me')
+      .then(biz => setProdeUrl(`https://${biz.slug}.elprode.ar`))
+      .catch(() => {})
+  }, [])
+
+  const handleShare = () => {
+    if (!prodeUrl) return
+    navigator.clipboard?.writeText(prodeUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
     <header className="fixed top-0 right-0 left-0 lg:left-[260px] h-[64px] bg-white border-b border-[#DDE1EF] flex items-center justify-between px-7 z-[100] shadow-[0_2px_16px_rgba(0,43,114,0.08)]">
       <div className="flex items-center gap-4">
@@ -37,12 +55,24 @@ export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) 
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D93025] rounded-full border-2 border-white" />
         </button>
 
-        <button className="hidden md:flex items-center gap-1.5 bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] rounded-xl px-4 py-[9px] text-[13px] font-bold text-[#5A6480] hover:bg-[#DDE1EF] transition-all">
-          👁️ Ver prode
-        </button>
-        <button className="flex items-center gap-2 bg-[#002B72] text-white rounded-xl px-4 py-[9px] text-[13px] font-extrabold hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20">
-          <span className="hidden sm:inline">🔗 Compartir link</span>
-          <span className="sm:hidden">🔗 Link</span>
+        {prodeUrl && (
+          <a
+            href={prodeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center gap-1.5 bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] rounded-xl px-4 py-[9px] text-[13px] font-bold text-[#5A6480] hover:bg-[#DDE1EF] transition-all"
+          >
+            👁️ Ver prode
+          </a>
+        )}
+
+        <button
+          onClick={handleShare}
+          disabled={!prodeUrl}
+          className="flex items-center gap-2 bg-[#002B72] text-white rounded-xl px-4 py-[9px] text-[13px] font-extrabold hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20 disabled:opacity-50"
+        >
+          <span className="hidden sm:inline">{copied ? '✅ Copiado' : '🔗 Compartir link'}</span>
+          <span className="sm:hidden">{copied ? '✅' : '🔗 Link'}</span>
         </button>
       </div>
     </header>
