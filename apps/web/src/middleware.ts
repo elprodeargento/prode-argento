@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/utils/supabase/middleware'
 
-const ROOT_DOMAINS = ['prode.ar', 'localhost']
+const ROOT_DOMAINS = ['elprode.ar', 'localhost']
 
 function getSlug(host: string): string | null {
   const bare = host.split(':')[0]
