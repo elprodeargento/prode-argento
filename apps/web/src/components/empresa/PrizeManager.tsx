@@ -188,7 +188,6 @@ export function PrizeManager() {
 
   // ── Premios semanales state ──────────────────────────────────────────────
   const currentWCWeekIdx = getCurrentWCWeekIdx(WC_WEEKS)
-  const [businessId, setBusinessId] = useState<string | null>(null)
   const [wpWeekIdx, setWpWeekIdx] = useState(Math.max(0, currentWCWeekIdx))
   const [wpPrizesMap, setWpPrizesMap] = useState<Record<string, WeekPrize[]>>({})
   const [wpDraftPrizes, setWpDraftPrizes] = useState<WeekPrize[]>([{ rank: 1, description: '' }])
@@ -201,8 +200,12 @@ export function PrizeManager() {
   useEffect(() => {
     async function fetchPrizes() {
       try {
-        const prizeData = await apiGet<Prize[]>('/prizes/me')
+        const [prizeData, weeklyData] = await Promise.all([
+          apiGet<Prize[]>('/prizes/me'),
+          apiGet<Record<string, Array<{ rank: number; description: string }>>>('/prizes/weekly/me'),
+        ])
         setPrizes(prizeData || [])
+        setWpPrizesMap(weeklyData || {})
       } catch (error) {
         console.error('Error fetching prizes:', error)
       } finally {
@@ -213,26 +216,6 @@ export function PrizeManager() {
   }, [])
 
   // ── Premios semanales effects ────────────────────────────────────────────
-
-  useEffect(() => {
-    async function fetchBusinessId() {
-      try {
-        const biz = await apiGet<{ id: string }>('/businesses/me')
-        setBusinessId(biz.id)
-      } catch (e) {
-        console.error('Error fetching businessId:', e)
-      }
-    }
-    fetchBusinessId()
-  }, [])
-
-  useEffect(() => {
-    if (!businessId) return
-    try {
-      const stored = localStorage.getItem(`weekly-prizes-${businessId}`)
-      if (stored) setWpPrizesMap(JSON.parse(stored))
-    } catch {}
-  }, [businessId])
 
   useEffect(() => {
     const existing = wpPrizesMap[String(wpWeekIdx)] ?? []
@@ -271,18 +254,20 @@ export function PrizeManager() {
     setWpDraftPrizes(prev => prev.map((p, i) => i === idx ? { ...p, description } : p))
   }
 
-  const handleSaveWpPrizes = () => {
-    if (!businessId) return
+  const handleSaveWpPrizes = async () => {
     setSavingWpPrizes(true)
-    const filtered = wpDraftPrizes.filter(p => p.description.trim())
-    const updated = { ...wpPrizesMap, [String(wpWeekIdx)]: filtered }
     try {
-      localStorage.setItem(`weekly-prizes-${businessId}`, JSON.stringify(updated))
+      const filtered = wpDraftPrizes.filter(p => p.description.trim())
+      await apiPut('/prizes/weekly/me', { weekIndex: wpWeekIdx, prizes: filtered })
+      const updated = { ...wpPrizesMap, [String(wpWeekIdx)]: filtered }
       setWpPrizesMap(updated)
       setWpSaved(true)
       setTimeout(() => setWpSaved(false), 2500)
-    } catch {}
-    setSavingWpPrizes(false)
+    } catch {
+      alert('Error al guardar los premios de la semana')
+    } finally {
+      setSavingWpPrizes(false)
+    }
   }
 
   const addPrize = () => {
