@@ -125,7 +125,7 @@ function TipsSlider() {
         setCurrent(c => (c + 1) % TIPS.length)
         setVisible(true)
       }, 200)
-    }, 5000)
+    }, 15000)
     return () => clearInterval(timer)
   }, [])
 
