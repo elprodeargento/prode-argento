@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "nest start --watch --entryFile apps/api/src/main",
     "build": "npx nest build",
-    "start:prod": "node dist/apps/api/src/main",
+    "start:prod": "node dist/main.js",
     "lint": "eslint \"{src,test}/**/*.ts\"",
     "test": "jest",
     "typecheck": "tsc --noEmit"
