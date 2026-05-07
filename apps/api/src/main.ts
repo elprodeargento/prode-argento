@@ -55,6 +55,10 @@ async function bootstrap() {
 
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } })
 
+  // Health check for Render
+  const fastify = app.getHttpAdapter().getInstance()
+  fastify.get('/api/', (_req: any, reply: any) => reply.send({ status: 'ok' }))
+
   const port = config.get<number>('PORT', 4000)
   await app.listen(port, '0.0.0.0')
   console.log(`🚀 API running on http://localhost:${port}/api`)
