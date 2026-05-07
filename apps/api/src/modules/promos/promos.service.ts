@@ -19,7 +19,7 @@ export class PromosService {
   async create(adminUserId: string, dto: CreatePromoDto) {
     const { data: biz, error: bizErr } = await this.supabase.client
       .from('businesses')
-      .select('id, lat, lon')
+      .select('id')
       .eq('admin_user_id', adminUserId)
       .single();
     if (bizErr || !biz) throw new NotFoundException('Business not found');
@@ -35,8 +35,8 @@ export class PromosService {
         radius_km:    dto.radius_km ?? 1,
         valid_from:   dto.valid_from ?? new Date().toISOString(),
         valid_until:  dto.valid_until,
-        lat:          biz.lat ?? 0,
-        lon:          biz.lon ?? 0,
+        lat:          0,
+        lon:          0,
         active:       true,
         views:        0,
       })
