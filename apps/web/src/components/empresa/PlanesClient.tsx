@@ -107,7 +107,7 @@ export function PlanesClient() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl items-center">
         {PLANS.map(plan => {
           const isCurrent = currentPlan === plan.id
           const isUpgrade = plan.id !== 'free' && !isCurrent
@@ -116,25 +116,27 @@ export function PlanesClient() {
           return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl border-2 p-6 flex flex-col gap-5 transition-all
-                ${plan.highlight ? 'border-[#002B72] shadow-[0_8px_40px_rgba(0,43,114,0.15)]' : 'border-[#DDE1EF] bg-white'}
-                ${isCurrent ? 'ring-2 ring-green-400 ring-offset-2' : ''}`}
-              style={plan.highlight ? { background: '#F5F8FF' } : {}}
+              className={`relative rounded-3xl border-2 p-6 flex flex-col gap-5 transition-all duration-300
+                ${isCurrent
+                  ? 'scale-105 z-10 shadow-[0_20px_60px_rgba(0,43,114,0.18)] border-[#002B72]'
+                  : 'border-[#DDE1EF] bg-white opacity-90 hover:opacity-100 hover:shadow-md'
+                }`}
+              style={isCurrent ? { background: '#F5F8FF' } : {}}
             >
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-xs font-black px-4 py-1 rounded-full">
+              {isCurrent && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-xs font-black px-4 py-1.5 rounded-full whitespace-nowrap shadow-lg">
+                  ✦ Tu plan actual
+                </div>
+              )}
+
+              {!isCurrent && plan.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#5A6480] text-white text-xs font-black px-4 py-1 rounded-full">
                   MÁS POPULAR
                 </div>
               )}
 
-              {isCurrent && (
-                <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full">
-                  TU PLAN
-                </div>
-              )}
-
               <div>
-                <div className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: plan.color }}>
+                <div className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: isCurrent ? '#002B72' : plan.color }}>
                   {plan.name}
                 </div>
                 <div className="font-bebas text-4xl text-[#0D1A3A]">{plan.priceLabel}</div>
@@ -157,7 +159,7 @@ export function PlanesClient() {
                 disabled={isCurrent || isLoading || plan.id === 'free'}
                 className={`w-full py-3 rounded-2xl font-black text-sm transition-all
                   ${isCurrent
-                    ? 'bg-green-100 text-green-700 cursor-default'
+                    ? 'bg-[#002B72] text-white cursor-default'
                     : plan.id === 'free'
                     ? 'bg-[#F1F3F9] text-[#8E96AE] cursor-default'
                     : 'text-white hover:opacity-90 disabled:opacity-60'}`}
