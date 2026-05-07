@@ -103,9 +103,14 @@ export class ParticipantsService {
       .single();
     if (bizErr || !business) throw new Error('Business not found');
 
+    // Total matches for this business (denominator for predictions progress)
+    const { count: totalMatches } = await this.supabase.client
+      .from('matches')
+      .select('*', { count: 'exact', head: true });
+
     let query = this.supabase.client
       .from('participants')
-      .select('*', { count: 'exact' })
+      .select('*, predictions(count)', { count: 'exact' })
       .eq('business_id', business.id)
       .order('total_points', { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
@@ -116,6 +121,14 @@ export class ParticipantsService {
 
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
-    return { data: data ?? [], total: count ?? 0, page, limit };
+
+    const enriched = (data ?? []).map((p: any) => ({
+      ...p,
+      predictions_count: p.predictions?.[0]?.count ?? 0,
+      total_matches: totalMatches ?? 0,
+      predictions: undefined,
+    }));
+
+    return { data: enriched, total: count ?? 0, page, limit };
   }
 }

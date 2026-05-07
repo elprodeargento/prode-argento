@@ -11,7 +11,8 @@ interface Participant {
   total_points: number
   rank: number
   registered_at: string
-  active?: boolean
+  predictions_count: number
+  total_matches: number
 }
 
 export function ParticipantesTable() {
@@ -117,11 +118,11 @@ export function ParticipantesTable() {
                 <td className="px-5 py-3.5 text-[13px] text-[#5A6480] font-bold">{p.phone}</td>
                 <td className="px-5 py-3.5">
                   <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
-                    p.active 
-                    ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10' 
+                    p.predictions_count > 0
+                    ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10'
                     : 'bg-[#F1F3F9] text-[#8E96AE] border-[#DDE1EF]'
                   }`}>
-                    {p.active ? 'Activo' : 'Inactivo'}
+                    {p.predictions_count > 0 ? 'Jugando' : 'Sin pronósticos'}
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-center">
@@ -134,11 +135,11 @@ export function ParticipantesTable() {
                 </td>
                 <td className="px-5 py-3.5 text-center">
                   <div className="flex flex-col items-center">
-                    <span className="text-[11px] font-black text-[#5A6480]">0/48</span>
+                    <span className="text-[11px] font-black text-[#5A6480]">{p.predictions_count}/{p.total_matches}</span>
                     <div className="w-14 h-[6px] bg-[#DDE1EF] rounded-full mt-1 overflow-hidden">
-                      <div 
-                        className="h-full bg-[#003FA3] rounded-full" 
-                        style={{ width: `0%` }}
+                      <div
+                        className="h-full bg-[#003FA3] rounded-full"
+                        style={{ width: p.total_matches > 0 ? `${Math.min(100, (p.predictions_count / p.total_matches) * 100)}%` : '0%' }}
                       />
                     </div>
                   </div>
