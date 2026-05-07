@@ -48,7 +48,7 @@ export default async function EmpresaDashboardPage() {
       <div className="page-header">
         <div>
           <h1 className="text-[26px] font-[900] text-[#0D1A3A] mb-1">
-            ¡Buen día, {user.user_metadata?.full_name?.split(' ')[0] || 'Daniel'}! 👋
+            ¡Buen día, {(user.user_metadata?.full_name || user.user_metadata?.name || user.email)?.split(/[ @]/)[0]}! 👋
           </h1>
           <p className="text-[14px] text-[#5A6480] font-medium">Acá está todo lo que pasa en tu prode hoy</p>
         </div>

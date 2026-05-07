@@ -90,7 +90,7 @@ export function OnboardingWizard() {
   }
 
   const copyLink = () => {
-    const url = `https://${business?.slug}.prode.ar`
+    const url = `https://${business?.slug}.elprode.ar`
     navigator.clipboard?.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -114,7 +114,7 @@ export function OnboardingWizard() {
 
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 mb-4 border border-slate-200">
             <span className="flex-1 text-left text-sm font-black text-[#002B72] truncate italic">
-              {business?.slug}.prode.ar
+              {business?.slug}.elprode.ar
             </span>
             <button 
               onClick={copyLink}

@@ -41,7 +41,7 @@ function EmailPreview({ message }: { message: string }) {
       <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 space-y-1">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
           <span className="w-14 text-right text-slate-400">De:</span>
-          <span className="text-slate-700">Prode Mundial 2026 &lt;no-reply@prode.ar&gt;</span>
+          <span className="text-slate-700">Prode Mundial 2026 &lt;no-reply@elprode.ar&gt;</span>
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
           <span className="w-14 text-right text-slate-400">Para:</span>

@@ -259,7 +259,7 @@ export function ConfigForm() {
                 {...register('slug')}
                 className="field-input"
               />
-              <div className="field-hint mt-1">{watch('slug') || 'empresa'}.prode.ar</div>
+              <div className="field-hint mt-1">{watch('slug') || 'empresa'}.elprode.ar</div>
               {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug.message}</p>}
             </div>
           </div>

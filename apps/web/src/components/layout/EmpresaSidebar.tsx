@@ -33,15 +33,34 @@ const navGroups = [
   }
 ]
 
+interface Business { name: string; logo_url?: string | null }
+
+function initials(name: string) {
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+}
+
 export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const path = usePathname()
   const router = useRouter()
   const supabase = createClient()
   const [badges, setBadges] = useState<Record<string, string>>({})
+  const [business, setBusiness] = useState<Business | null>(null)
+  const [userName, setUserName] = useState('')
+  const [userEmail, setUserEmail] = useState('')
 
   useEffect(() => {
     apiGet<{ data: unknown[]; total: number }>('/participants/me?page=1&limit=1')
       .then(res => setBadges({ participants: String(res.total) }))
+      .catch(() => {})
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      setUserName(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '')
+      setUserEmail(user.email || '')
+    })
+
+    apiGet<Business>('/businesses/me')
+      .then(biz => setBusiness(biz))
       .catch(() => {})
   }, [])
 
@@ -49,6 +68,10 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
     await supabase.auth.signOut()
     router.push('/empresa/login')
   }
+
+  const companyName = business?.name ?? ''
+  const userInitials = userName ? initials(userName) : '?'
+
   return (
     <>
       {/* Mobile Overlay */}
@@ -65,9 +88,15 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
       `}>
         <div className="pt-6 px-6 pb-5 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-[44px] h-[44px] bg-white/10 rounded-xl flex items-center justify-center text-[22px] border-[1.5px] border-white/20">⚽</div>
+            <div className="w-[44px] h-[44px] bg-white/10 rounded-xl flex items-center justify-center text-[22px] border-[1.5px] border-white/20 overflow-hidden">
+              {business?.logo_url
+                ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
+                : '⚽'}
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate">DISTRIBUIDORA<br />GARCÍA</div>
+              <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate uppercase">
+                {companyName || '—'}
+              </div>
               <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel empresa</div>
             </div>
           </div>
@@ -91,7 +120,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
                       ${active
                         ? 'bg-white/15 text-white shadow-[inset_3px_0_0_#F5C518]'
                         : 'text-white/65 hover:bg-white/10 hover:text-white/90'}`}>
-                    <span 
+                    <span
                       className="text-[20px] w-6 text-center transition-all opacity-100 group-hover:scale-110"
                       style={{ color: item.iconColor }}
                     >
@@ -112,9 +141,11 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
         <div className="p-4 border-t border-white/10">
           <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3.5">
-            <div className="w-[38px] h-[38px] rounded-full bg-[#F5C518] flex items-center justify-center font-black text-[#002B72] text-[16px]">DG</div>
+            <div className="w-[38px] h-[38px] rounded-full bg-[#F5C518] flex items-center justify-center font-black text-[#002B72] text-[16px] shrink-0">
+              {userInitials}
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="text-white text-[13px] font-bold truncate">Daniel García</div>
+              <div className="text-white text-[13px] font-bold truncate">{userName || userEmail || '—'}</div>
               <div className="text-white/50 text-[11px] font-semibold">Administrador</div>
             </div>
             <button onClick={handleLogout} title="Cerrar sesión" className="text-white/40 hover:text-white transition-colors p-1">

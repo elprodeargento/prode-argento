@@ -6,7 +6,7 @@
   "rewrites": [
     {
       "source": "/api/v1/:path*",
-      "destination": "https://api.prode.ar/api/v1/:path*"
+      "destination": "https://api.elprode.ar/api/v1/:path*"
     }
   ]
 }

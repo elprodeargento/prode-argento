@@ -6,7 +6,7 @@ export function DashboardLink({ empresa }: { empresa: any }) {
   const [copied, setCopied] = useState(false)
   const [showQR, setShowQR] = useState(false)
 
-  const url = `${empresa?.slug ?? 'miempresa'}.prode.ar`
+  const url = `${empresa?.slug ?? 'miempresa'}.elprode.ar`
   const fullUrl = `https://${url}`
 
   const copy = () => {

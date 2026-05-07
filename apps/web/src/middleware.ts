@@ -3,12 +3,18 @@ import { updateSession } from '@/utils/supabase/middleware'
 
 const ROOT_DOMAINS = ['elprode.ar', 'localhost']
 
+const RESERVED_SLUGS = new Set([
+  'www', 'api', 'app', 'admin', 'mail', 'smtp', 'ftp', 'cdn',
+  'static', 'assets', 'media', 'dev', 'staging', 'test', 'demo',
+  'blog', 'docs', 'help', 'support', 'status', 'auth',
+])
+
 function getSlug(host: string): string | null {
   const bare = host.split(':')[0]
   for (const root of ROOT_DOMAINS) {
     if (bare.endsWith(`.${root}`)) {
       const slug = bare.slice(0, -(root.length + 1))
-      if (slug && slug !== 'www') return slug
+      if (slug && !RESERVED_SLUGS.has(slug)) return slug
     }
   }
   return null
