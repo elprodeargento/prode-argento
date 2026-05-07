@@ -26,5 +26,10 @@ export class CreateBusinessDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  background_url?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   primary_color?: string;
 }

@@ -1,6 +1,5 @@
 'use client'
-import { useState } from 'react'
-import { Card } from '@/components/ui/Card'
+import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ProdeApp } from './ProdeApp'
@@ -11,17 +10,41 @@ interface Empresa {
   slug: string
   primary_color: string
   logo_url: string | null
+  background_url?: string | null
   welcome_msg: string
-  prizes?: Array<{ rank: number; description: string }>
+  prizes?: Array<{ rank: number; medal: string; pos: string; description: string }>
 }
+
+interface Participant {
+  id: string
+  name: string
+  email: string
+  phone: string
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+const storageKey = (slug: string) => `prode:${slug}`
 
 export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const [step, setStep] = useState<'login' | 'app'>('login')
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '' })
-  const [remember, setRemember] = useState(false)
+  const [remember, setRemember] = useState(true)
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [apiError, setApiError] = useState('')
+  const [participant, setParticipant] = useState<Participant | null>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem(storageKey(empresa.slug))
+    if (stored) {
+      try {
+        const data = JSON.parse(stored) as Participant
+        setParticipant(data)
+        setStep('app')
+      } catch {}
+    }
+  }, [empresa.slug])
 
   const validate = () => {
     const e: Record<string, string> = {}
@@ -37,11 +60,44 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    await new Promise(r => setTimeout(r, 600))
-    setStep('app')
+    setApiError('')
+    try {
+      const res = await fetch(`${API_URL}/participants/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: empresa.slug, name: form.name, email: form.email, phone: form.phone }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? 'Error al unirse al prode')
+      }
+      const { participant: p } = await res.json()
+      const saved: Participant = { id: p.id, name: form.name, email: form.email, phone: form.phone }
+      setParticipant(saved)
+      if (remember) localStorage.setItem(storageKey(empresa.slug), JSON.stringify(saved))
+      setStep('app')
+    } catch (err: any) {
+      setApiError(err.message ?? 'Hubo un error. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (step === 'app') return <ProdeApp empresa={empresa} participant={form} />
+  if (step === 'app' && participant) {
+    return (
+      <ProdeApp
+        empresa={empresa}
+        participant={participant}
+        onLogout={() => {
+          localStorage.removeItem(storageKey(empresa.slug))
+          setParticipant(null)
+          setStep('login')
+          setForm({ name: '', email: '', phone: '' })
+          setTerms(false)
+        }}
+      />
+    )
+  }
 
   const color = empresa.primary_color ?? '#002B72'
 
@@ -49,7 +105,14 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
     <div className="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: color }}>
       <div className="w-full sm:max-w-sm bg-white sm:rounded-3xl overflow-hidden shadow-2xl">
         {/* Hero */}
-        <div className="p-8 text-center relative overflow-hidden" style={{ background: color }}>
+        <div className="p-8 text-center relative overflow-hidden" style={{
+          background: color,
+          ...(empresa.background_url ? {
+            backgroundImage: `url(${empresa.background_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          } : {}),
+        }}>
           <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
           <div className="relative z-10">
             <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
@@ -64,6 +127,12 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
         <div className="p-6">
           <div className="text-xl font-black text-slate-900 mb-1">¡Bienvenido!</div>
           <div className="text-sm text-slate-400 mb-5">Ingresá tus datos para participar del prode</div>
+
+          {apiError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-semibold">
+              {apiError}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input label="Tu nombre completo" placeholder="Ej: María González"
@@ -88,7 +157,6 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
               {errors.phone && <p className="text-xs text-red-500 font-semibold">{errors.phone}</p>}
             </div>
 
-            {/* Recordarme */}
             <label className="flex items-center gap-3 cursor-pointer select-none py-1">
               <div
                 onClick={() => setRemember(r => !r)}
@@ -99,7 +167,6 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
               <span className="text-sm font-semibold text-slate-700">Recordarme en este dispositivo</span>
             </label>
 
-            {/* Términos */}
             <div className={`flex items-start gap-3 cursor-pointer select-none py-1 ${errors.terms ? 'p-2 bg-red-50 rounded-xl' : ''}`}
               onClick={() => { setTerms(t => !t); setErrors(e => ({...e, terms: ''})) }}>
               <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center mt-0.5 transition-all flex-shrink-0

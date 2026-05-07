@@ -48,6 +48,43 @@ export class ParticipantsService {
     return data;
   }
 
+  async joinBySlug(slug: string, name: string, email: string, phone?: string) {
+    const { data: business, error: bizError } = await this.supabase.client
+      .from('businesses')
+      .select('id, name, primary_color, logo_url, plan')
+      .eq('slug', slug)
+      .single();
+
+    if (bizError || !business) throw new BadRequestException('Prode no encontrado');
+
+    if (business.plan === 'free') {
+      const { count } = await this.supabase.client
+        .from('participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('business_id', business.id);
+      if (count && count >= 5) throw new BadRequestException('Límite del plan gratuito alcanzado');
+    }
+
+    // Upsert: if email already registered, return existing participant
+    const { data: existing } = await this.supabase.client
+      .from('participants')
+      .select('*')
+      .eq('business_id', business.id)
+      .eq('email', email)
+      .single();
+
+    if (existing) return { participant: existing, business };
+
+    const { data, error } = await this.supabase.client
+      .from('participants')
+      .insert({ business_id: business.id, name, email, phone, accepted_terms: true })
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return { participant: data, business };
+  }
+
   async findAllByBusiness(businessId: string) {
     const { data, error } = await this.supabase.client
       .from('participants')

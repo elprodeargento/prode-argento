@@ -1,8 +1,16 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsString, IsEmail, IsOptional } from 'class-validator';
 import { ParticipantsService } from './participants.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
+
+class JoinDto {
+  @IsString() slug: string;
+  @IsString() name: string;
+  @IsEmail() email: string;
+  @IsOptional() @IsString() phone?: string;
+}
 
 @ApiTags('Participants')
 @Controller({ path: 'participants', version: '1' })
@@ -13,6 +21,12 @@ export class ParticipantsController {
   @ApiOperation({ summary: 'Register a new participant for a business' })
   create(@Body() createParticipantDto: CreateParticipantDto) {
     return this.participantsService.create(createParticipantDto);
+  }
+
+  @Post('join')
+  @ApiOperation({ summary: 'Join a prode by slug (participant registration)' })
+  join(@Body() dto: JoinDto) {
+    return this.participantsService.joinBySlug(dto.slug, dto.name, dto.email, dto.phone);
   }
 
   @Get('me')

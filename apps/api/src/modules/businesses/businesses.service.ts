@@ -52,9 +52,27 @@ export class BusinessesService {
   async updateByAdminId(adminId: string, updateBusinessDto: UpdateBusinessDto) {
     const business = await this.findOneByAdminId(adminId);
 
+    const payload: Record<string, unknown> = { ...updateBusinessDto }
+
+    // ig_hashtags is stored as text[] in the DB — always send as array
+    if (typeof payload['ig_hashtags'] === 'string') {
+      payload['ig_hashtags'] = (payload['ig_hashtags'] as string)
+        .split(/[\s,]+/)
+        .map(t => t.trim())
+        .filter(Boolean)
+    }
+
+    // registration_deadline: date string "YYYY-MM-DD" or "" → timestamptz or null
+    if ('registration_deadline' in payload) {
+      const d = payload['registration_deadline']
+      payload['registration_deadline'] = (d && typeof d === 'string' && d.length > 0)
+        ? new Date(d).toISOString()
+        : null
+    }
+
     const { data, error } = await this.supabase.client
       .from('businesses')
-      .update(updateBusinessDto)
+      .update(payload)
       .eq('id', business.id)
       .select()
       .single();

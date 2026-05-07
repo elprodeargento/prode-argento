@@ -27,8 +27,12 @@ const configSchema = z.object({
   primary_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Debe ser un color hex válido'),
   welcome_msg: z.string().optional(),
   registration_deadline: z.string().optional(),
-  close_minutes: z.number().min(0).max(60),
-  ig_hashtags: z.string().optional(),
+  close_minutes: z.coerce.number().min(0).max(60),
+  match_visibility: z.enum(['all', 'daily']).default('all'),
+  ig_hashtags: z.preprocess(
+    (v) => Array.isArray(v) ? (v as string[]).join(' ') : v,
+    z.string().optional()
+  ),
   auto_post_ig: z.boolean().default(false),
   notify_reminders: z.boolean().default(true),
   notify_results: z.boolean().default(true),
@@ -43,8 +47,11 @@ export function ConfigForm() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadingBg, setUploadingBg] = useState(false)
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [igConnected, setIgConnected] = useState(false)
   const [businessId, setBusinessId] = useState<string | undefined>()
 
@@ -67,7 +74,7 @@ export function ConfigForm() {
   })
 
   const primaryColor = watch('primary_color')
-  const showSaveBar = isDirty || saving || success
+  const showSaveBar = isDirty || saving || success || !!saveError
 
   useEffect(() => {
     async function fetchConfig() {
@@ -79,14 +86,17 @@ export function ConfigForm() {
         })
         if (res.ok) {
           const data = await res.json()
+          const str = (v: unknown, fallback = '') =>
+            Array.isArray(v) ? v.join(' ') : (v as string) || fallback
           reset({
-            name: data.name || '',
-            slug: data.slug || '',
-            primary_color: data.primary_color || '#002B72',
-            welcome_msg: data.welcome_msg || '',
+            name: str(data.name),
+            slug: str(data.slug),
+            primary_color: str(data.primary_color, '#002B72'),
+            welcome_msg: str(data.welcome_msg),
             registration_deadline: data.registration_deadline ? new Date(data.registration_deadline).toISOString().slice(0, 10) : '',
             close_minutes: data.close_minutes || 5,
-            ig_hashtags: data.ig_hashtags || '#ProdeMundial2026 #Mundial2026',
+            match_visibility: data.match_visibility ?? 'all',
+            ig_hashtags: str(data.ig_hashtags, '#ProdeMundial2026 #Mundial2026'),
             auto_post_ig: data.auto_post_ig || false,
             notify_reminders: data.notify_reminders ?? true,
             notify_results: data.notify_results ?? true,
@@ -94,6 +104,7 @@ export function ConfigForm() {
             notify_whatsapp: data.notify_whatsapp ?? false,
           })
           setLogoUrl(data.logo_url)
+          setBackgroundUrl(data.background_url ?? null)
           setBusinessId(data.id)
         }
       } catch (err) {
@@ -120,9 +131,25 @@ export function ConfigForm() {
     }
   }
 
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      setUploadingBg(true)
+      const url = await uploadToR2(file, businessId)
+      setBackgroundUrl(url)
+    } catch (err) {
+      console.error(err)
+      alert('Error subiendo imagen de fondo')
+    } finally {
+      setUploadingBg(false)
+    }
+  }
+
   const onSubmit = async (data: ConfigFormValues) => {
     try {
       setSaving(true)
+      setSaveError(null)
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch(`${apiUrl}/businesses/me`, {
@@ -131,13 +158,17 @@ export function ConfigForm() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ ...data, logo_url: logoUrl }),
+        body: JSON.stringify({ ...data, logo_url: logoUrl, background_url: backgroundUrl }),
       })
       if (res.ok) {
         setSuccess(true)
         setTimeout(() => setSuccess(false), 3000)
+      } else {
+        const body = await res.json().catch(() => ({}))
+        setSaveError(body?.message ?? `Error ${res.status}`)
       }
     } catch (err) {
+      setSaveError('No se pudo conectar con el servidor')
       console.error(err)
     } finally {
       setSaving(false)
@@ -147,7 +178,14 @@ export function ConfigForm() {
   if (loading) return <div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-slate-300" /></div>
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="config-form pb-24">
+    <form
+      onSubmit={handleSubmit(onSubmit, (validationErrors) => {
+        const [[field, err]] = Object.entries(validationErrors)
+        const msg = (err as { message?: string })?.message ?? 'Campo inválido'
+        setSaveError(`${field}: ${msg}`)
+      })}
+      className="config-form pb-24"
+    >
       {/* IDENTIDAD VISUAL */}
       <div className="config-section">
         <div className="config-section-head">
@@ -175,6 +213,33 @@ export function ConfigForm() {
                   <div className="logo-upload-text">Subir nuevo logo</div>
                   <div className="logo-upload-hint">PNG, SVG, JPG · máx 2MB</div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="field">
+            <div className="field-label">Imagen de fondo</div>
+            <div className="logo-preview-row">
+              <div className="h-16 w-24 rounded-xl border-2 border-[#DDE1EF] bg-[#F1F3F9] flex items-center justify-center overflow-hidden relative">
+                {backgroundUrl ? (
+                  <Image src={backgroundUrl} alt="Fondo" fill className="object-cover" />
+                ) : (
+                  <span className="text-2xl">🖼️</span>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="logo-upload">
+                  <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} />
+                  <div className="logo-upload-icon">📁</div>
+                  <div className="logo-upload-text">{uploadingBg ? 'Subiendo...' : 'Subir imagen de fondo'}</div>
+                  <div className="logo-upload-hint">Se muestra detrás del hero de bienvenida · JPG, PNG · máx 5MB</div>
+                </div>
+                {backgroundUrl && (
+                  <button type="button" onClick={() => setBackgroundUrl(null)}
+                    className="mt-2 text-xs font-bold text-red-500 hover:text-red-700">
+                    Quitar fondo
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -274,6 +339,62 @@ export function ConfigForm() {
                  </div>
                ))}
              </div>
+          </div>
+        </div>
+      </div>
+
+      {/* VISIBILIDAD DE PARTIDOS */}
+      <div className="config-section">
+        <div className="config-section-head">
+          <span className="config-section-icon">📅</span>
+          <div>
+            <div className="config-section-title">Visibilidad de partidos</div>
+            <div className="config-section-sub">¿Cuándo pueden pronosticar tus participantes?</div>
+          </div>
+        </div>
+        <div className="config-section-body">
+          <div className="flex flex-col gap-3">
+            {([
+              {
+                value: 'all',
+                icon: '🗓️',
+                title: 'Todos los partidos a la vez',
+                desc: 'Los participantes ven y pueden pronosticar todos los partidos del torneo desde el primer día.',
+              },
+              {
+                value: 'daily',
+                icon: '📆',
+                title: 'Día a día',
+                desc: 'Solo se muestran los partidos del día actual y los siguientes. Se van habilitando a medida que se acerca la fecha.',
+              },
+            ] as const).map(opt => {
+              const selected = watch('match_visibility') === opt.value
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setValue('match_visibility', opt.value, { shouldDirty: true })}
+                  className={`w-full text-left flex items-start gap-4 p-4 rounded-xl border-[1.5px] transition-all ${
+                    selected
+                      ? 'bg-[#EBF4FC] border-[#003FA3]'
+                      : 'bg-white border-[#DDE1EF] hover:border-[#B0BAD4]'
+                  }`}
+                >
+                  <span className="text-[24px] mt-0.5 shrink-0">{opt.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-[14px] font-black mb-0.5 ${selected ? 'text-[#003FA3]' : 'text-[#0D1A3A]'}`}>
+                      {opt.title}
+                    </div>
+                    <div className="text-[12px] font-medium text-[#5A6480] leading-snug">{opt.desc}</div>
+                  </div>
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                    selected ? 'border-[#003FA3] bg-[#003FA3]' : 'border-[#C8CEDF]'
+                  }`}>
+                    {selected && <div className="w-2 h-2 rounded-full bg-white" />}
+                  </div>
+                </button>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -404,20 +525,24 @@ export function ConfigForm() {
       </div>
 
       {/* SAVE BAR */}
-      <div className={`fixed bottom-6 left-[20px] lg:left-[280px] right-[20px] bg-[#002B72] text-white rounded-2xl p-[16px_22px] flex items-center justify-between shadow-[0_8px_48px_rgba(0,43,114,0.16)] z-[150] transition-all duration-300 transform ${showSaveBar ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}>
+      <div className={`fixed bottom-6 left-[20px] lg:left-[280px] right-[20px] rounded-2xl p-[16px_22px] flex items-center justify-between shadow-[0_8px_48px_rgba(0,43,114,0.16)] z-[150] transition-all duration-300 transform ${showSaveBar || saveError ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'} ${saveError ? 'bg-red-600' : 'bg-[#002B72]'} text-white`}>
         <div className="text-[14px] font-bold">
-          {success ? '✅ Cambios guardados correctamente' : '💡 Tenés cambios sin guardar'}
+          {success
+            ? '✅ Cambios guardados correctamente'
+            : saveError
+            ? `❌ ${saveError}`
+            : '💡 Tenés cambios sin guardar'}
         </div>
         <div className="flex items-center gap-3">
-          <button 
-            type="button" 
-            onClick={() => reset()}
+          <button
+            type="button"
+            onClick={() => { reset(); setSaveError(null) }}
             className="px-5 py-2.5 bg-white/15 hover:bg-white/25 rounded-xl text-[14px] font-extrabold transition-all"
           >
             Descartar
           </button>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={saving}
             className="px-5 py-2.5 bg-[#F5C518] text-[#002B72] hover:bg-[#FFD740] rounded-xl text-[14px] font-black transition-all disabled:opacity-50"
           >

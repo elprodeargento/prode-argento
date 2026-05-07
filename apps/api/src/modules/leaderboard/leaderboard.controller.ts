@@ -8,6 +8,14 @@ import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard'
 export class LeaderboardController {
   constructor(private readonly leaderboardService: LeaderboardService) {}
 
+  @Get('me/weekly')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get weekly leaderboard (Mon–Sun) for the current business' })
+  getMyWeeklyLeaderboard(@Req() req: any, @Query('offset') offset = 0) {
+    return this.leaderboardService.getWeeklyLeaderboard(req.user.id, Number(offset))
+  }
+
   @Get('me')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()

@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Put, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PrizesService } from './prizes.service';
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
@@ -21,6 +21,12 @@ class ReplacePrizesDto {
 @Controller({ path: 'prizes', version: '1' })
 export class PrizesController {
   constructor(private readonly prizesService: PrizesService) {}
+
+  @Get('business/:businessId')
+  @ApiOperation({ summary: 'Get prizes for a business (public)' })
+  findByBusiness(@Param('businessId') businessId: string) {
+    return this.prizesService.findByBusinessId(businessId);
+  }
 
   @Get('me')
   @UseGuards(SupabaseAuthGuard)

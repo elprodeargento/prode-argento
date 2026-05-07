@@ -15,6 +15,16 @@ export class PrizesService {
     return data ?? [];
   }
 
+  async findByBusinessId(businessId: string) {
+    const { data, error } = await this.supabase.client
+      .from('prizes')
+      .select('*')
+      .eq('business_id', businessId)
+      .order('rank', { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  }
+
   async replaceForAdminUser(adminUserId: string, prizes: Array<{ rank: number; description: string }>) {
     const { data: business, error: bizErr } = await this.supabase.client
       .from('businesses')

@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Send, Mail, MessageSquare, Loader2 } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Loader2, ImagePlus, X } from 'lucide-react'
+import { uploadToR2 } from '@/lib/storage/r2'
+import { WhatsAppSendModal } from './WhatsAppSendModal'
 
 const DEFAULT_MSG = '¡Che! ¿Ya cargaste tus pronósticos para la Fecha 2? Quedan solo 4 días. No te quedes sin tus puntos 😅⚽'
 
@@ -66,6 +66,24 @@ export function NotifForm() {
   const [sent, setSent] = useState(false)
   const [channel, setChannel] = useState<'email' | 'whatsapp'>('email')
   const [message, setMessage] = useState(DEFAULT_MSG)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [waOpen, setWaOpen] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const url = await uploadToR2(file)
+      setImageUrl(url)
+    } catch {
+      alert('Error al subir la imagen')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -132,6 +150,36 @@ export function NotifForm() {
           />
         </div>
 
+        {/* IMAGE ATTACHMENT — solo WhatsApp */}
+        {channel === 'whatsapp' && (
+          <div className="field">
+            <div className="field-label">Imagen adjunta (opcional)</div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            {imageUrl ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 h-24">
+                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setImageUrl(null)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm font-bold text-slate-500 hover:border-[#075E54] hover:text-[#075E54] transition-all disabled:opacity-50"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                {uploading ? 'Subiendo...' : 'Agregar imagen'}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* PREVIEW */}
         <div className="field">
           <div className="field-label uppercase text-[10px] tracking-widest text-[#8E96AE]">Vista previa</div>
@@ -142,20 +190,34 @@ export function NotifForm() {
           )}
         </div>
 
-        <button 
-          type="submit" 
-          disabled={loading || sent}
-          className="w-full bg-[#002B72] text-white text-[14px] font-black p-[14px] rounded-xl flex items-center justify-center gap-2 hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20 disabled:opacity-50"
-        >
-          {loading ? (
-            <>⏳ Enviando…</>
-          ) : sent ? (
-            <>✓ ¡Enviado!</>
-          ) : (
-            <>📤 Enviar mensaje</>
-          )}
-        </button>
+        {channel === 'whatsapp' ? (
+          <button
+            type="button"
+            onClick={() => setWaOpen(true)}
+            disabled={!message.trim()}
+            className="w-full text-white text-[14px] font-black p-[14px] rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg disabled:opacity-50"
+            style={{ background: '#25D366', boxShadow: '0 4px 16px rgba(37,211,102,0.3)' }}
+          >
+            💬 Ver vista previa y enviar por WhatsApp
+          </button>
+        ) : (
+          <button
+            type="submit"
+            disabled={loading || sent}
+            className="w-full bg-[#002B72] text-white text-[14px] font-black p-[14px] rounded-xl flex items-center justify-center gap-2 hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20 disabled:opacity-50"
+          >
+            {loading ? <>⏳ Enviando…</> : sent ? <>✓ ¡Enviado!</> : <>📤 Enviar mensaje</>}
+          </button>
+        )}
       </form>
+
+      <WhatsAppSendModal
+        open={waOpen}
+        onClose={() => setWaOpen(false)}
+        defaultMessage={message}
+        defaultImageUrl={imageUrl}
+        title="Enviar notificación por WhatsApp"
+      />
     </div>
   )
 }

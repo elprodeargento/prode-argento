@@ -1,18 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
-import { Badge } from '@/components/ui/Badge'
-import { Plus, Tag, Star, MapPin, X, UploadCloud, Eye, Info, Loader2 } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { X, Loader2, ImagePlus } from 'lucide-react'
+import { uploadToR2 } from '@/lib/storage/r2'
 
 interface Promo {
   id: string
+  name: string
   category: string
   description: string
   image_url?: string
   radius_km: number
+  valid_from?: string
   valid_until: string
   views: number
   active: boolean
@@ -22,19 +21,118 @@ const CATEGORIES = [
   '🍕 Gastronomía',
   '☕ Cafetería',
   '🛒 Supermercado',
-  '👕 Indumentaria',
-  '💻 Electrónica',
-  '💆 Salud y Bienestar',
-  '📚 Educación',
-  '🎭 Entretenimiento',
-  '🚗 Automotriz',
+  '💊 Farmacia',
+  '👗 Indumentaria',
+  '💆 Bienestar',
+  '📚 Librería',
+  '🎬 Entretenimiento',
   '🔧 Servicios',
+  '🏠 Hogar',
 ]
+
+const GRADIENT_BY_CAT: Record<string, string> = {
+  '🍕 Gastronomía':   'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
+  '☕ Cafetería':      'linear-gradient(135deg, #3d1a00, #8B4513)',
+  '🛒 Supermercado':  'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
+  '💊 Farmacia':      'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
+  '👗 Indumentaria':  'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
+  '💆 Bienestar':     'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
+  '📚 Librería':      'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
+  '🎬 Entretenimiento':'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
+  '🔧 Servicios':     'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
+  '🏠 Hogar':         'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
+}
+
+function PromoPreview({ name, description, category, radiusKm, imageUrl }: {
+  name: string; description: string; category: string; radiusKm: number; imageUrl: string | null
+}) {
+  const bg = GRADIENT_BY_CAT[category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)'
+  return (
+    <div
+      className="h-[88px] rounded-[14px] overflow-hidden relative flex items-center"
+      style={{ background: imageUrl ? undefined : bg }}
+    >
+      {imageUrl && (
+        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      <div
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)' }}
+      />
+      <div className="relative z-10 px-4 flex flex-col gap-1">
+        <span
+          className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full w-fit uppercase tracking-wider"
+          style={{ background: '#F5C518', color: '#002B72' }}
+        >
+          📍 {radiusKm < 1 ? `${radiusKm * 1000}m` : `${radiusKm} km`}
+        </span>
+        <div className="text-[14px] font-black text-white leading-tight">
+          {name || 'Tu negocio'}
+        </div>
+        <div className="text-[11px] font-semibold leading-tight" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          {description || 'El texto de tu promo aparece acá'}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const INITIAL_FORM = {
+  name: '',
+  category: CATEGORIES[0],
+  description: '',
+  radius_km: 1,
+  valid_from: '',
+  valid_until: '',
+}
 
 export function PromoManager() {
   const [promos, setPromos] = useState<Promo[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const url = await uploadToR2(file)
+      setImageUrl(url)
+    } catch {
+      alert('Error al subir la imagen')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      const { apiPost } = await import('@/lib/api')
+      const created = await apiPost<Promo>('/promos/me', { ...form, image_url: imageUrl })
+      setPromos(p => [created, ...p])
+      setShowForm(false)
+      setForm(INITIAL_FORM)
+      setImageUrl(null)
+    } catch (err) {
+      console.error('Error creating promo:', err)
+      alert('Error al crear la promo')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setShowForm(false)
+    setForm(INITIAL_FORM)
+    setImageUrl(null)
+  }
 
   useEffect(() => {
     async function fetchPromos() {
@@ -94,6 +192,161 @@ export function PromoManager() {
         </button>
       </div>
 
+      {/* FORMULARIO NUEVA PROMO */}
+      {showForm && (
+        <div className="card">
+          <div className="px-[18px] py-[14px] bg-[#F1F3F9] border-b-[1.5px] border-[#DDE1EF] flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-[20px]">✏️</span>
+              <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">Nueva promoción</h3>
+            </div>
+            <button onClick={handleCancel} className="text-[12px] font-bold text-[#5A6480] hover:text-[#D93025] transition-colors">
+              Cancelar
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4">
+
+            {/* Fila 1: Nombre + Categoría */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="field">
+                <div className="field-label">Nombre del negocio</div>
+                <input
+                  className="field-input"
+                  placeholder="Ej: Pizzería Don Carlo"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="field">
+                <div className="field-label">Categoría</div>
+                <select
+                  value={form.category}
+                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  className="field-input"
+                  required
+                >
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Fila 2: Texto de la promo */}
+            <div className="field">
+              <div className="field-label">Texto de la promo</div>
+              <input
+                className="field-input"
+                placeholder="Ej: 2x1 en pizzas todos los miércoles"
+                maxLength={60}
+                value={form.description}
+                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                required
+              />
+              <div className="flex justify-between mt-1">
+                <span className="text-[11px] text-[#8E96AE] font-medium">Sé directo y concreto</span>
+                <span className={`text-[11px] font-bold ${form.description.length > 50 ? 'text-amber-500' : 'text-[#8E96AE]'}`}>
+                  {form.description.length}/60
+                </span>
+              </div>
+            </div>
+
+            {/* Fila 3: Desde + Hasta + Radio */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="field">
+                <div className="field-label">Válida desde</div>
+                <input
+                  type="date"
+                  className="field-input"
+                  value={form.valid_from}
+                  onChange={e => setForm(f => ({ ...f, valid_from: e.target.value }))}
+                />
+              </div>
+              <div className="field">
+                <div className="field-label">Válida hasta</div>
+                <input
+                  type="date"
+                  className="field-input"
+                  value={form.valid_until}
+                  onChange={e => setForm(f => ({ ...f, valid_until: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="field">
+                <div className="field-label">Radio de alcance</div>
+                <select
+                  className="field-input"
+                  value={form.radius_km}
+                  onChange={e => setForm(f => ({ ...f, radius_km: Number(e.target.value) }))}
+                >
+                  <option value={0.5}>500 metros</option>
+                  <option value={1}>1 km</option>
+                  <option value={2}>2 km</option>
+                  <option value={5}>5 km</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Imagen de fondo */}
+            <div className="field">
+              <div className="field-label">
+                Imagen de fondo <span className="text-[#8E96AE] font-medium">(opcional)</span>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+              {imageUrl ? (
+                <div className="relative rounded-xl overflow-hidden border border-[#DDE1EF] h-20">
+                  <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImageUrl(null)}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full border-2 border-dashed border-[#C8CEDF] rounded-xl p-5 text-center hover:border-[#003FA3] transition-all group disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-[#DDE1EF] mx-auto mb-1" />
+                  ) : (
+                    <div className="text-[28px] mb-1.5">🖼️</div>
+                  )}
+                  <div className="text-[13px] font-bold text-[#003FA3] group-hover:underline">
+                    {uploading ? 'Subiendo...' : 'Subir imagen'}
+                  </div>
+                  <div className="text-[11px] text-[#8E96AE] mt-1">JPG o PNG · 1200×400px recomendado</div>
+                </button>
+              )}
+            </div>
+
+            {/* Preview en el carrusel */}
+            <div className="field">
+              <div className="field-label">Preview en el carrusel</div>
+              <PromoPreview
+                name={form.name}
+                description={form.description}
+                category={form.category}
+                radiusKm={form.radius_km}
+                imageUrl={imageUrl}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full bg-[#002B72] text-white text-[14px] font-black py-[14px] rounded-xl hover:bg-[#00318A] transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Publicando...</> : '✅ Publicar promo'}
+            </button>
+          </form>
+        </div>
+      )}
+
       {/* LISTA DE PROMOS ACTIVAS */}
       <div className="card">
         <div className="px-[18px] py-[14px] bg-[#F1F3F9] border-b-[1.5px] border-[#DDE1EF] flex items-center justify-between">
@@ -116,15 +369,18 @@ export function PromoManager() {
             return (
               <div
                 key={promo.id}
-                className={`border-[1.5px] border-[#DDE1EF] rounded-xl overflow-hidden ${!promo.active ? 'opacity-60' : ''}`}
+                className={`border-[1.5px] border-[#DDE1EF] rounded-xl overflow-hidden ${!promo.active ? 'opacity-70' : ''}`}
               >
                 <div
                   className="h-[72px] relative flex items-center px-4"
-                  style={{ background: 'linear-gradient(135deg, #1a3a5c, #2d6a8f)' }}
+                  style={{ background: promo.image_url ? undefined : (GRADIENT_BY_CAT[promo.category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)') }}
                 >
+                  {promo.image_url && (
+                    <img src={promo.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
                   <div className="relative z-10">
-                    <div className="text-[13px] font-[900] text-white leading-tight">{promo.category}</div>
+                    <div className="text-[13px] font-[900] text-white leading-tight">{promo.name || promo.category}</div>
                     <div className="text-[11px] text-white/80 font-medium leading-tight mt-0.5">{promo.description}</div>
                   </div>
                 </div>
@@ -139,6 +395,14 @@ export function PromoManager() {
                     <span className="text-[11px] font-bold text-[#8E96AE] bg-[#F1F3F9] px-2 py-0.5 rounded-full">⏰ Hasta {until}</span>
                     <span className="text-[11px] font-bold text-[#8E96AE] bg-[#F1F3F9] px-2 py-0.5 rounded-full">👁️ {promo.views} vistas</span>
                   </div>
+                  {!promo.active && (
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="text-[12px] font-black text-[#003FA3] border-[1.5px] border-[#DDE1EF] px-3 py-1 rounded-lg hover:bg-[#EBF4FC] transition-all whitespace-nowrap"
+                    >
+                      🔄 Renovar
+                    </button>
+                  )}
                 </div>
               </div>
             )

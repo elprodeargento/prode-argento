@@ -8,7 +8,7 @@ const LOCK_MINUTES_BEFORE = 5
 export class PredictionsService {
   constructor(private supabase: SupabaseService) {}
 
-  async savePredictions(dto: SavePredictionsDto, userId: string) {
+  async savePredictions(dto: SavePredictionsDto) {
     // Verify participant belongs to business
     const { data: participant } = await this.supabase.client
       .from('participants')

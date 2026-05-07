@@ -1,32 +1,34 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { LogOut } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import { apiGet } from '@/lib/api'
 
 const navGroups = [
   {
     label: 'Principal',
     items: [
-      { href: '/empresa/dashboard', icon: '🏠', label: 'Inicio', iconColor: '#003FA3' },
-      { href: '/empresa/participantes', icon: '👥', label: 'Participantes', badge: '87', iconColor: '#18A06A' },
-      { href: '/empresa/ranking', icon: '🏆', label: 'Ranking', iconColor: '#F5C518' },
-      { href: '/empresa/partidos', icon: '⚽', label: 'Partidos', iconColor: '#003FA3' },
+      { href: '/empresa/dashboard', icon: '🏠', label: 'Inicio', iconColor: '#003FA3', badgeKey: null },
+      { href: '/empresa/participantes', icon: '👥', label: 'Participantes', iconColor: '#18A06A', badgeKey: 'participants' },
+      { href: '/empresa/ranking', icon: '🏆', label: 'Ranking', iconColor: '#F5C518', badgeKey: null },
+      { href: '/empresa/partidos', icon: '⚽', label: 'Partidos', iconColor: '#003FA3', badgeKey: null },
     ]
   },
   {
     label: 'Gestión',
     items: [
-      { href: '/empresa/configuracion', icon: '⚙️', label: 'Configuración', iconColor: '#003FA3' },
-      { href: '/empresa/premios', icon: '🎁', label: 'Premios', iconColor: '#F5C518' },
-      { href: '/empresa/notificaciones', icon: '🔔', label: 'Notificaciones', iconColor: '#D93025' },
-      { href: '/empresa/promos', icon: '🏷️', label: 'Mis Promos', iconColor: '#18A06A' },
+      { href: '/empresa/configuracion', icon: '⚙️', label: 'Configuración', iconColor: '#003FA3', badgeKey: null },
+      { href: '/empresa/premios', icon: '🎁', label: 'Premios', iconColor: '#F5C518', badgeKey: null },
+      { href: '/empresa/notificaciones', icon: '🔔', label: 'Notificaciones', iconColor: '#D93025', badgeKey: null },
+      { href: '/empresa/promos', icon: '🏷️', label: 'Mis Promos', iconColor: '#18A06A', badgeKey: null },
     ]
   },
   {
     label: 'Cuenta',
     items: [
-      { href: '/empresa/ayuda', icon: '❓', label: 'Ayuda', iconColor: '#5A6480' },
+      { href: '/empresa/ayuda', icon: '❓', label: 'Ayuda', iconColor: '#5A6480', badgeKey: null },
     ]
   }
 ]
@@ -35,6 +37,13 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
   const path = usePathname()
   const router = useRouter()
   const supabase = createClient()
+  const [badges, setBadges] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    apiGet<{ data: unknown[]; total: number }>('/participants/me?page=1&limit=1')
+      .then(res => setBadges({ participants: String(res.total) }))
+      .catch(() => {})
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -89,9 +98,9 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
                       {item.icon}
                     </span>
                     <span className="flex-1">{item.label}</span>
-                    {item.badge && (
+                    {item.badgeKey && badges[item.badgeKey] && (
                       <span className="bg-[#F5C518] text-[#002B72] text-[11px] font-black px-2 py-0.5 rounded-full min-w-[22px] text-center shadow-sm">
-                        {item.badge}
+                        {badges[item.badgeKey]}
                       </span>
                     )}
                   </Link>

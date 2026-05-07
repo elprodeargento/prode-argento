@@ -1,0 +1,178 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { apiPost, apiGet } from '@/lib/api'
+import { Check } from 'lucide-react'
+
+type Plan = 'free' | 'premium' | 'pro'
+
+interface Business { plan: Plan }
+
+const PLANS = [
+  {
+    id: 'free' as Plan,
+    name: 'Gratuito',
+    price: 0,
+    priceLabel: 'Gratis',
+    color: '#5A6480',
+    features: [
+      'Hasta 5 participantes',
+      'Partidos de grupo',
+      'Ranking en tiempo real',
+      'Página pública personalizada',
+    ],
+    cta: 'Plan actual',
+    highlight: false,
+  },
+  {
+    id: 'premium' as Plan,
+    name: 'Premium',
+    price: 4999,
+    priceLabel: '$4.999/mes',
+    color: '#002B72',
+    features: [
+      'Hasta 50 participantes',
+      'Todo lo del plan gratuito',
+      'Logo y fondo personalizados',
+      'Notificaciones automáticas',
+      'Soporte prioritario',
+    ],
+    cta: 'Contratar Premium',
+    highlight: true,
+  },
+  {
+    id: 'pro' as Plan,
+    name: 'Pro',
+    price: 9999,
+    priceLabel: '$9.999/mes',
+    color: '#F5C518',
+    colorText: '#002B72',
+    features: [
+      'Participantes ilimitados',
+      'Todo lo del plan Premium',
+      'Estadísticas avanzadas',
+      'API de integración',
+      'Gerente de cuenta dedicado',
+    ],
+    cta: 'Contratar Pro',
+    highlight: false,
+  },
+]
+
+export function PlanesClient() {
+  const searchParams = useSearchParams()
+  const [currentPlan, setCurrentPlan] = useState<Plan>('free')
+  const [loading, setLoading] = useState<Plan | null>(null)
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+
+  useEffect(() => {
+    apiGet<Business>('/businesses/me')
+      .then(b => setCurrentPlan(b.plan))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const status = searchParams.get('status')
+    const plan = searchParams.get('plan')
+    if (status === 'approved' && plan) {
+      setToast({ msg: `¡Plan ${plan} activado correctamente!`, type: 'success' })
+      setCurrentPlan(plan as Plan)
+      setTimeout(() => setToast(null), 5000)
+    } else if (status === 'error') {
+      setToast({ msg: 'Hubo un error con el pago. Intentá de nuevo.', type: 'error' })
+      setTimeout(() => setToast(null), 5000)
+    }
+  }, [searchParams])
+
+  const handleCheckout = async (plan: Plan) => {
+    if (plan === 'free') return
+    setLoading(plan)
+    try {
+      const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan })
+      window.location.href = initPoint
+    } catch (e: any) {
+      setToast({ msg: e.message ?? 'Error al iniciar el pago', type: 'error' })
+      setTimeout(() => setToast(null), 4000)
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  return (
+    <>
+      {toast && (
+        <div className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-2xl shadow-xl font-bold text-white text-sm
+          ${toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          {toast.msg}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl">
+        {PLANS.map(plan => {
+          const isCurrent = currentPlan === plan.id
+          const isUpgrade = plan.id !== 'free' && !isCurrent
+          const isLoading = loading === plan.id
+
+          return (
+            <div
+              key={plan.id}
+              className={`relative rounded-3xl border-2 p-6 flex flex-col gap-5 transition-all
+                ${plan.highlight ? 'border-[#002B72] shadow-[0_8px_40px_rgba(0,43,114,0.15)]' : 'border-[#DDE1EF] bg-white'}
+                ${isCurrent ? 'ring-2 ring-green-400 ring-offset-2' : ''}`}
+              style={plan.highlight ? { background: '#F5F8FF' } : {}}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-xs font-black px-4 py-1 rounded-full">
+                  MÁS POPULAR
+                </div>
+              )}
+
+              {isCurrent && (
+                <div className="absolute -top-3 right-4 bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full">
+                  TU PLAN
+                </div>
+              )}
+
+              <div>
+                <div className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: plan.color }}>
+                  {plan.name}
+                </div>
+                <div className="font-bebas text-4xl text-[#0D1A3A]">{plan.priceLabel}</div>
+                {plan.price > 0 && (
+                  <div className="text-xs text-[#8E96AE] font-medium mt-0.5">por mes · IVA incluido</div>
+                )}
+              </div>
+
+              <ul className="flex flex-col gap-2.5 flex-1">
+                {plan.features.map(f => (
+                  <li key={f} className="flex items-start gap-2 text-sm text-[#2D3A5A] font-medium">
+                    <Check className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => isUpgrade && handleCheckout(plan.id)}
+                disabled={isCurrent || isLoading || plan.id === 'free'}
+                className={`w-full py-3 rounded-2xl font-black text-sm transition-all
+                  ${isCurrent
+                    ? 'bg-green-100 text-green-700 cursor-default'
+                    : plan.id === 'free'
+                    ? 'bg-[#F1F3F9] text-[#8E96AE] cursor-default'
+                    : 'text-white hover:opacity-90 disabled:opacity-60'}`}
+                style={isUpgrade && !isCurrent ? { background: plan.color, color: plan.colorText ?? 'white' } : {}}
+              >
+                {isLoading ? 'Redirigiendo...' : isCurrent ? '✓ Plan actual' : plan.cta}
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      <p className="text-xs text-[#8E96AE] mt-2">
+        Los pagos se procesan de forma segura a través de Mercado Pago. Podés cancelar en cualquier momento.
+      </p>
+    </>
+  )
+}

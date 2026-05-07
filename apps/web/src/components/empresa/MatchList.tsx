@@ -20,6 +20,13 @@ interface Match {
   total_participants?: number
 }
 
+function Flag({ src, className = 'w-6 h-6' }: { src: string; className?: string }) {
+  if (src?.startsWith('http')) {
+    return <img src={src} alt="" className={`object-contain ${className}`} />
+  }
+  return <span>{src}</span>
+}
+
 interface DateGroup {
   label: string
   status: 'finished' | 'live' | 'scheduled'
@@ -115,7 +122,7 @@ export function MatchList() {
                   <div className="flex items-center gap-4 flex-1">
                     <div className="flex items-center gap-2 flex-1 justify-end">
                       <span className="text-[14px] font-extrabold text-[#0D1A3A] truncate">{match.home_team}</span>
-                      <span className="text-[22px]">{match.home_flag}</span>
+                      <Flag src={match.home_flag} className="w-6 h-6 shrink-0" />
                     </div>
 
                     <div className="flex items-center justify-center min-w-[70px]">
@@ -131,7 +138,7 @@ export function MatchList() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-[22px]">{match.away_flag}</span>
+                      <Flag src={match.away_flag} className="w-6 h-6 shrink-0" />
                       <span className="text-[14px] font-extrabold text-[#0D1A3A] truncate">{match.away_team}</span>
                     </div>
                   </div>

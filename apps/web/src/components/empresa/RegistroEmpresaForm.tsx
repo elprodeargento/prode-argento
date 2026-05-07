@@ -18,7 +18,7 @@ export function RegistroEmpresaForm() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/empresa/onboarding` },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/empresa/onboarding` },
     })
     if (error) setError(error.message)
     setLoading(false)

@@ -17,11 +17,11 @@ export function LoginEmpresaForm() {
     setLoading(true)
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/empresa/dashboard` },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError('')
