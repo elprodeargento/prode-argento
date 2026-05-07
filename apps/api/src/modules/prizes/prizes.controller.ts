@@ -43,4 +43,20 @@ export class PrizesController {
   replaceMine(@Req() req: any, @Body() body: ReplacePrizesDto) {
     return this.prizesService.replaceForAdminUser(req.user.id, body.prizes);
   }
+
+  @Get('weekly/me')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get weekly prizes for the current business' })
+  findWeeklyMine(@Req() req: any) {
+    return this.prizesService.findWeeklyByAdminUserId(req.user.id)
+  }
+
+  @Put('weekly/me')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Replace weekly prizes for a specific week' })
+  replaceWeeklyMine(@Req() req: any, @Body() body: { weekIndex: number; prizes: Array<{ rank: number; description: string }> }) {
+    return this.prizesService.replaceWeeklyForAdminUser(req.user.id, body.weekIndex, body.prizes)
+  }
 }
