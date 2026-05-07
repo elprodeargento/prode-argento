@@ -3,6 +3,7 @@ services:
     name: prode-api
     env: docker
     dockerfilePath: apps/api/Dockerfile
+    dockerContext: .
     healthCheckPath: /api/
     envVars:
       - key: NODE_ENV
