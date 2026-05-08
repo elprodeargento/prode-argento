@@ -99,8 +99,10 @@ export function DashboardNextMatch() {
           </div>
         ) : (
           <>
-            <div className="text-[32px] mb-[10px]">
-              {match.home_flag} 🆚 {match.away_flag}
+            <div className="flex items-center justify-center gap-3 mb-[10px]">
+              <img src={match.home_flag} alt={match.home_team} className="w-10 h-10 rounded-full object-cover border border-[#DDE1EF]" />
+              <span className="text-[20px]">🆚</span>
+              <img src={match.away_flag} alt={match.away_team} className="w-10 h-10 rounded-full object-cover border border-[#DDE1EF]" />
             </div>
             <div className="text-[16px] font-black text-[#0D1A3A] mb-[6px]">
               {match.home_team} vs {match.away_team}
