@@ -110,7 +110,7 @@ export function OnboardingWizard() {
         <Card className="w-full max-w-sm p-8 text-center animate-in fade-in zoom-in duration-300">
           <span className="text-6xl mb-4 block">🎉</span>
           <h2 className="font-bebas text-4xl text-[#002B72] tracking-wider mb-2">¡TODO LISTO!</h2>
-          <p className="text-slate-500 text-sm mb-8 font-semibold">Tu prode está activo y listo para compartir</p>
+          <p className="text-slate-500 text-sm mb-8 font-semibold">Compartí el link con tus clientes y empezá a generar visitas a tu local desde el primer partido.</p>
 
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 mb-4 border border-slate-200">
             <span className="flex-1 text-left text-sm font-black text-[#002B72] truncate italic">
@@ -161,7 +161,7 @@ export function OnboardingWizard() {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-black text-[#0D1A3A]">🎮 Free</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para jugar con amigos</p>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para empezar sin costo</p>
                   </div>
                   <div className="text-right">
                     <div className="font-bebas text-2xl text-slate-400">$0</div>
@@ -169,62 +169,51 @@ export function OnboardingWizard() {
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-3">
-                  {['Hasta 5 jugadores', 'Link y QR del prode', 'Ranking básico'].map(f => (
+                  {['Hasta 5 participantes', 'Todo el mundial', 'Ranking en tiempo real', 'Página pública con tu marca'].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
-                  ))}
-                  {['Sin panel de datos', 'Sin notificaciones'].map(f => (
-                    <div key={f} className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>{f}</div>
                   ))}
                 </div>
                 <div className="bg-slate-100 rounded-xl py-2 text-center text-[12px] font-black text-slate-400">Tu plan actual ✓</div>
               </div>
 
-              {/* PREMIUM */}
-              <div className="border-2 border-[#002B72] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(0,48,135,0.03),rgba(116,172,223,0.04))' }}>
+              {/* PRO */}
+              <div className="border-2 border-[#002B72] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(0,43,114,0.03),rgba(116,172,223,0.04))' }}>
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-black text-[#002B72]">⭐ Premium</h4>
+                    <h4 className="font-black text-[#002B72]">⭐ Pro</h4>
                     <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para comercios que juegan en serio</p>
                   </div>
                   <div className="text-right">
-                    <div className="font-bebas text-2xl text-[#002B72]">USD 15</div>
-                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                    <div className="font-bebas text-2xl text-[#002B72]">$40.000</div>
+                    <div className="text-[10px] text-slate-400 font-bold">pago único</div>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {['Jugadores ilimitados', 'Panel con datos completos', 'Notificaciones por email', 'Exportar ranking CSV', 'Estadísticas de participación'].map(f => (
+                  {['Participantes ilimitados', 'Todo lo del plan Free', 'Premios semanales configurables', 'Notificaciones por WhatsApp', 'Publicar podio en Instagram', 'QR descargable para tu local', 'Exportar lista de participantes'].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
-                  <div className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>Sin promos geolocalizadas</div>
                 </div>
-                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Activar Premium — USD 15 →</button>
+                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Contratar Pro — $40.000 →</button>
               </div>
 
-              {/* PRO */}
-              <div className="border-2 rounded-2xl p-4 text-left" style={{ borderColor: '#2d1a6e', background: 'linear-gradient(135deg,rgba(45,26,110,0.04),rgba(0,48,135,0.04))' }}>
+              {/* PREMIUM */}
+              <div className="border-2 border-[#F5C518] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(245,197,24,0.05),rgba(0,43,114,0.03))' }}>
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-black" style={{ color: '#2d1a6e' }}>📍 Pro</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para negocios que quieren clientes del barrio</p>
+                    <h4 className="font-black text-[#002B72]">🏆 Premium</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Máxima visibilidad para tu local</p>
                   </div>
                   <div className="text-right">
-                    <div className="font-bebas text-2xl" style={{ color: '#2d1a6e' }}>USD 25</div>
-                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                    <div className="font-bebas text-2xl text-[#002B72]">$80.000</div>
+                    <div className="text-[10px] text-slate-400 font-bold">pago único</div>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {[
-                    ['✅', 'Todo lo de Premium'],
-                    ['📍', 'Promos geolocalizadas entre prodes'],
-                    ['💬', 'Notificaciones por WhatsApp'],
-                    ['🏷️', 'Sin marca ProdeApp'],
-                    ['📊', 'Estadísticas avanzadas'],
-                    ['🎯', 'Soporte prioritario'],
-                  ].map(([icon, text]) => (
-                    <div key={text} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>{icon}</span>{text}</div>
+                  {['Todo lo del plan Pro', 'Publicidad geolocalizada en la zona', 'Estadísticas de visualizaciones', 'Soporte por WhatsApp', 'Exportar lista de participantes'].map(f => (
+                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
                 </div>
-                <button className="w-full py-3 rounded-full text-white text-[13px] font-black shadow-lg" style={{ background: 'linear-gradient(135deg,#2d1a6e,#003087)', boxShadow: '0 4px 20px rgba(45,26,110,0.28)' }}>Activar Pro — USD 25 →</button>
+                <button className="w-full py-3 rounded-full bg-[#F5C518] text-[#002B72] text-[13px] font-black shadow-lg">Contratar Premium — $80.000 →</button>
               </div>
             </div>
           )}
@@ -234,7 +223,7 @@ export function OnboardingWizard() {
               onClick={() => router.push('/empresa/dashboard')}
               className="w-full bg-[#002B72] text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
             >
-              IR AL PANEL →
+              IR A MI PANEL →
             </button>
             <button 
               onClick={() => router.push('/empresa/configuracion')}
@@ -266,10 +255,13 @@ export function OnboardingWizard() {
         {/* LOGO */}
         <Card className="p-6">
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="text-xl">🖼️</span> LOGO DE LA EMPRESA <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
+            <span className="text-xl">🖼️</span> LOGO DE TU COMERCIO <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
           </h3>
-          
-          <div 
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            Tus clientes van a ver tu marca en cada partido. Hacé que te recuerden.
+          </p>
+
+          <div
             onClick={() => document.getElementById('logo-input')?.click()}
             className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center cursor-pointer hover:bg-blue-50 hover:border-[#002B72] transition-all group"
           >
@@ -296,7 +288,10 @@ export function OnboardingWizard() {
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="text-xl">🎨</span> COLOR PRINCIPAL
           </h3>
-          
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            El color de tu comercio va a estar en toda la experiencia del prode.
+          </p>
+
           <div className="grid grid-cols-6 gap-3 mb-6">
             {['#003087', '#74ACDF', '#F6C543', '#C8102E', '#1B5E20', '#111111'].map(c => (
               <button 
@@ -333,6 +328,9 @@ export function OnboardingWizard() {
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="text-xl">🏆</span> PREMIOS
           </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            Los premios son la razón por la que tus clientes van a volver a tu local a ver los resultados.
+          </p>
 
           <div className="flex items-center justify-between mb-6">
             <span className="text-sm font-extrabold text-[#0D1A3A]">¿Cuántos ganadores?</span>
@@ -384,7 +382,7 @@ export function OnboardingWizard() {
                   <div className="w-14 h-14 mx-auto mb-4 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">
                     {logoUrl ? <img src={logoUrl} className="w-full h-full object-cover rounded-2xl" alt="Logo" /> : '⚽'}
                   </div>
-                  <h4 className="font-bebas text-2xl text-white tracking-widest truncate">{name || 'TU EMPRESA'}</h4>
+                  <h4 className="font-bebas text-2xl text-white tracking-widest truncate">{name || 'TU COMERCIO'}</h4>
                   <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Prode Mundial 2026</p>
                 </div>
              </div>
