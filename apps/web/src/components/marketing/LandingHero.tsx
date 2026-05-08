@@ -34,7 +34,7 @@ export function LandingHero() {
         <div className="flex justify-center gap-8 mt-10">
           {[["5'", "Para configurar"], ["ilimitados", "Participantes"], ["$0", "Para empezar"]].map(([num, label]) => (
             <div key={label} className="text-center">
-              <div className={`font-bebas text-[#F5C518] ${num === 'ilimitados' ? 'text-xl' : 'text-3xl'}`}>{num}</div>
+              <div className={`font-bebas text-[#F5C518] h-9 flex items-center justify-center ${num === 'ilimitados' ? 'text-xl' : 'text-3xl'}`}>{num}</div>
               <div className="text-white/50 text-xs font-bold uppercase tracking-wide">{label}</div>
             </div>
           ))}
