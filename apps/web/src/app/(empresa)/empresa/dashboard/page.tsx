@@ -5,6 +5,8 @@ import { DashboardNextMatch } from '@/components/empresa/DashboardNextMatch'
 import { DashboardActivity } from '@/components/empresa/DashboardActivity'
 import { DashboardWeeklyPrize } from '@/components/empresa/DashboardWeeklyPrize'
 import { DashboardUpgradeBanner } from '@/components/empresa/DashboardUpgradeBanner'
+import { DashboardChecklist } from '@/components/empresa/DashboardChecklist'
+import { DashboardTips } from '@/components/empresa/DashboardTips'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -55,13 +57,15 @@ export default async function EmpresaDashboardPage() {
           <p className="text-[14px] text-[#5A6480] font-medium">Tu comercio hoy</p>
         </div>
       </div>
+      <DashboardChecklist business={business} />
       <DashboardStats stats={dashboardStats} empresa={business} />
-      <DashboardUpgradeBanner plan={business.plan} total={dashboardStats.total_participants} />
+      <DashboardUpgradeBanner plan={business.plan} total={dashboardStats.total_participants || 0} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardLink empresa={business} />
         <DashboardNextMatch />
       </div>
       <DashboardWeeklyPrize businessId={business.id} />
+      <DashboardTips />
       <DashboardActivity />
     </div>
   )
