@@ -38,7 +38,7 @@ export function DashboardRanking() {
           .limit(5)
 
         if (cached && cached.length > 0) {
-          setRanking(cached as LeaderboardEntry[])
+          setRanking(cached as unknown as LeaderboardEntry[])
           return
         }
 
