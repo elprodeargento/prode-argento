@@ -25,10 +25,10 @@ export function DashboardStats({ stats, empresa }: { stats: any; empresa: any })
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard icon="👥" value={stats?.total_participants || 0} label="Participantes" color="bg-[#E6EEF9]" />
-      <StatCard icon="✅" value={stats?.predictions_loaded || 0} label="Participantes activos" badge={`${coverage}%`} color="bg-[#E8F8F1]" badgeType="up" />
-      <StatCard icon="⚽" value={0} label="Partidos jugados" color="bg-[#FEF8D8]" />
-      <StatCard icon="📊" value={stats?.predictions_loaded || 0} label="Pronósticos cargados" color="bg-[#EBF4FC]" />
+      <StatCard icon="👥" value={stats?.total_participants || 0} label="Clientes en tu prode" color="bg-[#E6EEF9]" />
+      <StatCard icon="✅" value={stats?.predictions_loaded || 0} label="Participantes activos" badge={`${coverage}%`} badgeType="up" color="bg-[#E8F8F1]" />
+      <StatCard icon="🆕" value={stats?.new_today || 0} label="Nuevos hoy" color="bg-[#FEF8D8]" badge={stats?.new_today > 0 ? '+' + stats.new_today : undefined} badgeType="up" />
+      <StatCard icon="👁️" value={stats?.weekly_visits || 0} label="Visitas esta semana" color="bg-[#EBF4FC]" />
     </div>
   )
 }

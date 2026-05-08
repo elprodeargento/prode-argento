@@ -3,6 +3,8 @@ import { DashboardLink } from '@/components/empresa/DashboardLink'
 import { DashboardRanking } from '@/components/empresa/DashboardRanking'
 import { DashboardNextMatch } from '@/components/empresa/DashboardNextMatch'
 import { DashboardActivity } from '@/components/empresa/DashboardActivity'
+import { DashboardWeeklyPrize } from '@/components/empresa/DashboardWeeklyPrize'
+import { DashboardUpgradeBanner } from '@/components/empresa/DashboardUpgradeBanner'
 import { createClient } from '@/utils/supabase/server'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -50,18 +52,17 @@ export default async function EmpresaDashboardPage() {
           <h1 className="text-[26px] font-[900] text-[#0D1A3A] mb-1">
             ¡Buen día, {(user.user_metadata?.full_name || user.user_metadata?.name || user.email)?.split(/[ @]/)[0]}! 👋
           </h1>
-          <p className="text-[14px] text-[#5A6480] font-medium">Acá está todo lo que pasa en tu prode hoy</p>
+          <p className="text-[14px] text-[#5A6480] font-medium">Tu comercio hoy</p>
         </div>
       </div>
       <DashboardStats stats={dashboardStats} empresa={business} />
+      <DashboardUpgradeBanner plan={business.plan} total={dashboardStats.total_participants} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardLink empresa={business} />
         <DashboardNextMatch />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardActivity />
-        <DashboardRanking />
-      </div>
+      <DashboardWeeklyPrize businessId={business.id} />
+      <DashboardActivity />
     </div>
   )
 }
