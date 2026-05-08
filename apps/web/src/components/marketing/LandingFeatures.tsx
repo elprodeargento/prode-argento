@@ -1,10 +1,10 @@
 const features = [
-  { icon: '🎨', title: 'Tu marca', desc: 'Logo, colores y link personalizado' },
-  { icon: '🏆', title: 'Premios', desc: 'Configurá qué gana cada puesto' },
-  { icon: '📱', title: 'QR listo', desc: 'Compartí al instante por WhatsApp' },
-  { icon: '📊', title: 'Ranking vivo', desc: 'Actualizado partido a partido' },
-  { icon: '🔔', title: 'Recordatorios', desc: 'WhatsApp antes de cada fecha' },
-  { icon: '📍', title: 'Promos geo', desc: 'Tu negocio en el carrusel de la zona' },
+  { icon: '🎨', title: 'Tu marca', desc: 'Tus clientes ven tu logo y colores en cada partido' },
+  { icon: '🏆', title: 'Premios', desc: 'Un regalo simple que trae al ganador de vuelta a tu local' },
+  { icon: '📱', title: 'QR listo', desc: 'Pegalo en tu local o compartilo por WhatsApp en segundos' },
+  { icon: '📊', title: 'Ranking vivo', desc: 'Tus clientes vuelven a ver cómo van — y se acuerdan de vos' },
+  { icon: '🔔', title: 'Recordatorios', desc: 'Contacto directo con tus clientes antes de cada partido' },
+  { icon: '📍', title: 'Promos geo', desc: 'Tu negocio visible para todos los clientes de la zona' },
 ]
 
 export function LandingFeatures() {

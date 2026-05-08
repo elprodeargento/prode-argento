@@ -24,7 +24,7 @@ export function LandingHero() {
           PRODE<br /><span className="text-[#F5C518]">MUNDIAL</span><br />2026
         </h1>
         <p className="text-white/70 text-lg font-semibold mb-8 leading-relaxed">
-          Armá el prode oficial de tu empresa en minutos. Tus empleados juegan, vos los fidelizás.
+          Creá tu propio prode con la imagen de tu negocio en minutos. Tus clientes juegan, vos vendés más.
         </p>
         <Link href="/empresa/registro">
           <Button size="lg" className="w-full rounded-full font-black text-[#002B72] !bg-[#F5C518] hover:!bg-yellow-300 shadow-xl">
