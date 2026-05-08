@@ -72,13 +72,18 @@ export function WhatsAppSendModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
-      style={{ paddingTop: 'env(safe-area-inset-top, 44px)', paddingBottom: 'env(safe-area-inset-bottom, 34px)', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
+      className="fixed inset-0 z-50 flex flex-col justify-end sm:justify-center sm:items-center sm:p-4"
+      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-[480px] max-h-[90vh] overflow-y-auto shadow-2xl"
-        style={{ animation: 'waSlideIn 0.3s cubic-bezier(0.34,1.1,0.64,1)' }}
+        className="bg-white w-full sm:max-w-[480px] sm:rounded-2xl overflow-y-auto shadow-2xl"
+        style={{
+          maxHeight: '90dvh',
+          borderRadius: '20px 20px 0 0',
+          paddingBottom: 'env(safe-area-inset-bottom, 16px)',
+          animation: 'waSlideIn 0.3s cubic-bezier(0.34,1.1,0.64,1)',
+        }}
       >
         <style>{`
           @keyframes waSlideIn {
@@ -86,6 +91,11 @@ export function WhatsAppSendModal({
             to   { transform: none; opacity: 1; }
           }
         `}</style>
+
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="w-10 h-1 rounded-full bg-slate-200" />
+        </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
