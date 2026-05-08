@@ -196,7 +196,7 @@ export function WhatsAppSendModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-2.5 px-6 pb-6 pt-2">
+        <div className="flex gap-2.5 px-6 pt-2" style={{ paddingBottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))' }}>
           <button onClick={onClose}
             className="flex-1 py-3 rounded-xl border border-slate-200 text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors">
             Cancelar
