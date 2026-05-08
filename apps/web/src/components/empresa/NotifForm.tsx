@@ -45,7 +45,7 @@ function EmailPreview({ message }: { message: string }) {
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
           <span className="w-14 text-right text-slate-400">Para:</span>
-          <span className="text-slate-700">participantes@empresa.com</span>
+          <span className="text-slate-700">participantes@comercio.com</span>
         </div>
         <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
           <span className="w-14 text-right text-slate-400">Asunto:</span>

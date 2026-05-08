@@ -614,7 +614,7 @@ export function PrizeManager() {
       <IgPublishModal
         open={igModalOpen}
         onClose={() => setIgModalOpen(false)}
-        empresa="MI EMPRESA"
+        empresa="MI COMERCIO"
         podium={(wpWeeklyData?.entries ?? []).slice(0, 3).map(e => ({
           name: e.name,
           points: e.weekly_points,
@@ -626,7 +626,7 @@ export function PrizeManager() {
       <IgPublishModal
         open={igFinalModalOpen}
         onClose={() => setIgFinalModalOpen(false)}
-        empresa="MI EMPRESA"
+        empresa="MI COMERCIO"
         podium={prizes.slice(0, 3).map((p, i) => ({
           name: p.description || `Puesto ${i + 1}`,
           points: 0,

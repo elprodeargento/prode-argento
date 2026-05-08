@@ -30,7 +30,7 @@ interface RankingPodiumProps {
   igConnected?: boolean
 }
 
-export function RankingPodium({ items, empresa = 'Mi Empresa', igConnected = false }: RankingPodiumProps) {
+export function RankingPodium({ items, empresa = 'Mi Comercio', igConnected = false }: RankingPodiumProps) {
   const [igOpen, setIgOpen] = useState(false)
 
   const p1 = items.find((i) => i.position === 1)

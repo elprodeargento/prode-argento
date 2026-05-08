@@ -4,7 +4,7 @@ import '@/styles/globals.css'
 
 export const metadata: Metadata = {
   title: { default: 'Prode Mundial 2026', template: '%s | Prode Mundial 2026' },
-  description: 'El prode del Mundial para tu empresa. Gratis, personalizado y listo en 5 minutos.',
+  description: 'El prode del Mundial para tu comercio. Gratis, personalizado y listo en 5 minutos.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
 }
 

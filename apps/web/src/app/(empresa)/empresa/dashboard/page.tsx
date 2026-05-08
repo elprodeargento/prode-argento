@@ -30,7 +30,7 @@ export default async function EmpresaDashboardPage() {
     // For now, we'll assume they have one if they are in this layout
     return (
       <div className="p-8 text-center bg-white rounded-2xl shadow-sm border border-slate-200">
-        <h2 className="text-xl font-black text-slate-900 mb-2">No se encontró tu empresa</h2>
+        <h2 className="text-xl font-black text-slate-900 mb-2">No se encontró tu comercio</h2>
         <p className="text-slate-500">Asegurate de haber completado el registro correctamente.</p>
       </div>
     )
