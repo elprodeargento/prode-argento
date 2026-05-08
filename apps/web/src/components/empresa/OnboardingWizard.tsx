@@ -20,12 +20,13 @@ export function OnboardingWizard() {
   
   // Form State
   const [name, setName] = useState('')
+  const [businessName, setBusinessName] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
+  const [backgroundUrl, setBackgroundUrl] = useState('')
   const [color, setColor] = useState('#003087')
   const [prizeCount, setPrizeCount] = useState(3)
   const [prizes, setPrizes] = useState<string[]>(['', '', ''])
   const [copied, setCopied] = useState(false)
-  const [showPlanes, setShowPlanes] = useState(false)
 
   useEffect(() => {
     async function getBusiness() {
@@ -41,8 +42,10 @@ export function OnboardingWizard() {
         if (data) {
           setBusiness(data)
           setName(data.name)
+          setBusinessName(data.name || '')
           if (data.primary_color) setColor(data.primary_color)
           if (data.logo_url) setLogoUrl(data.logo_url)
+          if (data.background_url) setBackgroundUrl(data.background_url)
         }
       } catch {
         // no business yet
@@ -67,12 +70,28 @@ export function OnboardingWizard() {
     }
   }
 
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !business) return
+
+    setLoading(true)
+    try {
+      const publicUrl = await uploadToR2(file, business.id)
+      setBackgroundUrl(publicUrl)
+    } catch (error) {
+      console.error('Error uploading background to R2:', error)
+      alert('Error al subir la imagen de fondo a Cloudflare R2. Verifica la configuración de tu API.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!business) return
     setLoading(true)
 
     try {
-      await apiPatch('/businesses/me', { primary_color: color, logo_url: logoUrl })
+      await apiPatch('/businesses/me', { name: businessName, primary_color: color, logo_url: logoUrl, background_url: backgroundUrl })
 
       const prizesToSave = prizes.slice(0, prizeCount).map((desc, i) => ({
         rank: i + 1,
@@ -147,15 +166,11 @@ export function OnboardingWizard() {
 
           <div className="h-px bg-slate-100 mb-6" />
 
-          <button 
-            onClick={() => setShowPlanes(!showPlanes)}
-            className="w-full flex items-center justify-center gap-2 text-sm font-black text-slate-400 hover:text-slate-900 transition-all mb-4"
-          >
-            Ver planes disponibles <Minus className={`h-3 w-3 transition-transform ${showPlanes ? '' : 'rotate-90'}`} />
-          </button>
+          <p className="text-[13px] font-black text-[#002B72] uppercase tracking-widest mb-4 text-center">
+            ¿Querés sacarle más provecho?
+          </p>
 
-          {showPlanes && (
-            <div className="space-y-3 mb-6 animate-in slide-in-from-top-4 duration-300">
+          <div className="space-y-3 mb-6">
               {/* FREE */}
               <div className="border-2 border-slate-200 rounded-2xl p-4 text-left">
                 <div className="flex justify-between items-start mb-3">
@@ -216,7 +231,6 @@ export function OnboardingWizard() {
                 <button className="w-full py-3 rounded-full bg-[#F5C518] text-[#002B72] text-[13px] font-black shadow-lg">Contratar Premium — $80.000 →</button>
               </div>
             </div>
-          )}
 
           <div className="space-y-3">
             <button 
@@ -237,7 +251,7 @@ export function OnboardingWizard() {
     )
   }
 
-  const progress = 30 + (logoUrl ? 25 : 0) + (color !== '#003087' ? 20 : 0) + (prizes.some(p => p) ? 25 : 0)
+  const progress = (businessName ? 20 : 0) + (logoUrl ? 20 : 0) + (backgroundUrl ? 15 : 0) + (color !== '#003087' ? 20 : 0) + (prizes.some(p => p) ? 25 : 0)
 
   return (
     <div className="min-h-screen bg-[#F1F3F9]">
@@ -252,6 +266,23 @@ export function OnboardingWizard() {
       </header>
 
       <main className="max-w-lg mx-auto p-6 -mt-6 relative z-10 space-y-6 pb-32">
+        {/* NOMBRE */}
+        <Card className="p-6">
+          <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-1 flex items-center gap-2">
+            <span className="text-xl">🏪</span> NOMBRE DE TU COMERCIO
+          </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4">
+            Así te van a ver tus clientes cuando entren al prode.
+          </p>
+          <input
+            type="text"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="Ej: Pizzería Don Juan"
+            className="w-full h-12 px-4 rounded-xl border-2 border-slate-100 font-bold text-slate-700 outline-none focus:border-[#002B72] transition-all"
+          />
+        </Card>
+
         {/* LOGO */}
         <Card className="p-6">
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -278,6 +309,36 @@ export function OnboardingWizard() {
                 <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">📁</div>
                 <span className="text-sm font-extrabold text-[#002B72]">Tocá para subir tu logo</span>
                 <span className="text-[10px] font-bold text-slate-400 mt-1">PNG, JPG o SVG · Recomendado 200x200px</span>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        {/* IMAGEN DE FONDO */}
+        <Card className="p-6">
+          <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-1 flex items-center gap-2">
+            <span className="text-xl">🖼️</span> IMAGEN DE FONDO <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
+          </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4">
+            Se muestra detrás del header de bienvenida de tu prode.
+          </p>
+          <div
+            onClick={() => document.getElementById('bg-input')?.click()}
+            className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center cursor-pointer hover:bg-blue-50 hover:border-[#002B72] transition-all group"
+          >
+            <input type="file" id="bg-input" className="hidden" accept="image/*" onChange={handleBackgroundUpload} />
+            {loading ? (
+              <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mx-auto" />
+            ) : backgroundUrl ? (
+              <div className="flex flex-col items-center">
+                <img src={backgroundUrl} className="w-full h-24 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Fondo" />
+                <span className="text-[11px] font-black text-slate-400">Tocá para cambiar</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">🖼️</div>
+                <span className="text-sm font-extrabold text-[#002B72]">Tocá para subir imagen de fondo</span>
+                <span className="text-[10px] font-bold text-slate-400 mt-1">JPG, PNG · Recomendado 1200x400px</span>
               </div>
             )}
           </div>
