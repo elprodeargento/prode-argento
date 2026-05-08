@@ -140,14 +140,11 @@ export function PlanesClient() {
                 <div className="text-[11px] font-black uppercase tracking-widest mb-1" style={{ color: isCurrent ? '#002B72' : plan.color }}>
                   {plan.name}
                 </div>
-                {plan.price > 0 && (
-                  <div className="inline-flex items-center gap-1.5 bg-[#EBF0FF] border border-[#C8D4F5] text-[#002B72] text-[11px] font-black px-3 py-1 rounded-full">
-                    🔒 Pago único · válido todo el Mundial 2026
-                  </div>
-                )}
                 <div className="font-bebas text-[42px] text-[#0D1A3A] leading-none">{plan.priceLabel}</div>
                 {plan.price > 0 && (
-                  <div className="text-[12px] text-[#8E96AE] font-medium mt-1">pago único · + IVA</div>
+                  <p className="text-[13px] font-black text-[#002B72] mt-1">
+                    🔒 Pago único · válido todo el Mundial 2026
+                  </p>
                 )}
               </div>
 
