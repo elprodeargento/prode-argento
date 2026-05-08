@@ -72,12 +72,13 @@ export function WhatsAppSendModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
+      style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}
       style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white rounded-2xl w-full max-w-[480px] max-h-[94vh] overflow-y-auto shadow-2xl"
+        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-[480px] max-h-[90vh] overflow-y-auto shadow-2xl"
         style={{ animation: 'waSlideIn 0.3s cubic-bezier(0.34,1.1,0.64,1)' }}
       >
         <style>{`

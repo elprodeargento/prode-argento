@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
+import { WhatsAppSendModal } from './WhatsAppSendModal'
 
 interface Match {
   id: string
@@ -33,6 +34,7 @@ export function DashboardNextMatch() {
   const [match, setMatch] = useState<Match | null | undefined>(undefined)
   const [sinCargar, setSinCargar] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -80,6 +82,10 @@ export function DashboardNextMatch() {
     ? (match.group ? `${match.group} · ` : '') + formatKickoff(match.kickoff_at)
     : ''
 
+  const waMessage = match
+    ? `⚽ ¡Acordate de cargar tus pronósticos!\n\nPróximo partido: ${match.home_team} vs ${match.away_team}\n📅 ${dateLabel}\n\n¡No te quedes afuera del ranking! 🏆`
+    : `⚽ ¡Acordate de cargar tus pronósticos!\n\n¡No te quedes afuera del ranking! 🏆`
+
   return (
     <div className="card">
       <div className="px-[20px] py-[14px] border-b border-[#DDE1EF] flex items-center justify-between">
@@ -115,12 +121,12 @@ export function DashboardNextMatch() {
                 <div className="bg-[#FFF4E5] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#FF8A00] mb-[12px] border border-[#FF8A00]/10">
                   ⚠️ {sinCargar} participante{sinCargar !== 1 ? 's' : ''} sin cargar aún
                 </div>
-                <a
-                  href="/empresa/notificaciones"
-                  className="block w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20 text-center"
+                <button
+                  onClick={() => setModalOpen(true)}
+                  className="w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
                 >
                   📢 Recordar a los {sinCargar}
-                </a>
+                </button>
               </>
             ) : (
               <div className="bg-[#E8F8F1] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#18A06A] border border-[#18A06A]/10">
@@ -131,5 +137,11 @@ export function DashboardNextMatch() {
         )}
       </div>
     </div>
+    <WhatsAppSendModal
+      open={modalOpen}
+      onClose={() => setModalOpen(false)}
+      defaultMessage={waMessage}
+      title="Recordar a participantes"
+    />
   )
 }
