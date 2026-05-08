@@ -23,6 +23,7 @@ const navGroups = [
       { href: '/empresa/premios', icon: '🎁', label: 'Premios', iconColor: '#F5C518', badgeKey: null },
       { href: '/empresa/notificaciones', icon: '🔔', label: 'Notificaciones', iconColor: '#D93025', badgeKey: null },
       { href: '/empresa/promos', icon: '🏷️', label: 'Mis Promos', iconColor: '#18A06A', badgeKey: null },
+      { href: '/empresa/planes', icon: '💳', label: 'Planes', iconColor: '#F5C518', badgeKey: null },
     ]
   },
   {
@@ -100,7 +101,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
               <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate uppercase">
                 {companyName || '—'}
               </div>
-              <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel comercio</div>
+              <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel Comercio</div>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white">

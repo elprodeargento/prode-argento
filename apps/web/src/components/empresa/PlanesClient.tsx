@@ -109,7 +109,7 @@ export function PlanesClient() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl items-center">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl items-start">
         {PLANS.map(plan => {
           const isCurrent = currentPlan === plan.id
           const isUpgrade = plan.id !== 'free' && !isCurrent
@@ -118,12 +118,11 @@ export function PlanesClient() {
           return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl border-2 p-6 flex flex-col gap-5 transition-all duration-300
+              className={`relative bg-white rounded-2xl border-[1.5px] p-6 flex flex-col gap-5 transition-all duration-300
                 ${isCurrent
-                  ? 'scale-105 z-10 shadow-[0_20px_60px_rgba(0,43,114,0.18)] border-[#002B72]'
-                  : 'border-[#DDE1EF] bg-white opacity-90 hover:opacity-100 hover:shadow-md'
+                  ? 'border-[#002B72] bg-[#F5F8FF] shadow-lg'
+                  : 'border-[#DDE1EF] hover:shadow-md'
                 }`}
-              style={isCurrent ? { background: '#F5F8FF' } : {}}
             >
               {isCurrent && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-xs font-black px-4 py-1.5 rounded-full whitespace-nowrap shadow-lg">
@@ -132,18 +131,18 @@ export function PlanesClient() {
               )}
 
               {!isCurrent && plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#5A6480] text-white text-xs font-black px-4 py-1 rounded-full">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-[10px] font-black px-4 py-1 rounded-full">
                   MÁS POPULAR
                 </div>
               )}
 
               <div>
-                <div className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: isCurrent ? '#002B72' : plan.color }}>
+                <div className="text-[11px] font-black uppercase tracking-widest mb-1" style={{ color: isCurrent ? '#002B72' : plan.color }}>
                   {plan.name}
                 </div>
-                <div className="font-bebas text-4xl text-[#0D1A3A]">{plan.priceLabel}</div>
+                <div className="font-bebas text-[42px] text-[#0D1A3A] leading-none">{plan.priceLabel}</div>
                 {plan.price > 0 && (
-                  <div className="text-xs text-[#8E96AE] font-medium mt-0.5">pago único · IVA incluido</div>
+                  <div className="text-[12px] text-[#8E96AE] font-medium mt-1">pago único · + IVA</div>
                 )}
               </div>
 
@@ -159,13 +158,15 @@ export function PlanesClient() {
               <button
                 onClick={() => isUpgrade && handleCheckout(plan.id)}
                 disabled={isCurrent || isLoading || plan.id === 'free'}
-                className={`w-full py-3 rounded-2xl font-black text-sm transition-all
+                className={`w-full py-3 rounded-xl font-black text-sm transition-all
                   ${isCurrent
                     ? 'bg-[#002B72] text-white cursor-default'
                     : plan.id === 'free'
                     ? 'bg-[#F1F3F9] text-[#8E96AE] cursor-default'
-                    : 'text-white hover:opacity-90 disabled:opacity-60'}`}
-                style={isUpgrade && !isCurrent ? { background: plan.color, color: plan.colorText ?? 'white' } : {}}
+                    : plan.id === 'pro'
+                    ? 'bg-[#002B72] text-white hover:bg-[#00318A] disabled:opacity-60'
+                    : 'bg-[#F5C518] text-[#002B72] hover:bg-yellow-300 disabled:opacity-60'
+                  }`}
               >
                 {isLoading ? 'Redirigiendo...' : isCurrent ? '✓ Plan actual' : plan.cta}
               </button>
@@ -175,7 +176,7 @@ export function PlanesClient() {
       </div>
 
       <p className="text-xs text-[#8E96AE] mt-2">
-        Los pagos se procesan de forma segura a través de Mercado Pago. Podés cancelar en cualquier momento.
+        Los pagos se procesan de forma segura a través de Mercado Pago. El plan es válido por todo el mundial.
       </p>
     </>
   )
