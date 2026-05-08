@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
+import { WhatsAppSendModal } from './WhatsAppSendModal'
 
 interface Step {
   id: string
@@ -12,6 +13,8 @@ interface Step {
   href: string
   cta: string
 }
+
+const WA_MESSAGE = '⚽ ¡Sumáte al prode del Mundial 2026!\n\nEntrá y cargá tus pronósticos antes del primer partido.\n\n¡Buena suerte! 🏆'
 
 export function DashboardChecklist({ business }: { business: any }) {
   const [steps, setSteps] = useState<Step[]>([
@@ -40,7 +43,7 @@ export function DashboardChecklist({ business }: { business: any }) {
       title: 'Sumá tus primeros clientes',
       desc: 'Compartí el link con al menos 3 clientes para arrancar.',
       href: '/empresa/participantes',
-      cta: 'Ver link',
+      cta: 'Copiar link',
     },
     {
       id: 'notification',
@@ -53,6 +56,9 @@ export function DashboardChecklist({ business }: { business: any }) {
     },
   ])
 
+  const [copied, setCopied] = useState(false)
+  const [waModalOpen, setWaModalOpen] = useState(false)
+
   useEffect(() => {
     apiGet<{ id: string }[]>('/prizes/me')
       .then(data => {
@@ -63,6 +69,16 @@ export function DashboardChecklist({ business }: { business: any }) {
       .catch(() => {})
   }, [])
 
+  const handleCopyLink = async () => {
+    try {
+      const biz = await apiGet<{ slug: string }>('/businesses/me')
+      const url = `https://${biz.slug}.elprode.ar`
+      await navigator.clipboard?.writeText(url)
+    } catch {}
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   const completedSteps = steps.filter(s => s.done).length
   const totalSteps = steps.length
 
@@ -71,47 +87,71 @@ export function DashboardChecklist({ business }: { business: any }) {
   const progressPct = (completedSteps / totalSteps) * 100
 
   return (
-    <div className="card overflow-hidden">
-      <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-[15px] font-black text-white">🚀 Primeros pasos</div>
-          <div className="text-[12px] font-bold text-white/70">
-            {completedSteps} de {totalSteps} completados
+    <>
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[15px] font-black text-white">🚀 Primeros pasos</div>
+            <div className="text-[12px] font-bold text-white/70">
+              {completedSteps} de {totalSteps} completados
+            </div>
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-white/20">
+            <div
+              className="h-1.5 rounded-full bg-[#F5C518] transition-all duration-500"
+              style={{ width: `${progressPct}%` }}
+            />
           </div>
         </div>
-        <div className="w-full h-1.5 rounded-full bg-white/20">
-          <div
-            className="h-1.5 rounded-full bg-[#F5C518] transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-      </div>
-      <div className="divide-y divide-[#DDE1EF]">
-        {steps.map(step => (
-          <div
-            key={step.id}
-            className={`px-5 py-4 flex items-center gap-4 ${step.done ? 'bg-[#F1F3F9]' : 'bg-white'}`}
-          >
-            <span className="text-[22px] shrink-0">{step.done ? '✅' : step.icon}</span>
-            <div className="flex-1 min-w-0">
-              <div className={`text-[14px] font-bold ${step.done ? 'line-through text-[#8E96AE]' : 'text-[#0D1A3A]'}`}>
-                {step.title}
+        <div className="divide-y divide-[#DDE1EF]">
+          {steps.map(step => (
+            <div
+              key={step.id}
+              className={`px-5 py-4 flex items-center gap-4 ${step.done ? 'bg-[#F1F3F9]' : 'bg-white'}`}
+            >
+              <span className="text-[22px] shrink-0">{step.done ? '✅' : step.icon}</span>
+              <div className="flex-1 min-w-0">
+                <div className={`text-[14px] font-bold ${step.done ? 'line-through text-[#8E96AE]' : 'text-[#0D1A3A]'}`}>
+                  {step.title}
+                </div>
+                {!step.done && (
+                  <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">{step.desc}</div>
+                )}
               </div>
               {!step.done && (
-                <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">{step.desc}</div>
+                step.id === 'participants' ? (
+                  <button
+                    onClick={handleCopyLink}
+                    className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px] font-black rounded-lg hover:bg-[#00318A] transition-all"
+                  >
+                    {copied ? '✓ Copiado' : 'Copiar link'}
+                  </button>
+                ) : step.id === 'notification' ? (
+                  <button
+                    onClick={() => setWaModalOpen(true)}
+                    className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px] font-black rounded-lg hover:bg-[#00318A] transition-all"
+                  >
+                    {step.cta}
+                  </button>
+                ) : (
+                  <a
+                    href={step.href}
+                    className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px] font-black rounded-lg hover:bg-[#00318A] transition-all"
+                  >
+                    {step.cta}
+                  </a>
+                )
               )}
             </div>
-            {!step.done && (
-              <a
-                href={step.href}
-                className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px] font-black rounded-lg hover:bg-[#00318A] transition-all"
-              >
-                {step.cta}
-              </a>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+      <WhatsAppSendModal
+        open={waModalOpen}
+        onClose={() => setWaModalOpen(false)}
+        defaultMessage={WA_MESSAGE}
+        title="Invitar clientes al prode"
+      />
+    </>
   )
 }
