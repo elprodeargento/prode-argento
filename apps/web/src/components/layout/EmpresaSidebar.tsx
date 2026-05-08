@@ -53,15 +53,18 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
       .then(res => setBadges({ participants: String(res.total) }))
       .catch(() => {})
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
       setUserName(user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '')
       setUserEmail(user.email || '')
-    })
 
-    apiGet<Business>('/businesses/me')
-      .then(biz => setBusiness(biz))
-      .catch(() => {})
+      const { data: biz } = await supabase
+        .from('businesses')
+        .select('name, logo_url')
+        .eq('admin_user_id', user.id)
+        .single()
+      if (biz) setBusiness(biz)
+    })
   }, [])
 
   const handleLogout = async () => {
