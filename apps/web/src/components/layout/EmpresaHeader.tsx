@@ -12,6 +12,7 @@ const titles: Record<string, string> = {
   '/empresa/promos': 'Mis Promos',
   '/empresa/notificaciones': 'Notificaciones',
   '/empresa/configuracion': 'Configuración',
+  '/empresa/planes': 'Planes y precios',
 }
 
 export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) {

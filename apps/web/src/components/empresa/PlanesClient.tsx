@@ -109,7 +109,7 @@ export function PlanesClient() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl items-start">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl items-stretch">
         {PLANS.map(plan => {
           const isCurrent = currentPlan === plan.id
           const isUpgrade = plan.id !== 'free' && !isCurrent
@@ -118,7 +118,7 @@ export function PlanesClient() {
           return (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl border-[1.5px] p-6 flex flex-col gap-5 transition-all duration-300
+              className={`relative bg-white rounded-2xl border-[1.5px] p-6 flex flex-col gap-5 h-full transition-all duration-300
                 ${isCurrent
                   ? 'border-[#002B72] bg-[#F5F8FF] shadow-lg'
                   : 'border-[#DDE1EF] hover:shadow-md'
