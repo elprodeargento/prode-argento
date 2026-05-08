@@ -87,6 +87,7 @@ export function DashboardNextMatch() {
     : `⚽ ¡Acordate de cargar tus pronósticos!\n\n¡No te quedes afuera del ranking! 🏆`
 
   return (
+    <>
     <div className="card">
       <div className="px-[20px] py-[14px] border-b border-[#DDE1EF] flex items-center justify-between">
         <div className="text-[14px] font-extrabold text-[#0D1A3A] flex items-center gap-2">
@@ -143,5 +144,6 @@ export function DashboardNextMatch() {
       defaultMessage={waMessage}
       title="Recordar a participantes"
     />
+    </>
   )
 }
