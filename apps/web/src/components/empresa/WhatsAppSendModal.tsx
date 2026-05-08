@@ -73,8 +73,7 @@ export function WhatsAppSendModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
-      style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}
-      style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
+      style={{ paddingTop: 'env(safe-area-inset-top, 16px)', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(6px)' }}
       onClick={e => e.target === e.currentTarget && onClose()}
     >
       <div
