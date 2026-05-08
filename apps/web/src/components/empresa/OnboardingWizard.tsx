@@ -20,12 +20,13 @@ export function OnboardingWizard() {
   
   // Form State
   const [name, setName] = useState('')
+  const [businessName, setBusinessName] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
+  const [backgroundUrl, setBackgroundUrl] = useState('')
   const [color, setColor] = useState('#003087')
   const [prizeCount, setPrizeCount] = useState(3)
   const [prizes, setPrizes] = useState<string[]>(['', '', ''])
   const [copied, setCopied] = useState(false)
-  const [showPlanes, setShowPlanes] = useState(false)
 
   useEffect(() => {
     async function getBusiness() {
@@ -41,8 +42,10 @@ export function OnboardingWizard() {
         if (data) {
           setBusiness(data)
           setName(data.name)
+          setBusinessName(data.name || '')
           if (data.primary_color) setColor(data.primary_color)
           if (data.logo_url) setLogoUrl(data.logo_url)
+          if (data.background_url) setBackgroundUrl(data.background_url)
         }
       } catch {
         // no business yet
@@ -67,12 +70,28 @@ export function OnboardingWizard() {
     }
   }
 
+  const handleBackgroundUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !business) return
+
+    setLoading(true)
+    try {
+      const publicUrl = await uploadToR2(file, business.id)
+      setBackgroundUrl(publicUrl)
+    } catch (error) {
+      console.error('Error uploading background to R2:', error)
+      alert('Error al subir la imagen de fondo a Cloudflare R2. Verifica la configuración de tu API.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSave = async () => {
     if (!business) return
     setLoading(true)
 
     try {
-      await apiPatch('/businesses/me', { primary_color: color, logo_url: logoUrl })
+      await apiPatch('/businesses/me', { name: businessName, primary_color: color, logo_url: logoUrl, background_url: backgroundUrl })
 
       const prizesToSave = prizes.slice(0, prizeCount).map((desc, i) => ({
         rank: i + 1,
@@ -110,7 +129,7 @@ export function OnboardingWizard() {
         <Card className="w-full max-w-sm p-8 text-center animate-in fade-in zoom-in duration-300">
           <span className="text-6xl mb-4 block">🎉</span>
           <h2 className="font-bebas text-4xl text-[#002B72] tracking-wider mb-2">¡TODO LISTO!</h2>
-          <p className="text-slate-500 text-sm mb-8 font-semibold">Tu prode está activo y listo para compartir</p>
+          <p className="text-slate-500 text-sm mb-8 font-semibold">Compartí el link con tus clientes y empezá a generar visitas a tu local desde el primer partido.</p>
 
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 mb-4 border border-slate-200">
             <span className="flex-1 text-left text-sm font-black text-[#002B72] truncate italic">
@@ -147,21 +166,17 @@ export function OnboardingWizard() {
 
           <div className="h-px bg-slate-100 mb-6" />
 
-          <button 
-            onClick={() => setShowPlanes(!showPlanes)}
-            className="w-full flex items-center justify-center gap-2 text-sm font-black text-slate-400 hover:text-slate-900 transition-all mb-4"
-          >
-            Ver planes disponibles <Minus className={`h-3 w-3 transition-transform ${showPlanes ? '' : 'rotate-90'}`} />
-          </button>
+          <p className="text-[13px] font-black text-[#002B72] uppercase tracking-widest mb-4 text-center">
+            ¿Querés sacarle más provecho?
+          </p>
 
-          {showPlanes && (
-            <div className="space-y-3 mb-6 animate-in slide-in-from-top-4 duration-300">
+          <div className="space-y-3 mb-6">
               {/* FREE */}
               <div className="border-2 border-slate-200 rounded-2xl p-4 text-left">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-black text-[#0D1A3A]">🎮 Free</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para jugar con amigos</p>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para empezar sin costo</p>
                   </div>
                   <div className="text-right">
                     <div className="font-bebas text-2xl text-slate-400">$0</div>
@@ -169,72 +184,60 @@ export function OnboardingWizard() {
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-3">
-                  {['Hasta 5 jugadores', 'Link y QR del prode', 'Ranking básico'].map(f => (
+                  {['Hasta 5 participantes', 'Todo el mundial', 'Ranking en tiempo real', 'Página pública con tu marca'].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
-                  ))}
-                  {['Sin panel de datos', 'Sin notificaciones'].map(f => (
-                    <div key={f} className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>{f}</div>
                   ))}
                 </div>
                 <div className="bg-slate-100 rounded-xl py-2 text-center text-[12px] font-black text-slate-400">Tu plan actual ✓</div>
               </div>
 
-              {/* PREMIUM */}
-              <div className="border-2 border-[#002B72] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(0,48,135,0.03),rgba(116,172,223,0.04))' }}>
+              {/* PRO */}
+              <div className="border-2 border-[#002B72] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(0,43,114,0.03),rgba(116,172,223,0.04))' }}>
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-black text-[#002B72]">⭐ Premium</h4>
+                    <h4 className="font-black text-[#002B72]">⭐ Pro</h4>
                     <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para comercios que juegan en serio</p>
                   </div>
                   <div className="text-right">
-                    <div className="font-bebas text-2xl text-[#002B72]">USD 15</div>
-                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                    <div className="font-bebas text-2xl text-[#002B72]">$40.000</div>
+                    <div className="text-[10px] text-slate-400 font-bold">pago único</div>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {['Jugadores ilimitados', 'Panel con datos completos', 'Notificaciones por email', 'Exportar ranking CSV', 'Estadísticas de participación'].map(f => (
+                  {['Participantes ilimitados', 'Todo lo del plan Free', 'Premios semanales configurables', 'Notificaciones por WhatsApp', 'Publicar podio en Instagram', 'QR descargable para tu local', 'Exportar lista de participantes'].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
-                  <div className="text-[12px] text-slate-400 flex gap-2 opacity-50"><span>🔒</span>Sin promos geolocalizadas</div>
                 </div>
-                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Activar Premium — USD 15 →</button>
+                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Contratar Pro — $40.000 →</button>
               </div>
 
-              {/* PRO */}
-              <div className="border-2 rounded-2xl p-4 text-left" style={{ borderColor: '#2d1a6e', background: 'linear-gradient(135deg,rgba(45,26,110,0.04),rgba(0,48,135,0.04))' }}>
+              {/* PREMIUM */}
+              <div className="border-2 border-[#F5C518] rounded-2xl p-4 text-left" style={{ background: 'linear-gradient(135deg,rgba(245,197,24,0.05),rgba(0,43,114,0.03))' }}>
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h4 className="font-black" style={{ color: '#2d1a6e' }}>📍 Pro</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para negocios que quieren clientes del barrio</p>
+                    <h4 className="font-black text-[#002B72]">🏆 Premium</h4>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Máxima visibilidad para tu local</p>
                   </div>
                   <div className="text-right">
-                    <div className="font-bebas text-2xl" style={{ color: '#2d1a6e' }}>USD 25</div>
-                    <div className="text-[10px] text-slate-400 font-bold">todo el Mundial</div>
+                    <div className="font-bebas text-2xl text-[#002B72]">$80.000</div>
+                    <div className="text-[10px] text-slate-400 font-bold">pago único</div>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {[
-                    ['✅', 'Todo lo de Premium'],
-                    ['📍', 'Promos geolocalizadas entre prodes'],
-                    ['💬', 'Notificaciones por WhatsApp'],
-                    ['🏷️', 'Sin marca ProdeApp'],
-                    ['📊', 'Estadísticas avanzadas'],
-                    ['🎯', 'Soporte prioritario'],
-                  ].map(([icon, text]) => (
-                    <div key={text} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>{icon}</span>{text}</div>
+                  {['Todo lo del plan Pro', 'Publicidad geolocalizada en la zona', 'Estadísticas de visualizaciones', 'Soporte por WhatsApp', 'Exportar lista de participantes'].map(f => (
+                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
                 </div>
-                <button className="w-full py-3 rounded-full text-white text-[13px] font-black shadow-lg" style={{ background: 'linear-gradient(135deg,#2d1a6e,#003087)', boxShadow: '0 4px 20px rgba(45,26,110,0.28)' }}>Activar Pro — USD 25 →</button>
+                <button className="w-full py-3 rounded-full bg-[#F5C518] text-[#002B72] text-[13px] font-black shadow-lg">Contratar Premium — $80.000 →</button>
               </div>
             </div>
-          )}
 
           <div className="space-y-3">
             <button 
               onClick={() => router.push('/empresa/dashboard')}
               className="w-full bg-[#002B72] text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
             >
-              IR AL PANEL →
+              IR A MI PANEL →
             </button>
             <button 
               onClick={() => router.push('/empresa/configuracion')}
@@ -248,7 +251,7 @@ export function OnboardingWizard() {
     )
   }
 
-  const progress = 30 + (logoUrl ? 25 : 0) + (color !== '#003087' ? 20 : 0) + (prizes.some(p => p) ? 25 : 0)
+  const progress = (businessName ? 20 : 0) + (logoUrl ? 20 : 0) + (backgroundUrl ? 15 : 0) + (color !== '#003087' ? 20 : 0) + (prizes.some(p => p) ? 25 : 0)
 
   return (
     <div className="min-h-screen bg-[#F1F3F9]">
@@ -263,13 +266,33 @@ export function OnboardingWizard() {
       </header>
 
       <main className="max-w-lg mx-auto p-6 -mt-6 relative z-10 space-y-6 pb-32">
+        {/* NOMBRE */}
+        <Card className="p-6">
+          <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-1 flex items-center gap-2">
+            <span className="text-xl">🏪</span> NOMBRE DE TU COMERCIO
+          </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4">
+            Así te van a ver tus clientes cuando entren al prode.
+          </p>
+          <input
+            type="text"
+            value={businessName}
+            onChange={(e) => setBusinessName(e.target.value)}
+            placeholder="Ej: Pizzería Don Juan"
+            className="w-full h-12 px-4 rounded-xl border-2 border-slate-100 font-bold text-slate-700 outline-none focus:border-[#002B72] transition-all"
+          />
+        </Card>
+
         {/* LOGO */}
         <Card className="p-6">
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="text-xl">🖼️</span> LOGO DE LA EMPRESA <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
+            <span className="text-xl">🖼️</span> LOGO DE TU COMERCIO <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
           </h3>
-          
-          <div 
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            Tus clientes van a ver tu marca en cada partido. Hacé que te recuerden.
+          </p>
+
+          <div
             onClick={() => document.getElementById('logo-input')?.click()}
             className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center cursor-pointer hover:bg-blue-50 hover:border-[#002B72] transition-all group"
           >
@@ -291,12 +314,45 @@ export function OnboardingWizard() {
           </div>
         </Card>
 
+        {/* IMAGEN DE FONDO */}
+        <Card className="p-6">
+          <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-1 flex items-center gap-2">
+            <span className="text-xl">🖼️</span> IMAGEN DE FONDO <span className="text-[10px] text-slate-400 ml-1 italic lowercase font-bold tracking-normal">(opcional)</span>
+          </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4">
+            Se muestra detrás del header de bienvenida de tu prode.
+          </p>
+          <div
+            onClick={() => document.getElementById('bg-input')?.click()}
+            className="border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center cursor-pointer hover:bg-blue-50 hover:border-[#002B72] transition-all group"
+          >
+            <input type="file" id="bg-input" className="hidden" accept="image/*" onChange={handleBackgroundUpload} />
+            {loading ? (
+              <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mx-auto" />
+            ) : backgroundUrl ? (
+              <div className="flex flex-col items-center">
+                <img src={backgroundUrl} className="w-full h-24 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Fondo" />
+                <span className="text-[11px] font-black text-slate-400">Tocá para cambiar</span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center text-3xl mb-3 group-hover:scale-110 transition-transform">🖼️</div>
+                <span className="text-sm font-extrabold text-[#002B72]">Tocá para subir imagen de fondo</span>
+                <span className="text-[10px] font-bold text-slate-400 mt-1">JPG, PNG · Recomendado 1200x400px</span>
+              </div>
+            )}
+          </div>
+        </Card>
+
         {/* COLORES */}
         <Card className="p-6">
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="text-xl">🎨</span> COLOR PRINCIPAL
           </h3>
-          
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            El color de tu comercio va a estar en toda la experiencia del prode.
+          </p>
+
           <div className="grid grid-cols-6 gap-3 mb-6">
             {['#003087', '#74ACDF', '#F6C543', '#C8102E', '#1B5E20', '#111111'].map(c => (
               <button 
@@ -333,6 +389,9 @@ export function OnboardingWizard() {
           <h3 className="text-sm font-black text-[#002B72] uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="text-xl">🏆</span> PREMIOS
           </h3>
+          <p className="text-[12px] text-slate-400 font-medium mb-4 -mt-2">
+            Los premios son la razón por la que tus clientes van a volver a tu local a ver los resultados.
+          </p>
 
           <div className="flex items-center justify-between mb-6">
             <span className="text-sm font-extrabold text-[#0D1A3A]">¿Cuántos ganadores?</span>
@@ -384,7 +443,7 @@ export function OnboardingWizard() {
                   <div className="w-14 h-14 mx-auto mb-4 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">
                     {logoUrl ? <img src={logoUrl} className="w-full h-full object-cover rounded-2xl" alt="Logo" /> : '⚽'}
                   </div>
-                  <h4 className="font-bebas text-2xl text-white tracking-widest truncate">{name || 'TU EMPRESA'}</h4>
+                  <h4 className="font-bebas text-2xl text-white tracking-widest truncate">{name || 'TU COMERCIO'}</h4>
                   <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mt-1">Prode Mundial 2026</p>
                 </div>
              </div>
