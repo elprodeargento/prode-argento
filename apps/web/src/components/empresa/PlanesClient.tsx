@@ -11,50 +11,52 @@ interface Business { plan: Plan }
 const PLANS = [
   {
     id: 'free' as Plan,
-    name: 'Gratuito',
+    name: 'Free',
     price: 0,
     priceLabel: 'Gratis',
     color: '#5A6480',
     features: [
       'Hasta 5 participantes',
-      'Partidos de grupo',
+      'Todo el mundial',
       'Ranking en tiempo real',
-      'Página pública personalizada',
+      'Página pública con tu marca',
     ],
     cta: 'Plan actual',
     highlight: false,
   },
   {
-    id: 'premium' as Plan,
-    name: 'Premium',
-    price: 4999,
-    priceLabel: '$4.999/mes',
+    id: 'pro' as Plan,
+    name: 'Pro',
+    price: 40000,
+    priceLabel: '$40.000',
     color: '#002B72',
     features: [
-      'Hasta 50 participantes',
-      'Todo lo del plan gratuito',
-      'Logo y fondo personalizados',
-      'Notificaciones automáticas',
-      'Soporte prioritario',
+      'Participantes ilimitados',
+      'Todo lo del plan Free',
+      'Premios semanales configurables',
+      'Notificaciones por WhatsApp',
+      'Publicar podio en Instagram',
+      'QR descargable para tu local',
+      'Exportar lista de participantes',
     ],
-    cta: 'Contratar Premium',
+    cta: 'Contratar Pro',
     highlight: true,
   },
   {
-    id: 'pro' as Plan,
-    name: 'Pro',
-    price: 9999,
-    priceLabel: '$9.999/mes',
+    id: 'premium' as Plan,
+    name: 'Premium',
+    price: 80000,
+    priceLabel: '$80.000',
     color: '#F5C518',
     colorText: '#002B72',
     features: [
-      'Participantes ilimitados',
-      'Todo lo del plan Premium',
-      'Estadísticas avanzadas',
-      'API de integración',
-      'Gerente de cuenta dedicado',
+      'Todo lo del plan Pro',
+      'Publicidad geolocalizada en la zona',
+      'Estadísticas de visualizaciones',
+      'Soporte por WhatsApp',
+      'Exportar lista de participantes',
     ],
-    cta: 'Contratar Pro',
+    cta: 'Contratar Premium',
     highlight: false,
   },
 ]
@@ -141,7 +143,7 @@ export function PlanesClient() {
                 </div>
                 <div className="font-bebas text-4xl text-[#0D1A3A]">{plan.priceLabel}</div>
                 {plan.price > 0 && (
-                  <div className="text-xs text-[#8E96AE] font-medium mt-0.5">por mes · IVA incluido</div>
+                  <div className="text-xs text-[#8E96AE] font-medium mt-0.5">pago único · IVA incluido</div>
                 )}
               </div>
 

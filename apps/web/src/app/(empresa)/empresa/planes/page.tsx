@@ -11,6 +11,10 @@ export default function PlanesPage() {
         <div>
           <h1 className="text-[26px] font-black text-[#0D1A3A] mb-1">Planes y precios</h1>
           <p className="text-[14px] text-[#5A6480] font-medium">Elegí el plan que mejor se adapta a tu comercio</p>
+          <p className="text-[14px] text-[#5A6480] font-medium mt-1">
+            Pago único por todo el mundial. Al finalizar podés exportar
+            tu lista de participantes.
+          </p>
         </div>
       </div>
       <Suspense>

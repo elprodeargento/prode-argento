@@ -4,8 +4,8 @@ import MercadoPago, { Preference } from 'mercadopago'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 
 export const PLANS = {
-  premium: { label: 'Plan Premium', price: 4999, max_participants: 50 },
-  pro:     { label: 'Plan Pro',     price: 9999, max_participants: null },
+  pro:     { label: 'Plan Pro',     price: 40000, max_participants: null },
+  premium: { label: 'Plan Premium', price: 80000, max_participants: null },
 } as const
 
 export type UpgradeablePlan = keyof typeof PLANS
@@ -33,7 +33,7 @@ export class PaymentsService {
         items: [{
           id: `prode-${plan}`,
           title: planInfo.label,
-          description: `Prode Mundial 2026 — ${planInfo.label} (30 días)`,
+          description: `Prode Mundial 2026 — ${planInfo.label} (pago único)`,
           quantity: 1,
           unit_price: planInfo.price,
           currency_id: 'ARS',
