@@ -13,7 +13,7 @@ export function LandingHero() {
       <div className="absolute bottom-0 left-0 right-0 h-1.5"
         style={{ background: 'repeating-linear-gradient(90deg,#74ACDF 0,#74ACDF 50%,#fff 50%,#fff 100%)', backgroundSize: '14px 6px' }}
       />
-      <div className="relative z-10 max-w-md mx-auto px-6 py-16 text-center">
+      <div className="relative z-10 max-w-md mx-auto px-6 pt-24 pb-16 text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-8">
           <div className="w-2 h-2 rounded-full bg-[#F5C518]" />
           <span className="text-white text-xs font-bold tracking-widest uppercase">Mundial 2026 · Para Comercios</span>
