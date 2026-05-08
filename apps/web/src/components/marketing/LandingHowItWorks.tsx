@@ -1,5 +1,5 @@
 const steps = [
-  { n: '1', title: 'Registrá tu empresa', desc: 'Solo el nombre. 30 segundos.' },
+  { n: '1', title: 'Registrá tu comercio', desc: 'Solo el nombre. 30 segundos.' },
   { n: '2', title: 'Personalizá tu marca', desc: 'Logo, colores y premios.' },
   { n: '3', title: 'Compartí el link', desc: 'Tu gente entra y empieza a jugar.' },
   { n: '🏆', title: 'Seguí en vivo', desc: 'El ranking se actualiza solo.' },

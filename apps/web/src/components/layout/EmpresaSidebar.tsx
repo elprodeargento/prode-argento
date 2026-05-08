@@ -97,7 +97,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
               <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate uppercase">
                 {companyName || '—'}
               </div>
-              <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel empresa</div>
+              <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel comercio</div>
             </div>
           </div>
           <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white">

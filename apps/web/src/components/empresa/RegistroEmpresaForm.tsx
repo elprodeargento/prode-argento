@@ -36,7 +36,7 @@ export function RegistroEmpresaForm() {
         password: form.password,
       })
     } catch (err: any) {
-      setError(err?.message ?? 'Error al registrar la empresa')
+      setError(err?.message ?? 'Error al registrar el comercio')
       setLoading(false)
       return
     }
@@ -64,7 +64,7 @@ export function RegistroEmpresaForm() {
         <div className="relative z-10">
           <div className="text-5xl mb-3">⚽</div>
           <div className="font-bebas text-2xl text-white tracking-widest">PRODE MUNDIAL 2026</div>
-          <div className="text-white/60 text-sm mt-1">Registrá tu empresa</div>
+          <div className="text-white/60 text-sm mt-1">Registrá tu comercio</div>
         </div>
       </div>
 
@@ -94,9 +94,9 @@ export function RegistroEmpresaForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input label="Nombre de la empresa" placeholder="Ej: Distribuidora García SA"
+          <Input label="Nombre del comercio" placeholder="Ej: Distribuidora García SA"
             value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} required />
-          <Input label="Email corporativo" type="email" placeholder="admin@tuempresa.com"
+          <Input label="Email corporativo" type="email" placeholder="admin@tucomercio.com"
             value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required />
           <Input label="Contraseña" type="password" placeholder="Mínimo 8 caracteres"
             value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required />

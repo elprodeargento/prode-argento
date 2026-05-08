@@ -16,7 +16,7 @@ export function LandingHero() {
       <div className="relative z-10 max-w-md mx-auto px-6 py-16 text-center">
         <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-2 mb-8">
           <div className="w-2 h-2 rounded-full bg-[#F5C518]" />
-          <span className="text-white text-xs font-bold tracking-widest uppercase">Mundial 2026 · Para Empresas</span>
+          <span className="text-white text-xs font-bold tracking-widest uppercase">Mundial 2026 · Para Comercios</span>
           <div className="w-2 h-2 rounded-full bg-[#F5C518]" />
         </div>
         <div className="text-7xl mb-4 animate-bounce">⚽</div>
@@ -24,11 +24,11 @@ export function LandingHero() {
           PRODE<br /><span className="text-[#F5C518]">MUNDIAL</span><br />2026
         </h1>
         <p className="text-white/70 text-lg font-semibold mb-8 leading-relaxed">
-          Armá el prode oficial de tu empresa en minutos. Tus empleados juegan, vos los fidelizás.
+          Armá el prode oficial de tu comercio en minutos. Tus clientes juegan, vos los fidelizás.
         </p>
         <Link href="/empresa/registro">
           <Button size="lg" className="w-full rounded-full font-black text-[#002B72] !bg-[#F5C518] hover:!bg-yellow-300 shadow-xl">
-            🚀 Crear el prode de mi empresa
+            🚀 Crear el prode de mi comercio
           </Button>
         </Link>
         <div className="flex justify-center gap-8 mt-10">

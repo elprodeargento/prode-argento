@@ -192,12 +192,12 @@ export function ConfigForm() {
           <span className="config-section-icon">🎨</span>
           <div>
             <div className="config-section-title">Identidad visual</div>
-            <div className="config-section-sub">Logo y colores de tu empresa</div>
+            <div className="config-section-sub">Logo y colores de tu comercio</div>
           </div>
         </div>
         <div className="config-section-body">
           <div className="field">
-            <div className="field-label">Logo de la empresa</div>
+            <div className="field-label">Logo del comercio</div>
             <div className="logo-preview-row">
               <div className="h-16 w-16 rounded-xl border-2 border-[#DDE1EF] bg-[#F1F3F9] flex items-center justify-center overflow-hidden relative">
                 {logoUrl && typeof logoUrl === 'string' && logoUrl.length > 0 ? (
@@ -246,7 +246,7 @@ export function ConfigForm() {
 
           <div className="field-row">
             <div className="field">
-              <div className="field-label">Nombre de la empresa</div>
+              <div className="field-label">Nombre del comercio</div>
               <input 
                 {...register('name')}
                 className="field-input"
@@ -259,7 +259,7 @@ export function ConfigForm() {
                 {...register('slug')}
                 className="field-input"
               />
-              <div className="field-hint mt-1">{watch('slug') || 'empresa'}.elprode.ar</div>
+              <div className="field-hint mt-1">{watch('slug') || 'comercio'}.elprode.ar</div>
               {errors.slug && <p className="text-xs text-red-500 mt-1">{errors.slug.message}</p>}
             </div>
           </div>

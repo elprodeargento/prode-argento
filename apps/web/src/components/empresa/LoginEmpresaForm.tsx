@@ -43,7 +43,7 @@ export function LoginEmpresaForm() {
     <Card className="w-full max-w-sm !p-0 overflow-hidden">
       <div className="bg-[#002B72] p-8 text-center">
         <div className="text-5xl mb-3">⚽</div>
-        <div className="font-bebas text-2xl text-white tracking-widest">PANEL EMPRESA</div>
+        <div className="font-bebas text-2xl text-white tracking-widest">PANEL COMERCIO</div>
         <div className="text-white/60 text-sm mt-1">Iniciá sesión</div>
       </div>
       <div className="p-6">
@@ -58,7 +58,7 @@ export function LoginEmpresaForm() {
           Entrar con Google
         </button>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <Input label="Email" type="email" placeholder="admin@tuempresa.com"
+          <Input label="Email" type="email" placeholder="admin@tucomercio.com"
             value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required />
           <Input label="Contraseña" type="password" placeholder="Tu contraseña"
             value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required />

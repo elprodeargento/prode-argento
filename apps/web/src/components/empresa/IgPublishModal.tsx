@@ -48,7 +48,7 @@ export function IgPublishModal({
   open,
   onClose,
   podium,
-  empresa = 'MI EMPRESA',
+  empresa = 'MI COMERCIO',
   igConnected = false,
   defaultHashtags = '#ProdeMundial2026 #Mundial2026',
 }: IgPublishModalProps) {

@@ -184,7 +184,7 @@ export function OnboardingWizard() {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h4 className="font-black text-[#002B72]">⭐ Premium</h4>
-                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para empresas que juegan en serio</p>
+                    <p className="text-[11px] text-slate-400 font-bold mt-0.5">Para comercios que juegan en serio</p>
                   </div>
                   <div className="text-right">
                     <div className="font-bebas text-2xl text-[#002B72]">USD 15</div>
