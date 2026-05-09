@@ -95,24 +95,24 @@ export function CanjesClient() {
           return (
             <div
               key={prize.titulo}
-              className={`card overflow-hidden transition-all ${!canRedeem ? 'opacity-60 grayscale' : ''}`}
+              className="card overflow-hidden transition-all"
             >
               <div
                 className="px-5 py-4 flex items-center gap-3"
-                style={{ background: prize.color }}
+                style={{ background: canRedeem ? prize.color : '#DDE1EF' }}
               >
-                <span className="text-[28px]">{prize.icon}</span>
+                <span className={`text-[28px] ${!canRedeem ? 'opacity-40' : ''}`}>{prize.icon}</span>
                 <div>
-                  <div className="text-[15px] font-black" style={{ color: prize.colorText }}>
+                  <div className={`text-[15px] font-black ${canRedeem ? '' : 'text-[#5A6480]'}`} style={{ color: canRedeem ? (prize.colorText ?? '#fff') : undefined }}>
                     {prize.titulo}
                   </div>
-                  <div className="text-[12px] font-bold opacity-80" style={{ color: prize.colorText }}>
+                  <div className={`text-[12px] font-bold opacity-80 ${canRedeem ? '' : 'text-[#5A6480]'}`} style={{ color: canRedeem ? (prize.colorText ?? '#fff') : undefined }}>
                     {prize.puntos} puntos
                   </div>
                 </div>
               </div>
-              <div className="px-5 py-4">
-                <p className="text-[13px] text-[#5A6480] font-medium mb-4">{prize.desc}</p>
+              <div className={`px-5 py-4 ${!canRedeem ? 'bg-[#F1F3F9]' : ''}`}>
+                <p className={`text-[13px] font-medium mb-4 ${canRedeem ? 'text-[#5A6480]' : 'text-[#8E96AE]'}`}>{prize.desc}</p>
                 {canRedeem ? (
                   <button
                     onClick={() => alert('¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.')}
