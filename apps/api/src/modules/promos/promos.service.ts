@@ -56,7 +56,7 @@ export class PromosService {
       .eq('admin_user_id', adminUserId)
       .single();
     if (bizErr || !biz) throw new NotFoundException('Business not found');
-    if (biz.plan !== 'pro') throw new ForbiddenException('Se requiere Plan Pro para crear promos');
+    if (biz.plan !== 'premium') throw new ForbiddenException('Se requiere Plan Premium para crear promos');
 
     const { data, error } = await this.supabase.client
       .from('promos')
@@ -71,6 +71,7 @@ export class PromosService {
         valid_until:  dto.valid_until,
         lat:          dto.lat ?? 0,
         lon:          dto.lon ?? 0,
+        link_url:     dto.link_url ?? null,
         active:       true,
         views:        0,
       })

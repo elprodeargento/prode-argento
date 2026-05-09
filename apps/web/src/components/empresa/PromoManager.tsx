@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { X, Loader2, ImagePlus } from 'lucide-react'
+import { X, Loader2, ImagePlus, Link } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiGet, apiPost } from '@/lib/api'
 
@@ -87,6 +87,7 @@ const INITIAL_FORM = {
   valid_until: '',
   lat: 0,
   lon: 0,
+  link_url: '',
 }
 
 function UpgradeModal({ onClose }: { onClose: () => void }) {
@@ -183,7 +184,11 @@ export function PromoManager() {
     setSaving(true)
     try {
       const { apiPost } = await import('@/lib/api')
-      const created = await apiPost<Promo>('/promos/me', { ...form, image_url: imageUrl })
+      const created = await apiPost<Promo>('/promos/me', {
+        ...form,
+        image_url: imageUrl,
+        link_url: form.link_url || undefined,
+      })
       setPromos(p => [created, ...p])
       setShowForm(false)
       setForm(INITIAL_FORM)
@@ -421,6 +426,24 @@ export function PromoManager() {
                   <div className="text-[11px] text-[#8E96AE] mt-1">JPG o PNG · 1200×400px recomendado</div>
                 </button>
               )}
+            </div>
+
+            {/* Link opcional */}
+            <div className="field">
+              <div className="field-label">
+                Link externo <span className="text-[#8E96AE] font-medium">(opcional)</span>
+              </div>
+              <div className="relative">
+                <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E96AE]" />
+                <input
+                  type="url"
+                  className="field-input pl-9"
+                  placeholder="https://instagram.com/p/... o tu web"
+                  value={form.link_url}
+                  onChange={e => setForm(f => ({ ...f, link_url: e.target.value }))}
+                />
+              </div>
+              <p className="text-[11px] text-[#8E96AE] font-medium mt-1">Instagram, Facebook, tu web, un post, lo que quieras</p>
             </div>
 
             {/* Preview en el carrusel */}

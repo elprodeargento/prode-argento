@@ -63,7 +63,7 @@ export class NotificationsService {
   async sendWhatsappBlast(
     businessId: string,
     dto: SendWhatsappDto,
-  ): Promise<{ sent: number; skipped: number }> {
+  ): Promise<{ sent: number; skipped: number; failed: number }> {
     let participants: Array<{ phone: string | null; name: string }> = []
 
     if (dto.recipients === 'all') {
@@ -106,20 +106,22 @@ export class NotificationsService {
 
     let sent = 0
     let skipped = 0
+    let failed = 0
 
     for (const p of participants) {
       const phone = normalizeE164AR(p.phone)
       if (!phone) {
+        this.logger.warn(`Skipping participant without valid phone: "${p.phone}" (${p.name})`)
         skipped++
         continue
       }
       const ok = await this.sendWA(phone, dto.message, dto.imageUrl)
       if (ok) sent++
-      else skipped++
+      else failed++
     }
 
-    this.logger.log(`Blast: ${sent} sent, ${skipped} skipped for business ${businessId}`)
-    return { sent, skipped }
+    this.logger.log(`Blast: ${sent} sent, ${skipped} sin teléfono, ${failed} fallidos for business ${businessId}`)
+    return { sent, skipped, failed }
   }
 
   /** Send reminder to participants who haven't submitted predictions for a fecha */

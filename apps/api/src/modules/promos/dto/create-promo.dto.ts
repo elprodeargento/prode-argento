@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsUrl, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -52,4 +52,9 @@ export class CreatePromoDto {
   @Type(() => Number)
   @IsNumber()
   lon?: number;
+
+  @ApiProperty({ required: false, description: 'Link a Instagram, post, web, etc.' })
+  @IsOptional()
+  @IsUrl({}, { message: 'El link debe ser una URL válida' })
+  link_url?: string;
 }
