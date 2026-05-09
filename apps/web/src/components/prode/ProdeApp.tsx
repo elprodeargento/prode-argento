@@ -174,6 +174,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [editForm, setEditForm] = useState({ name: participant.name, email: participant.email, phone: participant.phone })
   const [editSaving, setEditSaving] = useState(false)
   const [showPointsInfo, setShowPointsInfo] = useState(false)
+  const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
+  const [exactAlert, setExactAlert] = useState(false)
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
 
@@ -283,6 +285,21 @@ export function ProdeApp({ empresa, participant, onLogout }: {
             setWeeklyPrizes(current)
           })
           .catch(() => {})
+
+        // Leaderboard semanal
+        publicFetch(`/leaderboard/${empresa.id}/weekly`)
+          .then((data: any) => setWeeklyLeaderboard(data?.entries ?? []))
+          .catch(() => {})
+
+        // Detectar resultado exacto nuevo
+        const exactKey = `prode:${empresa.slug}:exactAlerted`
+        const hasNewExact = (predData as RawPrediction[]).some(p => p.points_earned === 3)
+        const alreadyAlerted = localStorage.getItem(exactKey) === 'true'
+        if (hasNewExact && !alreadyAlerted) {
+          setExactAlert(true)
+          localStorage.setItem(exactKey, 'true')
+          setTimeout(() => setExactAlert(false), 5000)
+        }
       } catch (e) {
         console.error('Load error:', e)
       } finally {
@@ -401,6 +418,17 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* HOME */}
         {tab === 'home' && (
           <div>
+            {exactAlert && (
+              <div
+                className="mx-4 mt-4 rounded-2xl p-4 text-center text-white"
+                style={{ background: 'linear-gradient(135deg, #F5C518, #E6A800)' }}
+                onClick={() => setExactAlert(false)}>
+                <div className="text-3xl mb-1">🎯</div>
+                <div className="font-black text-[#002B72] text-base">¡Resultado exacto!</div>
+                <div className="text-[#002B72]/70 text-xs mt-0.5 font-bold">Acertaste el marcador exacto · +3 puntos</div>
+              </div>
+            )}
+
             {positionChange !== null && (
               <div className="mx-4 mt-4 rounded-2xl p-4 text-white text-center animate-bounce"
                 style={{ background: 'linear-gradient(135deg, #18A06A, #0d7a52)' }}
@@ -505,7 +533,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
             {weeklyPrizes.length > 0 && (
               <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de esta semana</div>
+                <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de {empresa.name}</div>
                 <div className="flex flex-col gap-1">
                   {weeklyPrizes.map((p, i) => (
                     <div key={i} className="text-sm font-black text-slate-900">
@@ -513,6 +541,49 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {weeklyLeaderboard.length > 0 && weeklyPrizes.length > 0 && (
+              <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
+                </div>
+                <div className="divide-y divide-slate-50">
+                  {weeklyLeaderboard.slice(0, 5).map(entry => {
+                    const isMe = entry.participant_id === participant.id
+                    const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `${entry.rank}°`
+                    return (
+                      <div key={entry.participant_id}
+                        className={`flex items-center gap-3 px-4 py-3 ${isMe ? 'bg-blue-50' : ''}`}
+                        style={isMe ? { borderLeft: `3px solid ${color}` } : {}}>
+                        <span className="text-base w-6 text-center">{medal}</span>
+                        <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-slate-900' : 'text-slate-600'}`}>
+                          {entry.name}
+                          {isMe && <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>}
+                        </span>
+                        <span className="font-bebas text-xl" style={{ color }}>{entry.weekly_points}</span>
+                        <span className="text-xs text-slate-400">pts</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                {weeklyLeaderboard.findIndex(e => e.participant_id === participant.id) >= 5 && (
+                  <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-3 bg-blue-50"
+                    style={{ borderLeft: `3px solid ${color}` }}>
+                    <span className="text-base w-6 text-center">
+                      {weeklyLeaderboard.find(e => e.participant_id === participant.id)?.rank}°
+                    </span>
+                    <span className="flex-1 text-sm font-bold text-slate-900">
+                      {participant.name}
+                      <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>
+                    </span>
+                    <span className="font-bebas text-xl" style={{ color }}>
+                      {weeklyLeaderboard.find(e => e.participant_id === participant.id)?.weekly_points ?? 0}
+                    </span>
+                    <span className="text-xs text-slate-400">pts</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -624,6 +695,23 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   <div className="text-white/60 text-xs">{myEntry.exact_results} exactos · {myEntry.correct_winners} ganadores</div>
                 </div>
               </div>
+            )}
+            {myEntry && (
+              <button
+                onClick={async () => {
+                  const text = `🏆 Estoy ${myEntry.rank}° en el prode de ${empresa.name} con ${myEntry.total_points} puntos. ¡Sumate!`
+                  const url = `https://${empresa.slug}.elprode.ar`
+                  if (navigator.share) {
+                    await navigator.share({ title: empresa.name, text, url })
+                  } else {
+                    await navigator.clipboard.writeText(`${text} ${url}`)
+                    alert('¡Copiado!')
+                  }
+                }}
+                className="w-full mb-4 py-2.5 rounded-xl border-2 font-black text-sm flex items-center justify-center gap-2 transition-all"
+                style={{ borderColor: color, color }}>
+                📤 Compartir mi posición
+              </button>
             )}
             {leaderboard.length === 0 && (
               <div className="text-center py-10 text-slate-400">

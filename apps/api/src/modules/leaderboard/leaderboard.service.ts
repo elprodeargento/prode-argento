@@ -117,6 +117,51 @@ export class LeaderboardService {
     return { entries, weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
   }
 
+  async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) - offset * 7)
+    monday.setHours(0, 0, 0, 0)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+
+    const { data, error } = await this.supabase.client
+      .from('predictions')
+      .select(`
+        participant_id,
+        points_earned,
+        participants!inner(name, business_id)
+      `)
+      .eq('participants.business_id', businessId)
+      .gte('created_at', monday.toISOString())
+      .lte('created_at', sunday.toISOString())
+      .not('points_earned', 'is', null)
+
+    if (error) throw new Error(error.message)
+
+    const map: Record<string, { name: string; points: number; exact: number }> = {}
+    for (const row of data ?? []) {
+      const pid = row.participant_id
+      const name = (row.participants as any)?.name ?? 'Participante'
+      if (!map[pid]) map[pid] = { name, points: 0, exact: 0 }
+      map[pid].points += row.points_earned ?? 0
+      if (row.points_earned === 3) map[pid].exact++
+    }
+
+    const entries = Object.entries(map)
+      .map(([id, v]) => ({ participant_id: id, name: v.name, weekly_points: v.points, exact_results: v.exact }))
+      .sort((a, b) => b.weekly_points - a.weekly_points)
+      .map((e, i) => ({ ...e, rank: i + 1 }))
+
+    return {
+      entries,
+      weekStart: monday.toISOString(),
+      weekEnd: sunday.toISOString(),
+    }
+  }
+
   async getLeaderboardByAdminId(adminUserId: string, limit = 50) {
     const { data: business } = await this.supabase.client
       .from('businesses')

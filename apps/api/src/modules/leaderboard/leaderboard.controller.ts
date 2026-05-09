@@ -24,6 +24,15 @@ export class LeaderboardController {
     return this.leaderboardService.getLeaderboardByAdminId(req.user.id, Number(limit))
   }
 
+  @Get(':businessId/weekly')
+  @ApiOperation({ summary: 'Get weekly leaderboard for a business (public)' })
+  getWeeklyByBusiness(
+    @Param('businessId') businessId: string,
+    @Query('offset') offset = 0,
+  ) {
+    return this.leaderboardService.getWeeklyLeaderboardByBusinessId(businessId, Number(offset))
+  }
+
   @Get(':businessId')
   @ApiOperation({ summary: 'Get leaderboard for a business' })
   getLeaderboard(
