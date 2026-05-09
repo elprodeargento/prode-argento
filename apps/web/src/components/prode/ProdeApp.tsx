@@ -550,13 +550,25 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               </div>
             )}
 
-            {weeklyLeaderboard.length > 0 && (
+            {leaderboard.length > 0 && (
               <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100">
+                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                   <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
+                  {weeklyLeaderboard.length === 0 && (
+                    <span className="text-[10px] text-slate-400 font-medium">Se actualiza con los partidos</span>
+                  )}
                 </div>
                 <div className="divide-y divide-slate-50">
-                  {weeklyLeaderboard.slice(0, 5).map(entry => {
+                  {(weeklyLeaderboard.length > 0
+                    ? weeklyLeaderboard
+                    : leaderboard.slice(0, 5).map(e => ({
+                        participant_id: e.participant_id,
+                        name: e.participants?.name ?? 'Participante',
+                        weekly_points: e.total_points,
+                        exact_results: e.exact_results,
+                        rank: e.rank,
+                      }))
+                  ).slice(0, 5).map(entry => {
                     const isMe = entry.participant_id === participant.id
                     const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `${entry.rank}°`
                     return (
@@ -566,7 +578,9 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                         <span className="text-base w-6 text-center">{medal}</span>
                         <span className={`flex-1 text-sm font-bold truncate ${isMe ? 'text-slate-900' : 'text-slate-600'}`}>
                           {entry.name}
-                          {isMe && <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>}
+                          {isMe && (
+                            <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>
+                          )}
                         </span>
                         <span className="font-bebas text-xl" style={{ color }}>{entry.weekly_points}</span>
                         <span className="text-xs text-slate-400">pts</span>
@@ -574,22 +588,31 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     )
                   })}
                 </div>
-                {weeklyLeaderboard.findIndex(e => e.participant_id === participant.id) >= 5 && (
-                  <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-3 bg-blue-50"
-                    style={{ borderLeft: `3px solid ${color}` }}>
-                    <span className="text-base w-6 text-center">
-                      {weeklyLeaderboard.find(e => e.participant_id === participant.id)?.rank}°
-                    </span>
-                    <span className="flex-1 text-sm font-bold text-slate-900">
-                      {participant.name}
-                      <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>
-                    </span>
-                    <span className="font-bebas text-xl" style={{ color }}>
-                      {weeklyLeaderboard.find(e => e.participant_id === participant.id)?.weekly_points ?? 0}
-                    </span>
-                    <span className="text-xs text-slate-400">pts</span>
-                  </div>
-                )}
+                {(() => {
+                  const source = weeklyLeaderboard.length > 0
+                    ? weeklyLeaderboard
+                    : leaderboard.map(e => ({
+                        participant_id: e.participant_id,
+                        name: e.participants?.name ?? 'Participante',
+                        weekly_points: e.total_points,
+                        rank: e.rank,
+                      }))
+                  const myIdx = source.findIndex(e => e.participant_id === participant.id)
+                  const myEntry2 = source[myIdx]
+                  if (myIdx < 5 || !myEntry2) return null
+                  return (
+                    <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-3 bg-blue-50"
+                      style={{ borderLeft: `3px solid ${color}` }}>
+                      <span className="text-base w-6 text-center">{myEntry2.rank}°</span>
+                      <span className="flex-1 text-sm font-bold text-slate-900">
+                        {participant.name}
+                        <span className="text-[10px] text-white px-1.5 py-0.5 rounded-full ml-1 font-black" style={{ background: color }}>Vos</span>
+                      </span>
+                      <span className="font-bebas text-xl" style={{ color }}>{myEntry2.weekly_points}</span>
+                      <span className="text-xs text-slate-400">pts</span>
+                    </div>
+                  )
+                })()}
               </div>
             )}
 
