@@ -56,11 +56,13 @@ export function usePushNotifications(participantId: string | undefined) {
     const unsub = onMessage(messaging, (payload) => {
       const title = payload.notification?.title || 'Prode Mundial 2026'
       const body = payload.notification?.body || ''
+      const icon = payload.notification?.icon
+      const image = (payload.notification as any)?.image
       if (Notification.permission === 'granted') {
         new Notification(title, {
           body,
-          icon: '/icon-192.png',
-          ...(payload.notification?.image ? { image: payload.notification.image } : {}),
+          ...(icon ? { icon } : {}),
+          ...(image ? { image } : {}),
         })
       }
     })

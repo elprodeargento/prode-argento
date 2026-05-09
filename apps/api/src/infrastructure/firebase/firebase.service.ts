@@ -50,7 +50,7 @@ export class FirebaseService implements OnModuleInit {
     const BATCH = 500
     let sent = 0
     let failed = 0
-    const notifIcon = icon || '/icon-192.png'
+    const notifIcon = icon && icon.startsWith('http') ? icon : undefined
 
     for (let i = 0; i < tokens.length; i += BATCH) {
       const batch = tokens.slice(i, i + BATCH)
@@ -62,7 +62,7 @@ export class FirebaseService implements OnModuleInit {
             notification: {
               title,
               body,
-              icon: notifIcon,
+              ...(notifIcon ? { icon: notifIcon } : {}),
               ...(imageUrl ? { image: imageUrl } : {}),
             },
           },
