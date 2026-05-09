@@ -31,17 +31,30 @@ export async function middleware(request: NextRequest) {
   }
 
   if (slug === null) {
-    // Verificar si es ref.elprode.ar
     const host = request.headers.get('host') ?? ''
     const isRef = host.startsWith('ref.')
     if (isRef) {
-      // El path es /slug-del-referrer
-      const refSlug = request.nextUrl.pathname.replace('/', '')
-      if (refSlug) {
+      const pathname = request.nextUrl.pathname
+      // Solo reescribir si es la raíz o un slug simple (sin sub-rutas)
+      const refSlug = pathname.replace(/^\//, '').split('/')[0]
+      const isSimpleSlug = refSlug &&
+        !refSlug.startsWith('empresa') &&
+        !refSlug.startsWith('_next') &&
+        !refSlug.startsWith('api') &&
+        pathname.split('/').filter(Boolean).length === 1
+
+      if (isSimpleSlug) {
         const url = request.nextUrl.clone()
+        url.hostname = ROOT_DOMAINS.find(d => host.endsWith(d)) ?? 'elprode.ar'
         url.pathname = `/ref/${refSlug}`
         return NextResponse.rewrite(url)
       }
+
+      // Para cualquier otra ruta en ref.elprode.ar,
+      // redirigir al dominio principal manteniendo el path
+      const url = request.nextUrl.clone()
+      url.hostname = 'elprode.ar'
+      return NextResponse.redirect(url)
     }
   }
 

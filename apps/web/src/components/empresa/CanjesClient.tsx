@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { apiGet } from '@/lib/api'
+import { apiGet, apiPost } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
 
 interface ReferralsData {
@@ -65,6 +65,15 @@ export function CanjesClient() {
       .finally(() => setLoading(false))
   }, [])
 
+  const handleRedeem = async (prize: string, points: number) => {
+    try {
+      await apiPost('/referrals/redeem', { prize, points })
+      alert('¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.')
+    } catch {
+      alert('Error al procesar el canje. Intentá de nuevo.')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -115,7 +124,7 @@ export function CanjesClient() {
                 <p className={`text-[13px] font-medium mb-4 ${canRedeem ? 'text-[#5A6480]' : 'text-[#8E96AE]'}`}>{prize.desc}</p>
                 {canRedeem ? (
                   <button
-                    onClick={() => alert('¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.')}
+                    onClick={() => handleRedeem(prize.titulo, prize.puntos)}
                     className="w-full py-2.5 rounded-xl text-[13px] font-black text-white transition-all hover:opacity-90"
                     style={{ background: prize.color }}
                   >

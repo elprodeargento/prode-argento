@@ -41,6 +41,45 @@ export class ReferralsService {
     })
   }
 
+  private async sendRedemptionEmail(businessName: string, prize: string, points: number) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: 'noreply@elprode.ar',
+          to: 'elprodeargento@gmail.com',
+          subject: `🎁 Nuevo canje — ${businessName}`,
+          html: `
+            <h2>Nuevo canje solicitado</h2>
+            <p><strong>Comercio:</strong> ${businessName}</p>
+            <p><strong>Premio:</strong> ${prize}</p>
+            <p><strong>Puntos usados:</strong> ${points}</p>
+            <p><strong>Fecha:</strong> ${new Date().toLocaleString('es-AR')}</p>
+            <br/>
+            <p>Contactar al comercio en las próximas 24hs.</p>
+          `
+        })
+      })
+    } catch (e) {
+      console.error('Error sending redemption email:', e)
+    }
+  }
+
+  async redeemPrize(adminUserId: string, prize: string, points: number) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('name')
+      .eq('admin_user_id', adminUserId)
+      .single()
+
+    await this.sendRedemptionEmail(business?.name ?? 'Desconocido', prize, points)
+    return { success: true }
+  }
+
   // Obtener datos de referidos del comercio actual
   async getMyReferrals(adminUserId: string) {
     const { data: business } = await this.supabase.client
