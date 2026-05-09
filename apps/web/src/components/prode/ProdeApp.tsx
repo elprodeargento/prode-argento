@@ -166,6 +166,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [savedMsg, setSavedMsg] = useState('')
   const [isUpcomingDay, setIsUpcomingDay] = useState(false)
   const [promos, setPromos] = useState<Promo[]>([])
+  const [hasChanges, setHasChanges] = useState(false)
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
 
@@ -245,6 +246,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const finishedMatches = matches.filter(m => m.status === 'finished')
   const closeMin = empresa.close_minutes ?? 5
   const nextMatch = scheduledMatches.find(m => !isLocked(m, closeMin))
+  const nextMatchApiPred = nextMatch ? apiPreds[nextMatch.id] : null
 
   const handleSave = async () => {
     setSaving(true)
@@ -263,6 +265,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         body: JSON.stringify({ participantId: participant.id, predictions: items }),
       })
       setSavedMsg('✅ Guardados')
+      setHasChanges(false)
       // Refresh predictions
       const fresh = await publicFetch(`/predictions/participant/${participant.id}`).catch(() => [])
       const predMap: Record<number, RawPrediction> = {}
@@ -337,6 +340,23 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               </div>
             </div>
 
+            <button
+              onClick={async () => {
+                const url = `https://${empresa.slug}.elprode.ar`
+                const text = `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
+                if (navigator.share) {
+                  await navigator.share({ title: empresa.name, text, url })
+                } else {
+                  await navigator.clipboard.writeText(`${text} ${url}`)
+                  alert('¡Link copiado!')
+                }
+              }}
+              className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-black text-sm transition-all"
+              style={{ borderColor: color, color, background: `${color}10` }}
+            >
+              👥 Invitá a un amigo
+            </button>
+
             <PromoCarousel promos={promos} />
 
             {nextMatch ? (
@@ -360,10 +380,22 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   <span>📅 {formatDate(nextMatch.kickoff_at)}</span>
                   <span>⏰ {timeUntil(nextMatch.kickoff_at)}</span>
                 </div>
-                <button onClick={() => setTab('pronosticar')}
-                  className="w-full bg-yellow-400 text-[#002B72] rounded-xl py-2.5 font-black text-sm hover:bg-yellow-300 transition-all">
-                  ⚡ Cargar mi pronóstico
-                </button>
+                {nextMatchApiPred ? (
+                  <div className="w-full bg-white/15 rounded-xl py-3 px-4 flex items-center justify-between">
+                    <span className="text-white/70 text-xs font-black uppercase tracking-wide">Tu pronóstico</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bebas text-3xl text-yellow-300">{nextMatchApiPred.home_pred}</span>
+                      <span className="font-bebas text-xl text-white/50">-</span>
+                      <span className="font-bebas text-3xl text-yellow-300">{nextMatchApiPred.away_pred}</span>
+                    </div>
+                    <span className="text-white/50 text-xs font-bold">✅ Cargado</span>
+                  </div>
+                ) : (
+                  <button onClick={() => setTab('pronosticar')}
+                    className="w-full bg-yellow-400 text-[#002B72] rounded-xl py-2.5 font-black text-sm hover:bg-yellow-300 transition-all">
+                    ⚡ Cargar mi pronóstico
+                  </button>
+                )}
               </div>
             ) : (
               <div className="mx-4 mt-4 rounded-2xl p-4 text-white/80 text-center" style={{ background: color }}>
@@ -392,7 +424,18 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* PRONOSTICAR */}
         {tab === 'pronosticar' && (
           <div className="p-4">
-            <div className="text-sm font-black text-slate-900 mb-4">Cargá tus pronósticos</div>
+            {(() => {
+              const totalScheduled = scheduledMatches.length
+              const totalPredicted = scheduledMatches.filter(m => apiPreds[m.id] !== undefined).length
+              return (
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-black text-slate-900">Cargá tus pronósticos</div>
+                  <div className={`text-xs font-black px-3 py-1.5 rounded-full ${totalPredicted === totalScheduled && totalScheduled > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                    ✅ {totalPredicted} de {totalScheduled} cargados
+                  </div>
+                </div>
+              )
+            })()}
 
             {isUpcomingDay && scheduledMatches.length > 0 && (
               <div className="rounded-2xl mb-4 px-4 py-3 flex items-center gap-3"
@@ -435,13 +478,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       <div className="flex items-center gap-1.5">
                         <input type="number" min={0} max={20} disabled={locked}
                           value={preds[m.id]?.h ?? ''}
-                          onChange={e => setPreds(p => ({...p, [m.id]: {...p[m.id], h: e.target.value, a: p[m.id]?.a ?? ''}}))}
+                          onChange={e => { setPreds(p => ({...p, [m.id]: {...p[m.id], h: e.target.value, a: p[m.id]?.a ?? ''}})); setHasChanges(true) }}
                           className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
                           style={{ borderColor: preds[m.id]?.h !== undefined && preds[m.id]?.h !== '' ? color : undefined }} />
                         <span className="font-bebas text-xl text-slate-400">:</span>
                         <input type="number" min={0} max={20} disabled={locked}
                           value={preds[m.id]?.a ?? ''}
-                          onChange={e => setPreds(p => ({...p, [m.id]: {...p[m.id], a: e.target.value, h: p[m.id]?.h ?? ''}}))}
+                          onChange={e => { setPreds(p => ({...p, [m.id]: {...p[m.id], a: e.target.value, h: p[m.id]?.h ?? ''}})); setHasChanges(true) }}
                           className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
                           style={{ borderColor: preds[m.id]?.a !== undefined && preds[m.id]?.a !== '' ? color : undefined }} />
                       </div>
@@ -454,15 +497,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 )
               })}
             </div>
-            {scheduledMatches.length > 0 && !isUpcomingDay && (
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full mt-4 rounded-2xl py-4 text-white font-black text-base shadow-lg hover:opacity-90 transition-all disabled:opacity-60"
-                style={{ background: color }}>
-                {saving ? 'Guardando...' : savedMsg || '💾 Guardar pronósticos'}
-              </button>
-            )}
           </div>
         )}
 
@@ -593,6 +627,23 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         )}
 
       </div>
+
+      {/* Floating save button */}
+      {hasChanges && tab === 'pronosticar' && (
+        <div className="fixed bottom-[64px] left-0 right-0 max-w-md mx-auto px-4 pb-3 z-40">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full rounded-2xl py-4 text-white font-black text-base shadow-lg hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ background: color }}>
+            {saving
+              ? <><span className="animate-spin">⚽</span> Guardando...</>
+              : savedMsg
+              ? savedMsg
+              : '💾 Guardar pronósticos'}
+          </button>
+        </div>
+      )}
 
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-100 flex shadow-lg z-50">
