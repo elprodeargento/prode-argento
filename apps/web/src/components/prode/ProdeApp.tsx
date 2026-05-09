@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
@@ -41,6 +41,81 @@ interface LeaderboardEntry {
   correct_winners: number
   rank: number
   participants: { name: string; email: string }
+}
+
+interface Promo {
+  id: string
+  name: string
+  category: string
+  description: string
+  image_url?: string
+  radius_km: number
+  lat: number
+  lon: number
+}
+
+const GRADIENT_BY_CAT: Record<string, string> = {
+  '🍕 Gastronomía':    'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
+  '☕ Cafetería':       'linear-gradient(135deg, #3d1a00, #8B4513)',
+  '🛒 Supermercado':   'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
+  '💊 Farmacia':       'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
+  '👗 Indumentaria':   'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
+  '💆 Bienestar':      'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
+  '📚 Librería':       'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
+  '🎬 Entretenimiento':'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
+  '🔧 Servicios':      'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
+  '🏠 Hogar':          'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
+}
+
+function PromoCarousel({ promos }: { promos: Promo[] }) {
+  const [current, setCurrent] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (promos.length <= 1) return
+    timerRef.current = setInterval(() => setCurrent(c => (c + 1) % promos.length), 4000)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [promos.length])
+
+  if (!promos.length) return null
+
+  const promo = promos[current]
+  const bg = GRADIENT_BY_CAT[promo.category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)'
+  const radiusLabel = promo.radius_km < 1 ? `${promo.radius_km * 1000}m` : `${promo.radius_km} km`
+  const hasLocation = promo.lat !== 0 || promo.lon !== 0
+
+  return (
+    <div className="px-4 pt-4">
+      <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Promociones locales</div>
+      <div
+        className="h-[88px] rounded-[16px] overflow-hidden relative flex items-center cursor-pointer select-none"
+        style={{ background: promo.image_url ? undefined : bg }}
+        onClick={() => setCurrent(c => (c + 1) % promos.length)}
+      >
+        {promo.image_url && (
+          <img src={promo.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        )}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)' }} />
+        <div className="relative z-10 px-4 flex flex-col gap-1 flex-1 min-w-0">
+          {hasLocation && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full w-fit uppercase tracking-wider"
+              style={{ background: '#F5C518', color: '#002B72' }}>
+              📍 {radiusLabel}
+            </span>
+          )}
+          <div className="text-[14px] font-black text-white leading-tight truncate">{promo.name || promo.category}</div>
+          <div className="text-[11px] font-semibold leading-tight truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>{promo.description}</div>
+        </div>
+        {promos.length > 1 && (
+          <div className="absolute bottom-2 right-3 flex gap-1">
+            {promos.map((_, i) => (
+              <div key={i} className={`rounded-full transition-all ${i === current ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/40'}`} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 interface Participant { id: string; name: string; email: string; phone: string }
@@ -90,8 +165,28 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState('')
   const [isUpcomingDay, setIsUpcomingDay] = useState(false)
+  const [promos, setPromos] = useState<Promo[]>([])
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
+
+  useEffect(() => {
+    // Fetch nearby promos silently using geolocation if available
+    function loadPromos(lat = 0, lon = 0) {
+      publicFetch(`/promos/nearby?lat=${lat}&lon=${lon}`)
+        .then((data: Promo[]) => setPromos(data ?? []))
+        .catch(() => {})
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => loadPromos(pos.coords.latitude, pos.coords.longitude),
+        () => loadPromos(),
+        { timeout: 5000 },
+      )
+    } else {
+      loadPromos()
+    }
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -241,6 +336,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-xs font-bold text-slate-400">Posición</div>
               </div>
             </div>
+
+            <PromoCarousel promos={promos} />
 
             {nextMatch ? (
               <div className="mx-4 mt-4 rounded-2xl p-4 text-white relative overflow-hidden" style={{ background: color }}>

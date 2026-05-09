@@ -40,4 +40,16 @@ export class CreatePromoDto {
   @Min(0.1)
   @Max(50)
   radius_km?: number;
+
+  @ApiProperty({ required: false, default: 0 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  lat?: number;
+
+  @ApiProperty({ required: false, default: 0 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  lon?: number;
 }

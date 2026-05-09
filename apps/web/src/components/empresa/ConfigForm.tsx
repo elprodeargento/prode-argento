@@ -54,6 +54,7 @@ export function ConfigForm() {
   const [saveError, setSaveError] = useState<string | null>(null)
   const [igConnected, setIgConnected] = useState(false)
   const [businessId, setBusinessId] = useState<string | undefined>()
+  const [slug, setSlug] = useState<string | null>(null)
 
   const {
     register,
@@ -106,6 +107,7 @@ export function ConfigForm() {
           setLogoUrl(data.logo_url)
           setBackgroundUrl(data.background_url ?? null)
           setBusinessId(data.id)
+          setSlug(data.slug ?? null)
         }
       } catch (err) {
         console.error('Failed to fetch config:', err)
@@ -186,6 +188,18 @@ export function ConfigForm() {
       })}
       className="config-form pb-24"
     >
+      {/* VER PRODE */}
+      {slug && (
+        <a
+          href={`https://${slug}.elprode.ar`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full border-2 border-[#002B72] text-[#002B72] font-black text-[14px] py-[13px] rounded-xl hover:bg-[#002B72] hover:text-white transition-all"
+        >
+          👁️ Ver mi prode
+        </a>
+      )}
+
       {/* IDENTIDAD VISUAL */}
       <div className="config-section">
         <div className="config-section-head">

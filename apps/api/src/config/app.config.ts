@@ -3,7 +3,7 @@ import { registerAs } from '@nestjs/config'
 export default registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '4000', 10),
-  webUrl: process.env.WEB_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
+  webUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000',
   supabaseUrl: (process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL)!,
   supabaseServiceKey: (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '')!,
   footballDataKey: process.env.FOOTBALL_DATA_API_KEY!,

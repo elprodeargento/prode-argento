@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
+import { normalizeE164AR } from '../../shared/utils/phone';
 
 @Injectable()
 export class ParticipantsService {
@@ -75,9 +76,11 @@ export class ParticipantsService {
 
     if (existing) return { participant: existing, business };
 
+    const normalizedPhone = normalizeE164AR(phone) ?? phone ?? ''
+
     const { data, error } = await this.supabase.client
       .from('participants')
-      .insert({ business_id: business.id, name, email, phone, accepted_terms: true })
+      .insert({ business_id: business.id, name, email, phone: normalizedPhone, accepted_terms: true })
       .select()
       .single();
 

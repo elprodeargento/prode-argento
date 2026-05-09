@@ -85,6 +85,8 @@ const INITIAL_FORM = {
   radius_km: 1,
   valid_from: '',
   valid_until: '',
+  lat: 0,
+  lon: 0,
 }
 
 function UpgradeModal({ onClose }: { onClose: () => void }) {
@@ -93,7 +95,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
   const handleCheckout = async () => {
     setLoading(true)
     try {
-      const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan: 'pro' })
+      const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan: 'premium' })
       window.location.href = initPoint
     } catch {
       alert('Error al iniciar el pago. Intentá de nuevo.')
@@ -112,7 +114,7 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
 
         <div className="text-center mb-6">
           <div className="text-4xl mb-3">⭐</div>
-          <div className="text-xs font-black text-[#F5C518] uppercase tracking-widest mb-1">Plan Pro</div>
+          <div className="text-xs font-black text-[#F5C518] uppercase tracking-widest mb-1">Plan Premium</div>
           <h3 className="text-2xl font-black text-[#0D1A3A] mb-2">Activá tus promos</h3>
           <p className="text-sm text-[#5A6480] leading-snug">
             Tus promos llegan a todos los participantes de la zona en cualquier prode de la plataforma.
@@ -120,10 +122,15 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="rounded-2xl border-2 border-[#F5C518] bg-[#FFFBEA] p-5 mb-6">
-          <div className="font-bebas text-4xl text-[#0D1A3A] mb-1">$9.999<span className="text-lg text-[#8E96AE] font-sans font-medium">/mes</span></div>
-          <div className="text-xs text-[#8E96AE] font-medium mb-4">IVA incluido</div>
+          <div className="font-bebas text-4xl text-[#0D1A3A] mb-0.5">$80.000</div>
+          <p className="text-[13px] font-black text-[#002B72] mb-4">🔒 Pago único · válido todo el Mundial 2026</p>
           <ul className="flex flex-col gap-2">
-            {['Participantes ilimitados', 'Promos geolocalizadas', 'Todo lo del plan Premium', 'Estadísticas avanzadas'].map(f => (
+            {[
+              'Todo lo del plan Pro',
+              'Publicidad geolocalizada en la zona',
+              'Estadísticas de visualizaciones',
+              'Soporte por WhatsApp',
+            ].map(f => (
               <li key={f} className="flex items-center gap-2 text-sm text-[#2D3A5A] font-medium">
                 <span className="text-green-500 font-black">✓</span> {f}
               </li>
@@ -134,12 +141,11 @@ function UpgradeModal({ onClose }: { onClose: () => void }) {
         <button
           onClick={handleCheckout}
           disabled={loading}
-          className="w-full py-4 rounded-2xl font-black text-[#002B72] text-sm transition-all hover:opacity-90 disabled:opacity-60 shadow-lg"
-          style={{ background: '#F5C518' }}
+          className="w-full py-4 rounded-2xl font-black text-white text-sm transition-all hover:bg-[#00318A] disabled:opacity-60 shadow-lg bg-[#002B72]"
         >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : '🚀 Contratar Plan Pro con Mercado Pago'}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : '🚀 Contratar Plan Premium con MP'}
         </button>
-        <p className="text-center text-xs text-[#8E96AE] mt-3">Pago seguro · Podés cancelar cuando quieras</p>
+        <p className="text-center text-xs text-[#8E96AE] mt-3">Pago seguro a través de Mercado Pago</p>
       </div>
     </div>
   )
@@ -152,6 +158,7 @@ export function PromoManager() {
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [geoStatus, setGeoStatus] = useState<'idle' | 'ok' | 'denied'>('idle')
   const [form, setForm] = useState(INITIAL_FORM)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -189,10 +196,26 @@ export function PromoManager() {
     }
   }
 
+  const openForm = () => {
+    setShowForm(true)
+    setGeoStatus('idle')
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setForm(f => ({ ...f, lat: pos.coords.latitude, lon: pos.coords.longitude }))
+          setGeoStatus('ok')
+        },
+        () => setGeoStatus('denied'),
+        { timeout: 8000 },
+      )
+    }
+  }
+
   const handleCancel = () => {
     setShowForm(false)
     setForm(INITIAL_FORM)
     setImageUrl(null)
+    setGeoStatus('idle')
   }
 
   useEffect(() => {
@@ -235,7 +258,7 @@ export function PromoManager() {
         <div className="page-actions">
           {!showForm && (
             <button
-              onClick={() => plan === 'pro' ? setShowForm(true) : setShowUpgrade(true)}
+              onClick={() => plan === 'premium' ? openForm() : setShowUpgrade(true)}
               className="flex items-center gap-2 bg-[#002B72] text-white rounded-xl px-5 py-[12px] text-[14px] font-black hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
             >
               + Nueva promo
@@ -244,19 +267,19 @@ export function PromoManager() {
         </div>
       </div>
 
-      {/* PLAN NOTICE — solo si no es pro */}
-      {plan !== 'pro' && (
+      {/* PLAN NOTICE — solo si no es premium */}
+      {plan !== 'premium' && (
         <div className="flex items-center gap-[14px] bg-gradient-to-br from-[#002B72] to-[#003FA3] rounded-[16px] p-[18px_22px] shadow-[0_8px_24px_rgba(0,43,114,0.15)]">
           <div className="text-[32px] shrink-0">⭐</div>
           <div className="flex-1">
-            <div className="text-[15px] font-black text-white mb-0.5">Función disponible en Plan Pro</div>
+            <div className="text-[15px] font-black text-white mb-0.5">Función disponible en Plan Premium</div>
             <div className="text-[13px] text-white/70 leading-tight">Tus promos llegan a todos los participantes de la zona que estén jugando en cualquier prode de la plataforma</div>
           </div>
           <button
             onClick={() => setShowUpgrade(true)}
             className="bg-[#F5C518] text-[#002B72] text-[12px] font-black px-4 py-2 rounded-full whitespace-nowrap hover:bg-[#FFD740] transition-all"
           >
-            Plan Pro →
+            Plan Premium →
           </button>
         </div>
       )}
@@ -354,6 +377,13 @@ export function PromoManager() {
                   <option value={5}>5 km</option>
                 </select>
               </div>
+            </div>
+
+            {/* Ubicación detectada */}
+            <div className="flex items-center gap-2 text-[12px] font-medium">
+              {geoStatus === 'idle' && <span className="text-[#8E96AE]">📍 Detectando ubicación del local...</span>}
+              {geoStatus === 'ok'   && <span className="text-[#18A06A]">📍 Ubicación capturada — la promo aparecerá a {form.radius_km} km a la redonda</span>}
+              {geoStatus === 'denied' && <span className="text-amber-500">⚠️ Sin ubicación — la promo se mostrará a todos los participantes</span>}
             </div>
 
             {/* Imagen de fondo */}

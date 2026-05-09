@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, UseGuards, Req, Query, ParseFloatPipe, DefaultValuePipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PromosService } from './promos.service';
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
 import { CreatePromoDto } from './dto/create-promo.dto';
@@ -8,6 +8,17 @@ import { CreatePromoDto } from './dto/create-promo.dto';
 @Controller({ path: 'promos', version: '1' })
 export class PromosController {
   constructor(private readonly promosService: PromosService) {}
+
+  @Get('nearby')
+  @ApiOperation({ summary: 'Get active promos near a location (public)' })
+  @ApiQuery({ name: 'lat', required: false, type: Number })
+  @ApiQuery({ name: 'lon', required: false, type: Number })
+  findNearby(
+    @Query('lat', new DefaultValuePipe(0), ParseFloatPipe) lat: number,
+    @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
+  ) {
+    return this.promosService.findNearby(lat, lon);
+  }
 
   @Get('me')
   @UseGuards(SupabaseAuthGuard)

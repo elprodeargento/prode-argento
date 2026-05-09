@@ -24,8 +24,9 @@ export class PaymentsService {
   }
 
   async createCheckoutPreference(businessId: string, plan: UpgradeablePlan, adminEmail: string) {
-    const webUrl = this.config.get<string>('app.webUrl')!
-    const apiUrl = process.env.API_PUBLIC_URL || webUrl.replace('3000', '4000') + '/api/v1'
+    const rawUrl = this.config.get<string>('app.webUrl') ?? ''
+    const webUrl = rawUrl.includes('localhost') ? 'https://elprode.ar' : rawUrl
+    const apiUrl = process.env.API_PUBLIC_URL ?? 'https://prode-argento.onrender.com/api/v1'
     const planInfo = PLANS[plan]
 
     const result = await this.preference.create({

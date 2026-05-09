@@ -10,7 +10,7 @@ services:
         value: production
       - key: PORT
         value: 4000
-      - key: WEB_URL
+      - key: NEXT_PUBLIC_APP_URL
         value: https://elprode.ar
       - key: SUPABASE_URL
         sync: false
