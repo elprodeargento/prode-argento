@@ -408,8 +408,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     // Logo del comercio (si existe)
     if (logoUrl) {
       try {
-        // Descargar la imagen via fetch para evitar CORS
-        const response = await fetch(logoUrl)
+        // Descargar la imagen via proxy para evitar CORS
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+        const proxiedUrl = `${API_BASE}/storage/proxy?url=${encodeURIComponent(logoUrl!)}`
+        const response = await fetch(proxiedUrl)
         const blob = await response.blob()
         const objectUrl = URL.createObjectURL(blob)
 

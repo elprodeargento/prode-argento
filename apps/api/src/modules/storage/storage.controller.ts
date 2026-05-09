@@ -1,4 +1,4 @@
-import { Controller, Post, Req } from '@nestjs/common';
+import { Controller, Get, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger';
 import { FastifyRequest } from 'fastify';
 import type { MultipartFile, MultipartValue } from '@fastify/multipart';
@@ -8,6 +8,21 @@ import { StorageService } from './storage.service';
 @Controller({ path: 'storage', version: '1' })
 export class StorageController {
   constructor(private readonly storageService: StorageService) {}
+
+  @Get('proxy')
+  async proxyImage(@Query('url') url: string, @Res() res: any) {
+    try {
+      const response = await fetch(url)
+      const buffer = await response.arrayBuffer()
+      const contentType = response.headers.get('content-type') || 'image/jpeg'
+      res.set('Content-Type', contentType)
+      res.set('Access-Control-Allow-Origin', '*')
+      res.set('Cache-Control', 'public, max-age=86400')
+      res.send(Buffer.from(buffer))
+    } catch {
+      res.status(400).send('Error fetching image')
+    }
+  }
 
   @Post('upload')
   @ApiOperation({ summary: 'Upload a file to Cloudflare R2' })
