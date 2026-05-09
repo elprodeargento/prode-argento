@@ -1,5 +1,5 @@
+import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
-import { updateSession } from '@/utils/supabase/middleware'
 
 const ROOT_DOMAINS = ['elprode.ar', 'localhost']
 
@@ -8,6 +8,8 @@ const RESERVED_SLUGS = new Set([
   'static', 'assets', 'media', 'dev', 'staging', 'test', 'demo',
   'blog', 'docs', 'help', 'support', 'status', 'auth', 'ref',
 ])
+
+const EMPRESA_PUBLIC_PATHS = ['/empresa/login', '/empresa/registro']
 
 function getSlug(host: string): string | null {
   const bare = host.split(':')[0]
@@ -21,44 +23,76 @@ function getSlug(host: string): string | null {
 }
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
   const slug = getSlug(request.headers.get('host') ?? '')
 
+  // — Subdomain rewrite: pizza.elprode.ar → /p/pizza
   if (slug) {
     const url = request.nextUrl.clone()
-    const rest = request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
+    const rest = pathname === '/' ? '' : pathname
     url.pathname = `/p/${slug}${rest}`
     return NextResponse.rewrite(url)
   }
 
-  if (slug === null) {
-    const host = request.headers.get('host') ?? ''
-    const isRef = host.startsWith('ref.')
-    if (isRef) {
-      const pathname = request.nextUrl.pathname
-      // Solo reescribir si es la raíz o un slug simple (sin sub-rutas)
-      const refSlug = pathname.replace(/^\//, '').split('/')[0]
-      const isSimpleSlug = refSlug &&
-        !refSlug.startsWith('empresa') &&
-        !refSlug.startsWith('_next') &&
-        !refSlug.startsWith('api') &&
-        pathname.split('/').filter(Boolean).length === 1
+  // — ref.elprode.ar handling
+  const host = request.headers.get('host') ?? ''
+  if (host.startsWith('ref.')) {
+    const refSlug = pathname.replace(/^\//, '').split('/')[0]
+    const isSimpleSlug = refSlug &&
+      !refSlug.startsWith('empresa') &&
+      !refSlug.startsWith('_next') &&
+      !refSlug.startsWith('api') &&
+      pathname.split('/').filter(Boolean).length === 1
 
-      if (isSimpleSlug) {
-        const url = request.nextUrl.clone()
-        url.hostname = ROOT_DOMAINS.find(d => host.endsWith(d)) ?? 'elprode.ar'
-        url.pathname = `/ref/${refSlug}`
-        return NextResponse.rewrite(url)
-      }
-
-      // Para cualquier otra ruta en ref.elprode.ar,
-      // redirigir al dominio principal manteniendo el path
+    if (isSimpleSlug) {
       const url = request.nextUrl.clone()
-      url.hostname = 'elprode.ar'
-      return NextResponse.redirect(url)
+      url.hostname = ROOT_DOMAINS.find(d => host.endsWith(d)) ?? 'elprode.ar'
+      url.pathname = `/ref/${refSlug}`
+      return NextResponse.rewrite(url)
     }
+    const url = request.nextUrl.clone()
+    url.hostname = 'elprode.ar'
+    return NextResponse.redirect(url)
   }
 
-  return await updateSession(request)
+  // — Session refresh + auth protection for /empresa/*
+  let response = NextResponse.next({ request: { headers: request.headers } })
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) => {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          response = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+          )
+        },
+      },
+    },
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const isEmpresaRoute = pathname.startsWith('/empresa/')
+  const isEmpresaPublic = EMPRESA_PUBLIC_PATHS.some(p => pathname.startsWith(p))
+
+  if (isEmpresaRoute && !isEmpresaPublic && !user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/empresa/login'
+    return NextResponse.redirect(loginUrl)
+  }
+
+  if (isEmpresaPublic && user) {
+    const dashUrl = request.nextUrl.clone()
+    dashUrl.pathname = '/empresa/dashboard'
+    return NextResponse.redirect(dashUrl)
+  }
+
+  return response
 }
 
 export const config = {

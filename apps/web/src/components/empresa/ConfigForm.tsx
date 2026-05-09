@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Image from 'next/image'
-import { Loader2, AlertTriangle } from 'lucide-react'
+import { Loader2, AlertTriangle, Copy, Check, QrCode } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
 
@@ -21,9 +22,21 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   )
 }
 
+function sanitizeSlug(raw: string): string {
+  return raw
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+}
+
 const configSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  slug: z.string().min(2, 'El slug es obligatorio'),
+  slug: z.string()
+    .min(2, 'El slug debe tener al menos 2 caracteres')
+    .regex(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{1,2}$/, 'Solo letras minúsculas, números y guiones, sin espacios ni caracteres especiales'),
   primary_color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Debe ser un color hex válido'),
   welcome_msg: z.string().optional(),
   registration_deadline: z.string().optional(),
@@ -43,6 +56,7 @@ const configSchema = z.object({
 type ConfigFormValues = z.infer<typeof configSchema>
 
 export function ConfigForm() {
+  const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -55,6 +69,8 @@ export function ConfigForm() {
   const [igConnected, setIgConnected] = useState(false)
   const [businessId, setBusinessId] = useState<string | undefined>()
   const [slug, setSlug] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+  const [qrDownloading, setQrDownloading] = useState(false)
 
   const {
     register,
@@ -76,6 +92,47 @@ export function ConfigForm() {
 
   const primaryColor = watch('primary_color')
   const showSaveBar = isDirty || saving || success || !!saveError
+  const shareUrl = slug ? `https://${slug}.elprode.ar` : null
+  const qrColor = (primaryColor ?? '#002B72').replace('#', '')
+
+  function copyLink() {
+    if (!shareUrl) return
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  function shareWA() {
+    if (!shareUrl) return
+    const text = `¡Participá del Prode Mundial 2026 de ${watch('name') || 'nuestra empresa'}! Entrá acá: ${shareUrl}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  function shareEmail() {
+    if (!shareUrl) return
+    const subject = `¡Participá del Prode Mundial 2026!`
+    const body = `¡Hola!\n\nTe invitamos a participar del Prode Mundial 2026 de ${watch('name') || 'nuestra empresa'}.\n\nIngresá acá: ${shareUrl}\n\n¡Muchos éxitos!`
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank')
+  }
+
+  async function downloadQR() {
+    if (!shareUrl) return
+    setQrDownloading(true)
+    try {
+      const src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shareUrl)}&size=512x512&color=${qrColor}&bgcolor=ffffff&margin=20`
+      const res = await fetch(src)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `qr-${slug}.png`
+      a.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setQrDownloading(false)
+    }
+  }
 
   useEffect(() => {
     async function fetchConfig() {
@@ -164,6 +221,7 @@ export function ConfigForm() {
       })
       if (res.ok) {
         setSuccess(true)
+        router.refresh()
         setTimeout(() => setSuccess(false), 3000)
       } else {
         const body = await res.json().catch(() => ({}))
@@ -188,16 +246,83 @@ export function ConfigForm() {
       })}
       className="config-form pb-24"
     >
-      {/* VER PRODE */}
-      {slug && (
-        <a
-          href={`https://${slug}.elprode.ar`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full border-2 border-[#002B72] text-[#002B72] font-black text-[14px] py-[13px] rounded-xl hover:bg-[#002B72] hover:text-white transition-all"
-        >
-          👁️ Ver mi prode
-        </a>
+      {/* COMPARTIR */}
+      {shareUrl && (
+        <div className="config-section">
+          <div className="config-section-head">
+            <span className="config-section-icon">🔗</span>
+            <div>
+              <div className="config-section-title">Compartir tu prode</div>
+              <div className="config-section-sub">Mandales el link a tus participantes</div>
+            </div>
+          </div>
+          <div className="config-section-body">
+            {/* URL + copy */}
+            <div className="flex items-center gap-2 px-4 py-3 bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] rounded-xl">
+              <span className="flex-1 text-[13px] font-bold text-[#003FA3] truncate">{shareUrl}</span>
+              <button
+                type="button"
+                onClick={copyLink}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border-[1.5px] border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#003FA3] hover:text-[#003FA3] transition-all shrink-0"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-[#18A06A]" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copiado' : 'Copiar'}
+              </button>
+              <a
+                href={shareUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-white border-[1.5px] border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#003FA3] hover:text-[#003FA3] transition-all shrink-0"
+              >
+                👁️ Ver
+              </a>
+            </div>
+
+            {/* Share buttons */}
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={shareWA}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[#E8F8F1] border-[1.5px] border-[#25D366]/20 text-[#1A9E52] font-black text-[12px] hover:bg-[#25D366] hover:text-white hover:border-[#25D366] transition-all"
+              >
+                <span className="text-[22px]">💬</span>
+                WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={shareEmail}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] text-[#5A6480] font-black text-[12px] hover:bg-[#003FA3] hover:text-white hover:border-[#003FA3] transition-all"
+              >
+                <span className="text-[22px]">✉️</span>
+                Email
+              </button>
+              <button
+                type="button"
+                onClick={downloadQR}
+                disabled={qrDownloading}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] text-[#5A6480] font-black text-[12px] hover:bg-[#003FA3] hover:text-white hover:border-[#003FA3] transition-all disabled:opacity-50"
+              >
+                {qrDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
+                Bajar QR
+              </button>
+            </div>
+
+            {/* QR preview */}
+            <div className="flex justify-center pt-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shareUrl)}&size=200x200&color=${qrColor}&bgcolor=ffffff&margin=10`}
+                alt="QR de tu prode"
+                width={120}
+                height={120}
+                className="rounded-xl border-[1.5px] border-[#DDE1EF] p-2 bg-white"
+              />
+            </div>
+            <p className="text-center text-[11px] text-[#8E96AE] font-medium -mt-1">
+              El color del QR sigue tu color principal
+            </p>
+          </div>
+        </div>
       )}
 
       {/* IDENTIDAD VISUAL */}
@@ -225,8 +350,11 @@ export function ConfigForm() {
                   <input type="file" onChange={handleLogoUpload} disabled={uploading} />
                   <div className="logo-upload-icon">📁</div>
                   <div className="logo-upload-text">Subir nuevo logo</div>
-                  <div className="logo-upload-hint">PNG, SVG, JPG · máx 2MB</div>
+                  <div className="logo-upload-hint">PNG o SVG cuadrado · mín 200×200px · máx 2MB</div>
                 </div>
+                <p className="text-[11px] text-[#8E96AE] mt-1.5 leading-snug">
+                  💡 Usá imagen cuadrada con fondo transparente para que se vea bien en todos los dispositivos.
+                </p>
               </div>
             </div>
           </div>
@@ -246,8 +374,11 @@ export function ConfigForm() {
                   <input type="file" accept="image/*" onChange={handleBackgroundUpload} disabled={uploadingBg} />
                   <div className="logo-upload-icon">📁</div>
                   <div className="logo-upload-text">{uploadingBg ? 'Subiendo...' : 'Subir imagen de fondo'}</div>
-                  <div className="logo-upload-hint">Se muestra detrás del hero de bienvenida · JPG, PNG · máx 5MB</div>
+                  <div className="logo-upload-hint">Relación 3:1 · mín 1200×400px · JPG o PNG · máx 5MB</div>
                 </div>
+                <p className="text-[11px] text-[#8E96AE] mt-1.5 leading-snug">
+                  💡 Se muestra detrás del hero de bienvenida. Una imagen ancha y oscura funciona mejor con texto blanco.
+                </p>
                 {backgroundUrl && (
                   <button type="button" onClick={() => setBackgroundUrl(null)}
                     className="mt-2 text-xs font-bold text-red-500 hover:text-red-700">
@@ -269,8 +400,10 @@ export function ConfigForm() {
             </div>
             <div className="field">
               <div className="field-label">Slug / URL</div>
-              <input 
-                {...register('slug')}
+              <input
+                value={watch('slug') ?? ''}
+                onChange={e => setValue('slug', sanitizeSlug(e.target.value), { shouldDirty: true })}
+                onBlur={e => setValue('slug', e.target.value.replace(/^-+|-+$/g, ''), { shouldValidate: true })}
                 className="field-input"
               />
               <div className="field-hint mt-1">{watch('slug') || 'comercio'}.elprode.ar</div>

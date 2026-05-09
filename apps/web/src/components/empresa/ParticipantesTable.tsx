@@ -36,6 +36,14 @@ interface PredictionRow {
 type SortCol = 'total_points' | 'rank' | 'name' | 'registered_at'
 type SortDir = 'asc' | 'desc'
 
+function Flag({ value }: { value: string }) {
+  if (!value) return null
+  if (value.startsWith('http')) {
+    return <img src={value} alt="" className="w-5 h-4 object-contain shrink-0" />
+  }
+  return <span>{value}</span>
+}
+
 function waLink(phone: string) {
   const digits = phone.replace(/\D/g, '')
   const num = digits.startsWith('54') ? digits : `54${digits}`
@@ -139,11 +147,11 @@ function ParticipantDrawer({ participant, onClose }: { participant: Participant;
                       <div key={p.match_id} className="flex items-center gap-3 py-1">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 text-[12px] font-bold text-[#0D1A3A]">
-                            <span>{p.matches.home_flag}</span>
+                            <Flag value={p.matches.home_flag} />
                             <span className="truncate">{p.matches.home_team}</span>
                             <span className="text-[#8E96AE] mx-0.5">vs</span>
                             <span className="truncate">{p.matches.away_team}</span>
-                            <span>{p.matches.away_flag}</span>
+                            <Flag value={p.matches.away_flag} />
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[11px] text-[#5A6480]">Predijo: <span className="font-black">{p.home_pred}-{p.away_pred}</span></span>
@@ -165,11 +173,11 @@ function ParticipantDrawer({ participant, onClose }: { participant: Participant;
                       <div key={p.match_id} className="flex items-center gap-3 py-1">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1 text-[12px] font-bold text-[#0D1A3A]">
-                            <span>{p.matches.home_flag}</span>
+                            <Flag value={p.matches.home_flag} />
                             <span className="truncate">{p.matches.home_team}</span>
                             <span className="text-[#8E96AE] mx-0.5">vs</span>
                             <span className="truncate">{p.matches.away_team}</span>
-                            <span>{p.matches.away_flag}</span>
+                            <Flag value={p.matches.away_flag} />
                           </div>
                           <div className="text-[11px] text-[#5A6480] mt-0.5">Predijo: <span className="font-black">{p.home_pred}-{p.away_pred}</span></div>
                         </div>
