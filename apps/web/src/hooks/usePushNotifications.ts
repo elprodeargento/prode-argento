@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect } from 'react'
-import { getToken } from 'firebase/messaging'
+import { getToken, onMessage } from 'firebase/messaging'
 import { getFirebaseMessaging } from '@/lib/firebase'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 const STORAGE_KEY = 'fcm_token_registered'
 
 export function usePushNotifications(participantId: string | undefined) {
+  // Register token
   useEffect(() => {
     if (!participantId) return
     if (typeof window === 'undefined') return
@@ -21,30 +22,23 @@ export function usePushNotifications(participantId: string | undefined) {
     if (stored === participantId) return
 
     Notification.requestPermission().then(async (permission) => {
-      console.log('[FCM] permission:', permission)
       if (permission !== 'granted') return
 
       try {
         const messaging = getFirebaseMessaging()
-        if (!messaging) { console.warn('[FCM] messaging null'); return }
+        if (!messaging) return
 
-        console.log('[FCM] registering SW...')
         await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
         const sw = await navigator.serviceWorker.ready
-        console.log('[FCM] SW active:', sw.active?.state)
 
-        console.log('[FCM] getting token...')
         const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: sw })
-        console.log('[FCM] token:', token ? token.slice(0, 20) + '...' : 'NULL')
         if (!token) return
 
-        console.log('[FCM] registering with API...')
         const res = await fetch(`${API_URL}/notifications/fcm-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ participantId, token }),
         })
-        console.log('[FCM] API response:', res.status)
 
         if (res.ok) localStorage.setItem(STORAGE_KEY, participantId)
       } catch (err) {
@@ -52,4 +46,25 @@ export function usePushNotifications(participantId: string | undefined) {
       }
     })
   }, [participantId])
+
+  // Handle foreground messages (app open)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const messaging = getFirebaseMessaging()
+    if (!messaging) return
+
+    const unsub = onMessage(messaging, (payload) => {
+      const title = payload.notification?.title || 'Prode Mundial 2026'
+      const body = payload.notification?.body || ''
+      if (Notification.permission === 'granted') {
+        new Notification(title, {
+          body,
+          icon: '/icon-192.png',
+          ...(payload.notification?.image ? { image: payload.notification.image } : {}),
+        })
+      }
+    })
+
+    return unsub
+  }, [])
 }
