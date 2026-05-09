@@ -43,12 +43,14 @@ export class FirebaseService implements OnModuleInit {
     body: string,
     imageUrl?: string,
     table: 'push_subscriptions' | 'admin_push_subscriptions' = 'push_subscriptions',
+    icon?: string,
   ): Promise<{ sent: number; failed: number }> {
     if (!this.isReady || !tokens.length) return { sent: 0, failed: 0 }
 
     const BATCH = 500
     let sent = 0
     let failed = 0
+    const notifIcon = icon || '/icon-192.png'
 
     for (let i = 0; i < tokens.length; i += BATCH) {
       const batch = tokens.slice(i, i + BATCH)
@@ -60,7 +62,7 @@ export class FirebaseService implements OnModuleInit {
             notification: {
               title,
               body,
-              icon: '/icon-192.png',
+              icon: notifIcon,
               ...(imageUrl ? { image: imageUrl } : {}),
             },
           },

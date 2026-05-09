@@ -98,6 +98,8 @@ export class NotificationsScheduler {
           participant.id,
           `🏆 Sumaste ${result.pointsEarned} pts`,
           `Quedaste ${participant.rank ?? '?'}° en ${biz.name}`,
+          undefined,
+          biz.id,
         )
       }
     }

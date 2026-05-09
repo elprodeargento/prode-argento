@@ -359,6 +359,15 @@ export class NotificationsService {
     return (data ?? []).map((r: any) => r.participant_id)
   }
 
+  private async getBusinessLogo(businessId: string): Promise<string | undefined> {
+    const { data } = await this.supabase.client
+      .from('businesses')
+      .select('logo_url')
+      .eq('id', businessId)
+      .single()
+    return data?.logo_url ?? undefined
+  }
+
   async sendPushBlast(
     businessId: string,
     dto: SendPushDto,
@@ -374,7 +383,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return { sent: 0, failed: 0 }
 
-    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl)
+    const icon = await this.getBusinessLogo(businessId)
+    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon)
     this.logger.log(`Push blast: ${result.sent} sent, ${result.failed} failed for business ${businessId}`)
     return result
   }
@@ -384,6 +394,7 @@ export class NotificationsService {
     title: string,
     body: string,
     imageUrl?: string,
+    businessId?: string,
   ): Promise<void> {
     const { data } = await this.supabase.client
       .from('push_subscriptions')
@@ -393,7 +404,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    await this.firebase.sendPush(tokens, title, body, imageUrl)
+    const icon = businessId ? await this.getBusinessLogo(businessId) : undefined
+    await this.firebase.sendPush(tokens, title, body, imageUrl, 'push_subscriptions', icon)
   }
 
   async sendPushToAdmin(businessId: string, title: string, body: string): Promise<void> {
@@ -405,7 +417,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    await this.firebase.sendPush(tokens, title, body, undefined, 'admin_push_subscriptions')
+    const icon = await this.getBusinessLogo(businessId)
+    await this.firebase.sendPush(tokens, title, body, undefined, 'admin_push_subscriptions', icon)
   }
 
   private async sendPushReminderForBusiness(
@@ -421,7 +434,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    await this.firebase.sendPush(tokens, title, body)
+    const icon = await this.getBusinessLogo(businessId)
+    await this.firebase.sendPush(tokens, title, body, undefined, 'push_subscriptions', icon)
   }
 
   async registerParticipantToken(participantId: string, token: string): Promise<void> {
