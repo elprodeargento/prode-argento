@@ -438,19 +438,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         const drawX = logoX + (logoSize - drawW) / 2
         const drawY = centerY - logoSize / 2 + (logoSize - drawH) / 2
 
-        // Círculo de fondo
-        ctx.beginPath()
-        ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2 + 15, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(255,255,255,0.15)'
-        ctx.fill()
-
         // Clip circular
         ctx.save()
         ctx.beginPath()
         ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2, 0, Math.PI * 2)
         ctx.clip()
-        // Fondo blanco dentro del clip por si la imagen tiene transparencia
-        ctx.fillStyle = '#ffffff'
+        // Fondo del color del comercio dentro del clip por si la imagen tiene transparencia
+        ctx.fillStyle = bgColor
         ctx.fillRect(logoX, centerY - logoSize / 2, logoSize, logoSize)
         ctx.drawImage(img, drawX, drawY, drawW, drawH)
         ctx.restore()
