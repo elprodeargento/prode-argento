@@ -54,10 +54,20 @@ export function DashboardChecklist({ business }: { business: any }) {
       href: '/empresa/notificaciones',
       cta: 'Enviar mensaje',
     },
+    {
+      id: 'referral',
+      done: false,
+      icon: '🤝',
+      title: 'Invitá a otro comercio',
+      desc: 'Compartí tu link y ganá 10 puntos por cada comercio que pague.',
+      href: '/empresa/referidos',
+      cta: 'Ver mi link de referido',
+    },
   ])
 
   const [copied, setCopied] = useState(false)
   const [waModalOpen, setWaModalOpen] = useState(false)
+  const [points, setPoints] = useState(0)
 
   useEffect(() => {
     apiGet<{ id: string }[]>('/prizes/me')
@@ -65,6 +75,14 @@ export function DashboardChecklist({ business }: { business: any }) {
         setSteps(prev =>
           prev.map(s => s.id === 'prize' ? { ...s, done: data?.length > 0 } : s)
         )
+      })
+      .catch(() => {})
+
+    apiGet<{ points: number; referrals: { status: string }[] }>('/referrals/me')
+      .then(refData => {
+        const hasPaidReferral = refData?.referrals?.some((r: any) => r.status === 'paid')
+        setSteps(prev => prev.map(s => s.id === 'referral' ? { ...s, done: hasPaidReferral } : s))
+        setPoints(refData?.points || 0)
       })
       .catch(() => {})
   }, [])
@@ -92,8 +110,18 @@ export function DashboardChecklist({ business }: { business: any }) {
         <div className="px-5 py-4" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>
           <div className="flex items-center justify-between mb-2">
             <div className="text-[15px] font-black text-white">🚀 Primeros pasos</div>
-            <div className="text-[12px] font-bold text-white/70">
-              {completedSteps} de {totalSteps} completados
+            <div className="flex items-center gap-2">
+              <div className="text-[12px] font-bold text-white/70">
+                {completedSteps} de {totalSteps} completados
+              </div>
+              {points > 0 && (
+                <a
+                  href="/empresa/canjes"
+                  className={`text-[11px] font-black px-2.5 py-1 rounded-full transition-all ${points >= 10 ? 'bg-[#F5C518] text-[#002B72] animate-pulse' : 'bg-white/20 text-white'}`}
+                >
+                  🎯 {points} pts
+                </a>
+              )}
             </div>
           </div>
           <div className="w-full h-1.5 rounded-full bg-white/20">
