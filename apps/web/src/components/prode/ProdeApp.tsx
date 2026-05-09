@@ -533,7 +533,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
             {weeklyPrizes.length > 0 && (
               <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-                <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de {empresa.name}</div>
+                <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio semanal de {empresa.name}</div>
                 <div className="flex flex-col gap-1">
                   {weeklyPrizes.map((p, i) => (
                     <div key={i} className="text-sm font-black text-slate-900">
@@ -544,7 +544,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               </div>
             )}
 
-            {weeklyLeaderboard.length > 0 && weeklyPrizes.length > 0 && (
+            {weeklyLeaderboard.length > 0 && (
               <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100">
                   <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
