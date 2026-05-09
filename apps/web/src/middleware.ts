@@ -24,18 +24,21 @@ function getSlug(host: string): string | null {
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const slug = getSlug(request.headers.get('host') ?? '')
+  const host = request.headers.get('host') ?? ''
+  const slug = getSlug(host)
+
+  console.log(`[MW] host=${host} pathname=${pathname} slug=${slug ?? 'null'}`)
 
   // — Subdomain rewrite: pizza.elprode.ar → /p/pizza
   if (slug) {
     const url = request.nextUrl.clone()
     const rest = pathname === '/' ? '' : pathname
     url.pathname = `/p/${slug}${rest}`
+    console.log(`[MW] REWRITE slug subdomain → ${url.pathname}`)
     return NextResponse.rewrite(url)
   }
 
   // — ref.elprode.ar handling
-  const host = request.headers.get('host') ?? ''
   if (host.startsWith('ref.')) {
     const refSlug = pathname.replace(/^\//, '').split('/')[0]
     const isSimpleSlug = refSlug &&
@@ -48,10 +51,12 @@ export async function middleware(request: NextRequest) {
       const url = request.nextUrl.clone()
       url.hostname = ROOT_DOMAINS.find(d => host.endsWith(d)) ?? 'elprode.ar'
       url.pathname = `/ref/${refSlug}`
+      console.log(`[MW] REWRITE ref subdomain → ${url.pathname}`)
       return NextResponse.rewrite(url)
     }
     const url = request.nextUrl.clone()
     url.hostname = 'elprode.ar'
+    console.log(`[MW] REDIRECT ref root`)
     return NextResponse.redirect(url)
   }
 
@@ -80,15 +85,19 @@ export async function middleware(request: NextRequest) {
   const isEmpresaRoute = pathname.startsWith('/empresa/')
   const isEmpresaPublic = EMPRESA_PUBLIC_PATHS.some(p => pathname.startsWith(p))
 
+  console.log(`[MW] auth path — user=${user?.id ?? 'anon'} isEmpresaRoute=${isEmpresaRoute} isEmpresaPublic=${isEmpresaPublic}`)
+
   if (isEmpresaRoute && !isEmpresaPublic && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/empresa/login'
+    console.log(`[MW] REDIRECT unauthenticated empresa → /empresa/login`)
     return NextResponse.redirect(loginUrl)
   }
 
   if (isEmpresaPublic && user) {
     const dashUrl = request.nextUrl.clone()
     dashUrl.pathname = '/empresa/dashboard'
+    console.log(`[MW] REDIRECT authenticated user away from public empresa page`)
     return NextResponse.redirect(dashUrl)
   }
 
