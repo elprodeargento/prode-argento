@@ -557,7 +557,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center text-lg overflow-hidden">
-              {empresa.logo_url ? <img src={empresa.logo_url} alt="" className="w-full h-full object-cover" /> : '⚽'}
+              {empresa.logo_url ? <img src={empresa.logo_url} alt="" className="w-full h-full object-contain p-0.5" /> : '⚽'}
             </div>
             <div>
               <div className="font-bebas text-base tracking-widest">{empresa.name.toUpperCase()}</div>
