@@ -47,23 +47,28 @@ export function usePushNotifications(participantId: string | undefined) {
     })
   }, [participantId])
 
-  // Handle foreground messages (app open)
+  // Handle foreground messages (app open) — separate path from SW to avoid duplicates
   useEffect(() => {
     if (typeof window === 'undefined') return
     const messaging = getFirebaseMessaging()
     if (!messaging) return
 
     const unsub = onMessage(messaging, (payload) => {
+      if (Notification.permission !== 'granted') return
       const title = payload.notification?.title || 'Prode Mundial 2026'
       const body = payload.notification?.body || ''
       const icon = payload.notification?.icon
-      const image = (payload.notification as any)?.image
-      if (Notification.permission === 'granted') {
-        new Notification(title, {
-          body,
-          ...(icon ? { icon } : {}),
-          ...(image ? { image } : {}),
-        })
+      const link = payload.fcmOptions?.link || (payload.data as any)?.link
+
+      const n = new Notification(title, {
+        body,
+        ...(icon ? { icon } : {}),
+      })
+      if (link) {
+        n.onclick = () => {
+          window.open(link, '_blank')
+          n.close()
+        }
       }
     })
 

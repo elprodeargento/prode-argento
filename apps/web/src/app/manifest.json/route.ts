@@ -28,12 +28,14 @@ export async function GET(req: NextRequest) {
     icons: [],
   }
 
+  let color = '#002B72'
+
   if (slug) {
     try {
       const res = await fetch(`${API_URL}/businesses/${slug}`, { cache: 'no-store' })
       if (res.ok) {
         const biz = await res.json()
-        const color = biz.primary_color ?? '#002B72'
+        color = biz.primary_color ?? color
         manifest.name = biz.name ? `${biz.name} — Prode` : manifest.name
         manifest.short_name = biz.name ?? manifest.short_name
         manifest.background_color = color
@@ -48,6 +50,12 @@ export async function GET(req: NextRequest) {
       // Use defaults
     }
   }
+
+  // Always include a generated fallback icon so Chrome can trigger beforeinstallprompt
+  const encodedColor = encodeURIComponent(color)
+  ;(manifest.icons as unknown[]).push(
+    { src: `/pwa-icon?color=${encodedColor}`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+  )
 
   return NextResponse.json(manifest, {
     headers: {

@@ -59,6 +59,7 @@ export class FirebaseService implements OnModuleInit {
         const res = await this.messaging.sendEachForMulticast({
           tokens: batch,
           notification: { title, body, ...(imageUrl ? { imageUrl } : {}) },
+          data: link ? { link } : undefined,
           webpush: {
             notification: {
               title,
