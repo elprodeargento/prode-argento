@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { IsString, IsEmail, IsOptional } from 'class-validator';
 import { ParticipantsService } from './participants.service';
@@ -46,5 +46,14 @@ export class ParticipantsController {
   @ApiOperation({ summary: 'Get all participants for a specific business' })
   findAllByBusiness(@Param('businessId') businessId: string) {
     return this.participantsService.findAllByBusiness(businessId);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update participant data' })
+  update(
+    @Param('id') id: string,
+    @Body() body: { name?: string; email?: string; phone?: string },
+  ) {
+    return this.participantsService.update(id, body)
   }
 }

@@ -88,6 +88,17 @@ export class ParticipantsService {
     return { participant: data, business };
   }
 
+  async update(id: string, data: { name?: string; email?: string; phone?: string }) {
+    const { data: updated, error } = await this.supabase.client
+      .from('participants')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return updated
+  }
+
   async findAllByBusiness(businessId: string) {
     const { data, error } = await this.supabase.client
       .from('participants')
