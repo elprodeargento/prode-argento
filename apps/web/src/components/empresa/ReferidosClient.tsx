@@ -99,7 +99,7 @@ export function ReferidosClient() {
           {[
             { icon: '🔗', text: 'Compartí tu link con otros comercios' },
             { icon: '💳', text: 'Cuando pagan su plan, vos ganás 10 puntos' },
-            { icon: '🎁', text: 'Canjeá tus puntos por premios en /empresa/canjes' },
+            { icon: '🎁', text: <span>Canjeá tus puntos por premios en{' '}<a href="/empresa/canjes" className="text-[#003FA3] font-black hover:underline">la tienda de canjes</a></span> },
           ].map((step, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#E6EEF9] flex items-center justify-center text-[16px] shrink-0">

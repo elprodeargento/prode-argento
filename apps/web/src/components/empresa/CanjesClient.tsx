@@ -15,7 +15,6 @@ const PRIZES = [
     desc: 'Tu perfil muestra la insignia de Embajador visible para tus clientes',
     puntos: 10,
     color: '#5A6480',
-    colorText: '#fff',
   },
   {
     icon: '💰',
@@ -23,23 +22,35 @@ const PRIZES = [
     desc: 'Te devolvemos $12.000 a tu cuenta de MercadoPago',
     puntos: 30,
     color: '#18A06A',
-    colorText: '#fff',
   },
   {
     icon: '⚡',
     titulo: 'Plan Pro gratis',
-    desc: 'Activá el plan Pro sin costo o recibí un cashback de $40.000',
+    desc: 'Activá el plan Pro sin costo durante todo el mundial',
     puntos: 50,
     color: '#002B72',
-    colorText: '#fff',
+  },
+  {
+    icon: '💵',
+    titulo: 'Cashback $40.000',
+    desc: 'Te devolvemos el valor completo de un plan Pro a tu MercadoPago',
+    puntos: 50,
+    color: '#003FA3',
   },
   {
     icon: '👑',
     titulo: 'Plan Premium gratis',
-    desc: 'Activá el plan Premium sin costo o recibí un cashback de $80.000',
-    puntos: 80,
+    desc: 'Activá el plan Premium sin costo durante todo el mundial',
+    puntos: 100,
     color: '#F5C518',
     colorText: '#002B72',
+  },
+  {
+    icon: '💵',
+    titulo: 'Cashback $80.000',
+    desc: 'Te devolvemos el valor completo de un plan Premium a tu MercadoPago',
+    puntos: 100,
+    color: '#0D1A3A',
   },
 ]
 

@@ -13,6 +13,8 @@ const titles: Record<string, string> = {
   '/empresa/notificaciones': 'Notificaciones',
   '/empresa/configuracion': 'Configuración',
   '/empresa/planes': 'Planes y precios',
+  '/empresa/referidos': 'Referidos',
+  '/empresa/canjes': 'Canjes',
 }
 
 export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) {
