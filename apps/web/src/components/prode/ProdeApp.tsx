@@ -644,48 +644,44 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                   <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
-                  {weeklyLeaderboard.length === 0 ? (
-                    <span className="text-[10px] text-slate-400 font-medium">Se actualiza con los partidos</span>
-                  ) : (
-                    <button
-                      onClick={async () => {
-                        const source = weeklyLeaderboard.length > 0
-                          ? weeklyLeaderboard
-                          : leaderboard.map(e => ({
-                              participant_id: e.participant_id,
-                              weekly_points: e.total_points,
-                              exact_results: e.exact_results,
-                              rank: e.rank,
-                            }))
-                        const myWeeklyEntry = source.find(e => e.participant_id === participant.id)
-                        if (!myWeeklyEntry) return
-                        const blob = await generateShareImage({
-                          rank: myWeeklyEntry.rank,
-                          points: myWeeklyEntry.weekly_points,
-                          exactResults: myWeeklyEntry.exact_results ?? 0,
-                          businessName: empresa.name,
-                          logoUrl: empresa.logo_url,
-                          color,
-                          type: 'semanal',
-                        })
-                        if (!blob) return
-                        const file = new File([blob], 'ranking-semanal.png', { type: 'image/png' })
-                        if (navigator.share && navigator.canShare({ files: [file] })) {
-                          await navigator.share({ files: [file], title: empresa.name })
-                        } else {
-                          const url = URL.createObjectURL(blob)
-                          const a = document.createElement('a')
-                          a.href = url
-                          a.download = 'ranking-semanal.png'
-                          a.click()
-                          URL.revokeObjectURL(url)
-                        }
-                      }}
-                      className="text-[11px] font-black px-2.5 py-1 rounded-full text-white transition-all"
-                      style={{ background: color }}>
-                      📤 Compartir
-                    </button>
-                  )}
+                  <button
+                    onClick={async () => {
+                      const source = weeklyLeaderboard.length > 0
+                        ? weeklyLeaderboard
+                        : leaderboard.map(e => ({
+                            participant_id: e.participant_id,
+                            weekly_points: e.total_points,
+                            exact_results: e.exact_results,
+                            rank: e.rank,
+                          }))
+                      const myWeeklyEntry = source.find(e => e.participant_id === participant.id)
+                      if (!myWeeklyEntry) return
+                      const blob = await generateShareImage({
+                        rank: myWeeklyEntry.rank,
+                        points: myWeeklyEntry.weekly_points,
+                        exactResults: myWeeklyEntry.exact_results ?? 0,
+                        businessName: empresa.name,
+                        logoUrl: empresa.logo_url,
+                        color,
+                        type: 'semanal',
+                      })
+                      if (!blob) return
+                      const file = new File([blob], 'ranking-semanal.png', { type: 'image/png' })
+                      if (navigator.share && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: empresa.name })
+                      } else {
+                        const url = URL.createObjectURL(blob)
+                        const a = document.createElement('a')
+                        a.href = url
+                        a.download = 'ranking-semanal.png'
+                        a.click()
+                        URL.revokeObjectURL(url)
+                      }
+                    }}
+                    className="text-[11px] font-black px-2.5 py-1 rounded-full text-white transition-all"
+                    style={{ background: color }}>
+                    📤 Compartir
+                  </button>
                 </div>
                 <div className="divide-y divide-slate-50">
                   {(weeklyLeaderboard.length > 0
