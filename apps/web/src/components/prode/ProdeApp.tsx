@@ -298,6 +298,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const closeMin = empresa.close_minutes ?? 5
   const nextMatch = scheduledMatches.find(m => !isLocked(m, closeMin))
   const nextMatchApiPred = nextMatch ? apiPreds[nextMatch.id] : null
+  const worldCupStarted = new Date() >= new Date('2026-06-11T21:00:00-03:00')
 
   const handleSave = async () => {
     setSaving(true)
@@ -443,6 +444,25 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
             <PromoCarousel promos={promos} />
 
+            {!worldCupStarted && (
+              <div className="mx-4 mt-4 rounded-2xl p-5 text-white text-center" style={{ background: color }}>
+                <div className="text-xs font-black text-white/60 uppercase tracking-widest mb-3">⚽ El Mundial arranca en</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {([
+                    [countdown.d, 'días'],
+                    [countdown.h, 'horas'],
+                    [countdown.m, 'min'],
+                    [countdown.s, 'seg'],
+                  ] as [number, string][]).map(([v, l]) => (
+                    <div key={l} className="bg-white/15 rounded-xl py-2">
+                      <div className="font-bebas text-3xl text-yellow-300">{v}</div>
+                      <div className="text-[10px] font-black text-white/60 uppercase">{l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {nextMatch ? (
               <div className="mx-4 mt-4 rounded-2xl p-4 text-white relative overflow-hidden" style={{ background: color }}>
                 <div className="text-xs font-bold text-white/60 mb-3 flex items-center gap-2">
@@ -481,24 +501,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   </button>
                 )}
               </div>
-            ) : (
-              <div className="mx-4 mt-4 rounded-2xl p-5 text-white text-center" style={{ background: color }}>
-                <div className="text-xs font-black text-white/60 uppercase tracking-widest mb-3">⚽ El Mundial arranca en</div>
-                <div className="grid grid-cols-4 gap-2">
-                  {([
-                    [countdown.d, 'días'],
-                    [countdown.h, 'horas'],
-                    [countdown.m, 'min'],
-                    [countdown.s, 'seg'],
-                  ] as [number, string][]).map(([v, l]) => (
-                    <div key={l} className="bg-white/15 rounded-xl py-2">
-                      <div className="font-bebas text-3xl text-yellow-300">{v}</div>
-                      <div className="text-[10px] font-black text-white/60 uppercase">{l}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            ) : null}
 
             {weeklyPrizes.length > 0 && (
               <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">

@@ -44,6 +44,12 @@ export class PrizesController {
     return this.prizesService.replaceForAdminUser(req.user.id, body.prizes);
   }
 
+  @Get('weekly/business/:businessId')
+  @ApiOperation({ summary: 'Get weekly prizes for a business (public)' })
+  getWeeklyByBusiness(@Param('businessId') businessId: string) {
+    return this.prizesService.findWeeklyByBusinessId(businessId)
+  }
+
   @Get('weekly/me')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()

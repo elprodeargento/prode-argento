@@ -25,6 +25,24 @@ export class PrizesService {
     return data ?? [];
   }
 
+  async findWeeklyByBusinessId(businessId: string): Promise<Record<string, Array<{rank: number, description: string}>>> {
+    const { data, error } = await this.supabase.client
+      .from('weekly_prizes')
+      .select('week_index, rank, description')
+      .eq('business_id', businessId)
+      .order('week_index', { ascending: true })
+      .order('rank', { ascending: true })
+    if (error) throw new Error(error.message)
+
+    const grouped: Record<string, Array<{rank: number, description: string}>> = {}
+    for (const row of data ?? []) {
+      const key = String(row.week_index)
+      if (!grouped[key]) grouped[key] = []
+      grouped[key].push({ rank: row.rank, description: row.description })
+    }
+    return grouped
+  }
+
   // Trae todos los premios semanales agrupados por week_index
   async findWeeklyByAdminUserId(adminUserId: string): Promise<Record<string, Array<{rank: number, description: string}>>> {
     const { data: business } = await this.supabase.client
