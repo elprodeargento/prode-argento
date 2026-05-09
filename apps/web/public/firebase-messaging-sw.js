@@ -13,11 +13,27 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || 'Prode Mundial 2026';
   const body = payload.notification?.body || '';
-  const icon = '/icon-192.png';
+  const icon = payload.notification?.icon;
   const image = payload.notification?.image;
+  const link = payload.fcmOptions?.link || payload.data?.link;
+
   self.registration.showNotification(title, {
     body,
-    icon,
+    ...(icon ? { icon } : {}),
     ...(image ? { image } : {}),
+    data: { link },
   });
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const link = event.notification.data?.link;
+  if (!link) return;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const existing = list.find((c) => c.url === link);
+      if (existing) return existing.focus();
+      return clients.openWindow(link);
+    }),
+  );
 });

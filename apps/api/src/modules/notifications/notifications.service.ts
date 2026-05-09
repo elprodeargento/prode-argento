@@ -359,13 +359,17 @@ export class NotificationsService {
     return (data ?? []).map((r: any) => r.participant_id)
   }
 
-  private async getBusinessLogo(businessId: string): Promise<string | undefined> {
+  private async getBusinessInfo(businessId: string): Promise<{ icon?: string; link?: string }> {
     const { data } = await this.supabase.client
       .from('businesses')
-      .select('logo_url')
+      .select('logo_url, slug')
       .eq('id', businessId)
       .single()
-    return data?.logo_url ?? undefined
+    if (!data) return {}
+    return {
+      icon: data.logo_url ?? undefined,
+      link: data.slug ? `https://${data.slug}.elprode.ar` : undefined,
+    }
   }
 
   async sendPushBlast(
@@ -383,8 +387,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return { sent: 0, failed: 0 }
 
-    const icon = await this.getBusinessLogo(businessId)
-    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon)
+    const { icon, link } = await this.getBusinessInfo(businessId)
+    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon, link)
     this.logger.log(`Push blast: ${result.sent} sent, ${result.failed} failed for business ${businessId}`)
     return result
   }
@@ -404,8 +408,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    const icon = businessId ? await this.getBusinessLogo(businessId) : undefined
-    await this.firebase.sendPush(tokens, title, body, imageUrl, 'push_subscriptions', icon)
+    const { icon, link } = businessId ? await this.getBusinessInfo(businessId) : {}
+    await this.firebase.sendPush(tokens, title, body, imageUrl, 'push_subscriptions', icon, link)
   }
 
   async sendPushToAdmin(businessId: string, title: string, body: string): Promise<void> {
@@ -417,7 +421,7 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    const icon = await this.getBusinessLogo(businessId)
+    const { icon } = await this.getBusinessInfo(businessId)
     await this.firebase.sendPush(tokens, title, body, undefined, 'admin_push_subscriptions', icon)
   }
 
@@ -434,8 +438,8 @@ export class NotificationsService {
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return
 
-    const icon = await this.getBusinessLogo(businessId)
-    await this.firebase.sendPush(tokens, title, body, undefined, 'push_subscriptions', icon)
+    const { icon, link } = await this.getBusinessInfo(businessId)
+    await this.firebase.sendPush(tokens, title, body, undefined, 'push_subscriptions', icon, link)
   }
 
   async registerParticipantToken(participantId: string, token: string): Promise<void> {

@@ -44,6 +44,7 @@ export class FirebaseService implements OnModuleInit {
     imageUrl?: string,
     table: 'push_subscriptions' | 'admin_push_subscriptions' = 'push_subscriptions',
     icon?: string,
+    link?: string,
   ): Promise<{ sent: number; failed: number }> {
     if (!this.isReady || !tokens.length) return { sent: 0, failed: 0 }
 
@@ -65,6 +66,7 @@ export class FirebaseService implements OnModuleInit {
               ...(notifIcon ? { icon: notifIcon } : {}),
               ...(imageUrl ? { image: imageUrl } : {}),
             },
+            ...(link ? { fcmOptions: { link } } : {}),
           },
         })
 
