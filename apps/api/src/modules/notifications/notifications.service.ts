@@ -425,14 +425,16 @@ export class NotificationsService {
   }
 
   async registerParticipantToken(participantId: string, token: string): Promise<void> {
-    await this.supabase.client
+    const { error } = await this.supabase.client
       .from('push_subscriptions')
       .upsert({ participant_id: participantId, fcm_token: token }, { onConflict: 'participant_id,fcm_token' })
+    if (error) this.logger.error(`registerParticipantToken error: ${JSON.stringify(error)}`)
   }
 
   async registerAdminToken(businessId: string, token: string): Promise<void> {
-    await this.supabase.client
+    const { error } = await this.supabase.client
       .from('admin_push_subscriptions')
       .upsert({ business_id: businessId, fcm_token: token }, { onConflict: 'business_id,fcm_token' })
+    if (error) this.logger.error(`registerAdminToken error: ${JSON.stringify(error)}`)
   }
 }
