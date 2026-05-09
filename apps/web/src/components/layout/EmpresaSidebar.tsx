@@ -98,7 +98,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
         <div className="pt-6 px-6 pb-5 border-b border-white/10 flex items-center gap-3">
           <div className="w-[44px] h-[44px] shrink-0 bg-white/10 rounded-xl flex items-center justify-center text-[22px] border-[1.5px] border-white/20 overflow-hidden">
             {business?.logo_url
-              ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
+              ? <img src={business.logo_url} alt="" className="w-full h-full object-contain" />
               : '⚽'}
           </div>
           <div className="flex-1 min-w-0">

@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check } from 'lucide-react'
 
 import { uploadToR2 } from '@/lib/storage/r2'
+import { generateQRCard } from '@/lib/qr/card'
 
 const MEDALS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
 const DEFAULTS = ['Trofeo + Diploma ⚽', 'Medalla de plata 🥈', 'Medalla de bronce 🥉', 'Aplauso del jefe 👏', 'El último puesto 😅']
@@ -94,10 +95,10 @@ export function OnboardingWizard() {
     try {
       await apiPatch('/businesses/me', { name: businessName, primary_color: color, logo_url: logoUrl, background_url: backgroundUrl })
 
-      const prizesToSave = prizes.slice(0, prizeCount).map((desc, i) => ({
-        rank: i + 1,
-        description: desc || DEFAULTS[i],
-      }))
+      const prizesToSave = prizes
+        .slice(0, prizeCount)
+        .map((desc, i) => ({ rank: i + 1, description: desc.trim() }))
+        .filter(p => p.description)
       await apiPut('/prizes/me', { prizes: prizesToSave })
 
       setStep('success')
@@ -135,10 +136,12 @@ export function OnboardingWizard() {
     if (!shareUrl) return
     setQrDownloading(true)
     try {
-      const qrColor = (color ?? '#002B72').replace('#', '')
-      const src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shareUrl)}&size=512x512&color=${qrColor}&bgcolor=ffffff&margin=20`
-      const res = await fetch(src)
-      const blob = await res.blob()
+      const blob = await generateQRCard({
+        shareUrl,
+        businessName: businessName || business?.name || 'Mi Prode',
+        primaryColor: color ?? '#002B72',
+        logoUrl,
+      })
       const blobUrl = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = blobUrl

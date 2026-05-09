@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { WhatsAppSendModal } from './WhatsAppSendModal'
 
+const DEFAULT_PRIZE_DESCS = new Set([
+  'Trofeo + Diploma ⚽', 'Medalla de plata 🥈', 'Medalla de bronce 🥉',
+  'Aplauso del jefe 👏', 'El último puesto 😅',
+])
+
 interface Step {
   id: string
   done: boolean
@@ -70,10 +75,11 @@ export function DashboardChecklist({ business }: { business: any }) {
   const [points, setPoints] = useState(0)
 
   useEffect(() => {
-    apiGet<{ id: string }[]>('/prizes/me')
+    apiGet<{ id: string; description: string }[]>('/prizes/me')
       .then(data => {
+        const hasRealPrize = data?.some(p => p.description?.trim() && !DEFAULT_PRIZE_DESCS.has(p.description.trim()))
         setSteps(prev =>
-          prev.map(s => s.id === 'prize' ? { ...s, done: data?.length > 0 } : s)
+          prev.map(s => s.id === 'prize' ? { ...s, done: !!hasRealPrize } : s)
         )
       })
       .catch(() => {})

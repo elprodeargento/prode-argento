@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Loader2, AlertTriangle, Copy, Check, QrCode } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
+import { generateQRCard } from '@/lib/qr/card'
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
@@ -120,9 +121,12 @@ export function ConfigForm() {
     if (!shareUrl) return
     setQrDownloading(true)
     try {
-      const src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shareUrl)}&size=512x512&color=${qrColor}&bgcolor=ffffff&margin=20`
-      const res = await fetch(src)
-      const blob = await res.blob()
+      const blob = await generateQRCard({
+        shareUrl,
+        businessName: watch('name') || slug || 'Mi Prode',
+        primaryColor: primaryColor ?? '#002B72',
+        logoUrl,
+      })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
