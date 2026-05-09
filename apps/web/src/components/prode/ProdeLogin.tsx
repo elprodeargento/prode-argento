@@ -41,7 +41,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       try {
         const data = JSON.parse(stored) as Participant
         setParticipant(data)
-        setStep('confirm')
+        setStep('app')
       } catch {}
     }
   }, [empresa.slug])

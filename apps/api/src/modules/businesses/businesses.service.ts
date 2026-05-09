@@ -7,6 +7,44 @@ import { UpdateBusinessDto } from './dto/update-business.dto';
 export class BusinessesService {
   constructor(private readonly supabase: SupabaseService) {}
 
+  async createForOAuthUser(userId: string, email: string, displayName: string) {
+    // Return existing business if already created (idempotent)
+    const { data: existing } = await this.supabase.client
+      .from('businesses')
+      .select('*')
+      .eq('admin_user_id', userId)
+      .maybeSingle()
+    if (existing) return existing
+
+    const base = displayName
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'comercio'
+
+    let slug = base
+    const { data: existingSlug } = await this.supabase.client
+      .from('businesses').select('slug').eq('slug', base).maybeSingle()
+    if (existingSlug) {
+      const { data: siblings } = await this.supabase.client
+        .from('businesses').select('slug').like('slug', `${base}-%`)
+      const taken = new Set([base, ...(siblings ?? []).map((r: any) => r.slug)])
+      let i = 2
+      while (taken.has(`${base}-${i}`)) i++
+      slug = `${base}-${i}`
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('businesses')
+      .insert({ name: displayName, slug, admin_user_id: userId, admin_email: email })
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return data
+  }
+
   async create(createBusinessDto: CreateBusinessDto) {
     const { data, error } = await this.supabase.client
       .from('businesses')

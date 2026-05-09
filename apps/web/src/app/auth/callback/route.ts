@@ -35,7 +35,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/empresa/login?error=no_session`)
   }
 
-  // Check if user already has a business; if not, send to onboarding
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
   const bizRes = await fetch(`${apiUrl}/businesses/me`, {
     headers: { Authorization: `Bearer ${session.access_token}` },
@@ -46,5 +45,11 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/empresa/dashboard`)
   }
 
-  return NextResponse.redirect(`${origin}${next}`)
+  // New OAuth user — create business from Google profile, then go to onboarding
+  await fetch(`${apiUrl}/businesses/me`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  })
+
+  return NextResponse.redirect(`${origin}/empresa/onboarding`)
 }

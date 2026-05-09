@@ -22,6 +22,20 @@ export class BusinessesController {
     return this.businessesService.findAll();
   }
 
+  @Post('me')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create business for OAuth user (idempotent)' })
+  createMe(@Req() req: any) {
+    const user = req.user
+    const name =
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      user.email?.split('@')[0] ||
+      'Mi Comercio'
+    return this.businessesService.createForOAuthUser(user.id, user.email, name)
+  }
+
   @Get('me')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()
