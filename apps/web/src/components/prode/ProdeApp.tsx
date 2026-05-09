@@ -376,6 +376,96 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     }
   }
 
+  const generateShareImage = async ({
+    rank, points, exactResults, businessName, logoUrl, color: bgColor, type,
+  }: {
+    rank: number; points: number; exactResults: number
+    businessName: string; logoUrl: string | null; color: string; type: 'ranking' | 'semanal'
+  }): Promise<Blob | null> => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1080
+    canvas.height = 1080
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+
+    // Fondo degradado
+    const gradient = ctx.createLinearGradient(0, 0, 1080, 1080)
+    gradient.addColorStop(0, bgColor)
+    gradient.addColorStop(1, '#000000')
+    ctx.fillStyle = gradient
+    ctx.fillRect(0, 0, 1080, 1080)
+
+    // Patrón de puntos sutil
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'
+    for (let x = 0; x < 1080; x += 40) {
+      for (let y = 0; y < 1080; y += 40) {
+        ctx.beginPath()
+        ctx.arc(x, y, 3, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // Logo del comercio (si existe)
+    if (logoUrl) {
+      try {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = logoUrl! })
+        const logoSize = 160
+        const logoX = (1080 - logoSize) / 2
+        ctx.beginPath()
+        ctx.arc(logoX + logoSize / 2, 200, logoSize / 2 + 10, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.fill()
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(logoX + logoSize / 2, 200, logoSize / 2, 0, Math.PI * 2)
+        ctx.clip()
+        ctx.drawImage(img, logoX, 200 - logoSize / 2, logoSize, logoSize)
+        ctx.restore()
+      } catch {}
+    }
+
+    // Nombre del comercio
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'
+    ctx.font = 'bold 48px system-ui, sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(businessName.toUpperCase(), 540, 330)
+
+    // Tipo de ranking
+    ctx.fillStyle = 'rgba(255,255,255,0.5)'
+    ctx.font = 'bold 32px system-ui, sans-serif'
+    ctx.fillText(type === 'semanal' ? 'RANKING SEMANAL' : 'RANKING GENERAL', 540, 380)
+
+    // Posición grande
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null
+    if (medal) {
+      ctx.font = '200px system-ui'
+      ctx.fillText(medal, 540, 620)
+    } else {
+      ctx.fillStyle = '#F5C518'
+      ctx.font = 'bold 220px system-ui, sans-serif'
+      ctx.fillText(`${rank}°`, 540, 640)
+    }
+
+    // Puntos
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 72px system-ui, sans-serif'
+    ctx.fillText(`${points} puntos`, 540, 750)
+
+    // Exactos
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'
+    ctx.font = 'bold 42px system-ui, sans-serif'
+    ctx.fillText(`${exactResults} resultados exactos`, 540, 820)
+
+    // Footer
+    ctx.fillStyle = 'rgba(255,255,255,0.4)'
+    ctx.font = 'bold 36px system-ui, sans-serif'
+    ctx.fillText('⚽ Prode Mundial 2026 · elprode.ar', 540, 960)
+
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+  }
+
   const navItems: { id: Tab; icon: string; label: string }[] = [
     { id: 'home', icon: '🏠', label: 'Inicio' },
     { id: 'pronosticar', icon: '⚽', label: 'Pronosticar' },
@@ -554,8 +644,47 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
                   <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
-                  {weeklyLeaderboard.length === 0 && (
+                  {weeklyLeaderboard.length === 0 ? (
                     <span className="text-[10px] text-slate-400 font-medium">Se actualiza con los partidos</span>
+                  ) : (
+                    <button
+                      onClick={async () => {
+                        const source = weeklyLeaderboard.length > 0
+                          ? weeklyLeaderboard
+                          : leaderboard.map(e => ({
+                              participant_id: e.participant_id,
+                              weekly_points: e.total_points,
+                              exact_results: e.exact_results,
+                              rank: e.rank,
+                            }))
+                        const myWeeklyEntry = source.find(e => e.participant_id === participant.id)
+                        if (!myWeeklyEntry) return
+                        const blob = await generateShareImage({
+                          rank: myWeeklyEntry.rank,
+                          points: myWeeklyEntry.weekly_points,
+                          exactResults: myWeeklyEntry.exact_results ?? 0,
+                          businessName: empresa.name,
+                          logoUrl: empresa.logo_url,
+                          color,
+                          type: 'semanal',
+                        })
+                        if (!blob) return
+                        const file = new File([blob], 'ranking-semanal.png', { type: 'image/png' })
+                        if (navigator.share && navigator.canShare({ files: [file] })) {
+                          await navigator.share({ files: [file], title: empresa.name })
+                        } else {
+                          const url = URL.createObjectURL(blob)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = 'ranking-semanal.png'
+                          a.click()
+                          URL.revokeObjectURL(url)
+                        }
+                      }}
+                      className="text-[11px] font-black px-2.5 py-1 rounded-full text-white transition-all"
+                      style={{ background: color }}>
+                      📤 Compartir
+                    </button>
                   )}
                 </div>
                 <div className="divide-y divide-slate-50">
@@ -730,13 +859,26 @@ export function ProdeApp({ empresa, participant, onLogout }: {
             {myEntry && (
               <button
                 onClick={async () => {
-                  const text = `🏆 Estoy ${myEntry.rank}° en el prode de ${empresa.name} con ${myEntry.total_points} puntos. ¡Sumate!`
-                  const url = `https://${empresa.slug}.elprode.ar`
-                  if (navigator.share) {
-                    await navigator.share({ title: empresa.name, text, url })
+                  const blob = await generateShareImage({
+                    rank: myEntry.rank,
+                    points: myEntry.total_points,
+                    exactResults: myEntry.exact_results,
+                    businessName: empresa.name,
+                    logoUrl: empresa.logo_url,
+                    color,
+                    type: 'ranking',
+                  })
+                  if (!blob) return
+                  const file = new File([blob], 'mi-posicion.png', { type: 'image/png' })
+                  if (navigator.share && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: empresa.name })
                   } else {
-                    await navigator.clipboard.writeText(`${text} ${url}`)
-                    alert('¡Copiado!')
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = 'mi-posicion.png'
+                    a.click()
+                    URL.revokeObjectURL(url)
                   }
                 }}
                 className="w-full mb-4 py-2.5 rounded-xl border-2 font-black text-sm flex items-center justify-center gap-2 transition-all"
