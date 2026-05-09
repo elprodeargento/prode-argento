@@ -95,21 +95,19 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
         fixed left-0 top-0 bottom-0 w-[260px] bg-[#002B72] flex flex-col z-[200] shadow-[4px_0_32px_rgba(0,43,114,0.25)] border-r border-white/10 sidebar-transition
         lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="pt-6 px-6 pb-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-[44px] h-[44px] bg-white/10 rounded-xl flex items-center justify-center text-[22px] border-[1.5px] border-white/20 overflow-hidden">
-              {business?.logo_url
-                ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
-                : '⚽'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate uppercase">
-                {companyName || '—'}
-              </div>
-              <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel Comercio</div>
-            </div>
+        <div className="pt-6 px-6 pb-5 border-b border-white/10 flex items-center gap-3">
+          <div className="w-[44px] h-[44px] shrink-0 bg-white/10 rounded-xl flex items-center justify-center text-[22px] border-[1.5px] border-white/20 overflow-hidden">
+            {business?.logo_url
+              ? <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
+              : '⚽'}
           </div>
-          <button onClick={onClose} className="lg:hidden text-white/50 hover:text-white">
+          <div className="flex-1 min-w-0">
+            <div className="font-bebas text-white text-[17px] tracking-[1px] leading-[1.1] truncate uppercase">
+              {companyName || '—'}
+            </div>
+            <div className="text-white/50 text-[11px] font-semibold uppercase tracking-[0.06em] mt-0.5">Panel Comercio</div>
+          </div>
+          <button onClick={onClose} className="lg:hidden shrink-0 text-white/50 hover:text-white">
             <span className="text-xl">✕</span>
           </button>
         </div>

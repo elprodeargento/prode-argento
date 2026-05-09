@@ -21,25 +21,33 @@ export function usePushNotifications(participantId: string | undefined) {
     if (stored === participantId) return
 
     Notification.requestPermission().then(async (permission) => {
+      console.log('[FCM] permission:', permission)
       if (permission !== 'granted') return
 
       try {
         const messaging = getFirebaseMessaging()
-        if (!messaging) return
+        if (!messaging) { console.warn('[FCM] messaging null'); return }
 
+        console.log('[FCM] registering SW...')
         const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
+        console.log('[FCM] SW registered:', sw.scope)
+
+        console.log('[FCM] getting token...')
         const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: sw })
+        console.log('[FCM] token:', token ? token.slice(0, 20) + '...' : 'NULL')
         if (!token) return
 
-        await fetch(`${API_URL}/notifications/fcm-token`, {
+        console.log('[FCM] registering with API...')
+        const res = await fetch(`${API_URL}/notifications/fcm-token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ participantId, token }),
         })
+        console.log('[FCM] API response:', res.status)
 
-        localStorage.setItem(STORAGE_KEY, participantId)
-      } catch {
-        // Silently fail — push is a nice-to-have
+        if (res.ok) localStorage.setItem(STORAGE_KEY, participantId)
+      } catch (err) {
+        console.error('[FCM] error:', err)
       }
     })
   }, [participantId])
