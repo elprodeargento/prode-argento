@@ -167,6 +167,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [isUpcomingDay, setIsUpcomingDay] = useState(false)
   const [promos, setPromos] = useState<Promo[]>([])
   const [hasChanges, setHasChanges] = useState(false)
+  const [countdown, setCountdown] = useState({ d: 0, h: 0, m: 0, s: 0 })
+  const [weeklyPrizes, setWeeklyPrizes] = useState<Array<{ rank: number; description: string }>>([])
+  const [positionChange, setPositionChange] = useState<number | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({ name: participant.name, email: participant.email, phone: participant.phone })
+  const [editSaving, setEditSaving] = useState(false)
+  const [showPointsInfo, setShowPointsInfo] = useState(false)
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
 
@@ -188,6 +195,28 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       loadPromos()
     }
   }, [])
+
+  useEffect(() => {
+    const worldCupStart = new Date('2026-06-11T21:00:00-03:00')
+    const timer = setInterval(() => {
+      const diff = worldCupStart.getTime() - Date.now()
+      if (diff <= 0) { clearInterval(timer); return }
+      setCountdown({
+        d: Math.floor(diff / 86400000),
+        h: Math.floor((diff % 86400000) / 3600000),
+        m: Math.floor((diff % 3600000) / 60000),
+        s: Math.floor((diff % 60000) / 1000),
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (positionChange !== null) {
+      const t = setTimeout(() => setPositionChange(null), 5000)
+      return () => clearTimeout(t)
+    }
+  }, [positionChange])
 
   useEffect(() => {
     async function load() {
@@ -224,6 +253,17 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         setMatches(visibleMatches)
         setLeaderboard(lbData)
 
+        // Position change tracking
+        const storageRankKey = `prode:${empresa.slug}:rank`
+        const prevRank = parseInt(localStorage.getItem(storageRankKey) ?? '0')
+        const currentRank = (lbData as LeaderboardEntry[]).find(e => e.participant_id === participant.id)?.rank ?? 0
+        if (prevRank > 0 && currentRank > 0 && currentRank < prevRank) {
+          setPositionChange(prevRank - currentRank)
+        }
+        if (currentRank > 0) {
+          localStorage.setItem(storageRankKey, String(currentRank))
+        }
+
         const predMap: Record<number, RawPrediction> = {}
         const editMap: Record<number, { h: string; a: string }> = {}
         for (const p of (predData as RawPrediction[])) {
@@ -232,6 +272,17 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         }
         setApiPreds(predMap)
         setPreds(editMap)
+
+        // Weekly prizes
+        publicFetch(`/prizes/weekly/business/${empresa.id}`)
+          .then(data => {
+            const wcStart = new Date('2026-06-11')
+            const now = new Date()
+            const weekIdx = Math.max(0, Math.floor((now.getTime() - wcStart.getTime()) / (7 * 24 * 60 * 60 * 1000)))
+            const current = data[String(weekIdx)] ?? []
+            setWeeklyPrizes(current)
+          })
+          .catch(() => {})
       } catch (e) {
         console.error('Load error:', e)
       } finally {
@@ -276,6 +327,26 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     } finally {
       setSaving(false)
       setTimeout(() => setSavedMsg(''), 3000)
+    }
+  }
+
+  const handleEditSave = async () => {
+    setEditSaving(true)
+    try {
+      await publicFetch(`/participants/${participant.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(editForm),
+      })
+      const stored = localStorage.getItem(`prode:${empresa.slug}`)
+      if (stored) {
+        const data = JSON.parse(stored)
+        localStorage.setItem(`prode:${empresa.slug}`, JSON.stringify({ ...data, ...editForm }))
+      }
+      setEditing(false)
+    } catch {
+      alert('Error al guardar. Intentá de nuevo.')
+    } finally {
+      setEditSaving(false)
     }
   }
 
@@ -329,6 +400,19 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* HOME */}
         {tab === 'home' && (
           <div>
+            {positionChange !== null && (
+              <div className="mx-4 mt-4 rounded-2xl p-4 text-white text-center animate-bounce"
+                style={{ background: 'linear-gradient(135deg, #18A06A, #0d7a52)' }}
+                onClick={() => setPositionChange(null)}>
+                <div className="text-2xl mb-1">🎉</div>
+                <div className="font-black text-sm">
+                  ¡Subiste {positionChange} {positionChange === 1 ? 'posición' : 'posiciones'}!
+                </div>
+                <div className="text-white/70 text-xs mt-0.5">
+                  Ahora estás {myEntry ? `${myEntry.rank}°` : ''} en el ranking
+                </div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-3 px-4 pt-4">
               <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
                 <div className="font-bebas text-4xl" style={{ color }}>{myEntry?.total_points ?? 0}</div>
@@ -398,9 +482,34 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 )}
               </div>
             ) : (
-              <div className="mx-4 mt-4 rounded-2xl p-4 text-white/80 text-center" style={{ background: color }}>
-                <div className="text-2xl mb-1">🏁</div>
-                <div className="font-bold text-sm">No hay partidos próximos</div>
+              <div className="mx-4 mt-4 rounded-2xl p-5 text-white text-center" style={{ background: color }}>
+                <div className="text-xs font-black text-white/60 uppercase tracking-widest mb-3">⚽ El Mundial arranca en</div>
+                <div className="grid grid-cols-4 gap-2">
+                  {([
+                    [countdown.d, 'días'],
+                    [countdown.h, 'horas'],
+                    [countdown.m, 'min'],
+                    [countdown.s, 'seg'],
+                  ] as [number, string][]).map(([v, l]) => (
+                    <div key={l} className="bg-white/15 rounded-xl py-2">
+                      <div className="font-bebas text-3xl text-yellow-300">{v}</div>
+                      <div className="text-[10px] font-black text-white/60 uppercase">{l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {weeklyPrizes.length > 0 && (
+              <div className="mx-4 mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de esta semana</div>
+                <div className="flex flex-col gap-1">
+                  {weeklyPrizes.map((p, i) => (
+                    <div key={i} className="text-sm font-black text-slate-900">
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'} {p.description}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -546,6 +655,37 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {tab === 'resultados' && (
           <div className="p-4">
             <div className="text-sm font-black text-slate-900 mb-4">Resultados</div>
+            <button
+              onClick={() => setShowPointsInfo(s => !s)}
+              className="w-full flex items-center justify-between mb-3 px-1 text-sm font-black text-slate-500">
+              <span>¿Cómo se puntúa?</span>
+              <span>{showPointsInfo ? '▲' : '▼'}</span>
+            </button>
+            {showPointsInfo && (
+              <div className="bg-white rounded-2xl border border-slate-100 p-4 mb-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">🎯</span>
+                  <div>
+                    <div className="text-sm font-black text-slate-900">3 puntos — Resultado exacto</div>
+                    <div className="text-xs text-slate-400">Acertás el marcador exacto del partido</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">👍</span>
+                  <div>
+                    <div className="text-sm font-black text-slate-900">1 punto — Ganador correcto</div>
+                    <div className="text-xs text-slate-400">Acertás quién gana pero no el marcador exacto</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">😔</span>
+                  <div>
+                    <div className="text-sm font-black text-slate-900">0 puntos — Sin acierto</div>
+                    <div className="text-xs text-slate-400">El resultado no coincide con tu pronóstico</div>
+                  </div>
+                </div>
+              </div>
+            )}
             {finishedMatches.length === 0 && (
               <div className="text-center py-10 text-slate-400">
                 <div className="text-3xl mb-2">📊</div>
@@ -611,10 +751,40 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 ))}
               </div>
             </div>
+            {editing ? (
+              <div className="flex flex-col gap-3 mt-4">
+                <input placeholder="Nombre completo" value={editForm.name}
+                  onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
+                <input placeholder="Email" type="email" value={editForm.email}
+                  onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
+                <input placeholder="Teléfono" type="tel" value={editForm.phone}
+                  onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
+                <div className="flex gap-2">
+                  <button onClick={() => setEditing(false)}
+                    className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-500 font-bold text-sm">
+                    Cancelar
+                  </button>
+                  <button onClick={handleEditSave} disabled={editSaving}
+                    className="flex-[2] py-3 rounded-xl text-white font-black text-sm disabled:opacity-60"
+                    style={{ background: color }}>
+                    {editSaving ? 'Guardando...' : 'Guardar cambios'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setEditing(true)}
+                className="mt-4 w-full py-2.5 rounded-xl border-2 font-bold text-sm transition-all"
+                style={{ borderColor: color, color }}>
+                ✏️ Editar mis datos
+              </button>
+            )}
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="w-full py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-50 transition-all">
+                className="w-full mt-3 py-3 rounded-2xl border-2 border-slate-200 text-slate-500 font-bold text-sm hover:bg-slate-50 transition-all">
                 Cerrar sesión
               </button>
             )}
