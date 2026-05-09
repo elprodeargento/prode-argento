@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
-import { Trophy } from 'lucide-react'
 import { IgPublishModal } from './IgPublishModal'
+import type { Prize } from './RankingClient'
 
 function IgIcon({ className }: { className?: string }) {
   return (
@@ -13,29 +13,78 @@ function IgIcon({ className }: { className?: string }) {
   )
 }
 
-
-
+function waLink(phone: string) {
+  const digits = phone.replace(/\D/g, '')
+  const num = digits.startsWith('54') ? digits : `54${digits}`
+  return `https://wa.me/${num}`
+}
 
 interface PodiumItem {
   id: string
   name: string
+  email: string
+  phone: string
   points: number
   position: number
-  avatar?: string
 }
 
 interface RankingPodiumProps {
   items: PodiumItem[]
+  prizes?: Prize[]
   empresa?: string
   igConnected?: boolean
 }
 
-export function RankingPodium({ items, empresa = 'Mi Comercio', igConnected = false }: RankingPodiumProps) {
+const PODIUM = [
+  { pos: 1, ringColor: 'border-[#F5C518]', bg: 'bg-[#FEF8D8]', barColor: 'bg-[#F5C518]', barH: 'h-[70px]', barText: 'text-[#002B72]', ptsColor: 'text-[#C49A00]' },
+  { pos: 2, ringColor: 'border-[#B0B8CC]', bg: 'bg-[#F0F2F8]', barColor: 'bg-[#9BA5BE]', barH: 'h-[56px]', barText: 'text-white/60', ptsColor: 'text-[#7A839E]' },
+  { pos: 3, ringColor: 'border-[#CD9B6A]', bg: 'bg-[#FBF0E8]', barColor: 'bg-[#CD9B6A]', barH: 'h-[44px]', barText: 'text-white/60', ptsColor: 'text-[#9B6B3A]' },
+]
+
+export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igConnected = false }: RankingPodiumProps) {
   const [igOpen, setIgOpen] = useState(false)
 
-  const p1 = items.find((i) => i.position === 1)
-  const p2 = items.find((i) => i.position === 2)
-  const p3 = items.find((i) => i.position === 3)
+  const byPos = (pos: number) => items.find(i => i.position === pos)
+  const prize = (pos: number) => prizes.find(p => p.rank === pos)
+
+  const PodiumSlot = ({ pos }: { pos: number }) => {
+    const p = byPos(pos)
+    const pr = prize(pos)
+    const style = PODIUM.find(s => s.pos === pos)!
+    const order = pos === 1 ? 'order-2' : pos === 2 ? 'order-1' : 'order-3'
+
+    return (
+      <div className={`flex flex-col items-center flex-1 ${order}`}>
+        <div className={`h-[52px] w-[52px] ${pos === 1 ? 'h-[60px] w-[60px]' : ''} rounded-full ${style.bg} border-[3px] ${style.ringColor} flex items-center justify-center text-xl font-black mb-2 text-[#002B72]`}>
+          {p?.name?.charAt(0) ?? '?'}
+        </div>
+        <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-0.5 truncate w-full px-1">
+          {p?.name ?? '—'}
+        </div>
+        <div className={`font-bebas text-[18px] ${style.ptsColor} leading-none mb-1`}>
+          {p?.points ?? 0} pts
+        </div>
+        {pr && (
+          <div className="text-[10px] font-black text-[#5A6480] text-center mb-1 px-1 truncate w-full" title={pr.description}>
+            🎁 {pr.description}
+          </div>
+        )}
+        {p?.phone && (
+          <a
+            href={waLink(p.phone)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-black text-[#25D366] bg-[#E8F8F1] px-2 py-0.5 rounded-full mb-2 hover:opacity-80 transition-all"
+          >
+            💬 WA
+          </a>
+        )}
+        <div className={`w-full ${style.barH} ${style.barColor} rounded-t-xl flex items-center justify-center font-bebas text-[22px] ${style.barText}`}>
+          {pos}°
+        </div>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -47,56 +96,24 @@ export function RankingPodium({ items, empresa = 'Mi Comercio', igConnected = fa
           </div>
           <button
             onClick={() => setIgOpen(true)}
-            className="flex items-center justify-center gap-2 px-[14px] py-[7px] rounded-lg text-white text-[12px] font-black hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-pink-500/10"
+            className="flex items-center justify-center gap-2 px-[14px] py-[7px] rounded-lg text-white text-[12px] font-black hover:opacity-90 transition-all shadow-lg shadow-pink-500/10"
             style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
           >
-            <span className="text-[14px]">📸</span> Publicar en Instagram
+            <IgIcon className="w-4 h-4" /> Publicar en Instagram
           </button>
         </div>
 
         <div className="flex items-end justify-center gap-3 px-[22px] pt-6 pb-0">
-          {/* 2nd Place */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="h-[52px] w-[52px] rounded-full bg-[#F0F2F8] border-[3px] border-[#B0B8CC] flex items-center justify-center text-xl font-black mb-2 text-[#002B72]">
-              {p2?.avatar || '👨'}
-            </div>
-            <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-1 truncate w-full">{p2?.name || 'Carlos Ruiz'}</div>
-            <div className="font-bebas text-[20px] text-[#7A839E] mb-2 leading-none">{p2?.points || 0} pts</div>
-            <div className="w-full h-[56px] bg-[#9BA5BE] rounded-t-xl flex items-center justify-center font-bebas text-2xl text-white/60">
-              2°
-            </div>
-          </div>
-
-          {/* 1st Place */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="h-[60px] w-[60px] rounded-full bg-[#FEF8D8] border-[3px] border-[#F5C518] flex items-center justify-center text-2xl font-black mb-2 text-[#002B72]">
-              {p1?.avatar || '👩'}
-            </div>
-            <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-1 truncate w-full">{p1?.name || 'Martina López'}</div>
-            <div className="font-bebas text-[20px] text-[#C49A00] mb-2 leading-none">{p1?.points || 0} pts</div>
-            <div className="w-full h-[70px] bg-[#F5C518] rounded-t-xl flex items-center justify-center font-bebas text-[24px] text-[#002B72]">
-              1°
-            </div>
-          </div>
-
-          {/* 3rd Place */}
-          <div className="flex flex-col items-center flex-1">
-            <div className="h-[52px] w-[52px] rounded-full bg-[#FBF0E8] border-[3px] border-[#CD9B6A] flex items-center justify-center text-xl font-black mb-2 text-[#002B72]">
-              {p3?.avatar || '🧑'}
-            </div>
-            <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-1 truncate w-full">{p3?.name || 'Lucas Fernández'}</div>
-            <div className="font-bebas text-[20px] text-[#9B6B3A] mb-2 leading-none">{p3?.points || 0} pts</div>
-            <div className="w-full h-[44px] bg-[#CD9B6A] rounded-t-xl flex items-center justify-center font-bebas text-2xl text-white/60">
-              3°
-            </div>
-          </div>
+          <PodiumSlot pos={2} />
+          <PodiumSlot pos={1} />
+          <PodiumSlot pos={3} />
         </div>
       </Card>
 
       <IgPublishModal
         open={igOpen}
         onClose={() => setIgOpen(false)}
-        podium={items.map((i) => ({ name: i.name, points: i.points, position: i.position }))}
+        podium={items.map(i => ({ name: i.name, points: i.points, position: i.position }))}
         empresa={empresa}
         igConnected={igConnected}
       />

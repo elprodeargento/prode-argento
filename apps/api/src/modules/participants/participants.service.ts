@@ -119,7 +119,14 @@ export class ParticipantsService {
     return data;
   }
 
-  async findByAdminUserId(adminUserId: string, search?: string, page = 1, limit = 10) {
+  async findByAdminUserId(
+    adminUserId: string,
+    search?: string,
+    page = 1,
+    limit = 10,
+    sortBy = 'total_points',
+    sortDir: 'asc' | 'desc' = 'desc',
+  ) {
     const { data: business, error: bizErr } = await this.supabase.client
       .from('businesses')
       .select('id')
@@ -127,16 +134,19 @@ export class ParticipantsService {
       .single();
     if (bizErr || !business) throw new Error('Business not found');
 
-    // Total matches for this business (denominator for predictions progress)
     const { count: totalMatches } = await this.supabase.client
       .from('matches')
       .select('*', { count: 'exact', head: true });
+
+    const ALLOWED_SORT = ['total_points', 'rank', 'name', 'registered_at']
+    const col = ALLOWED_SORT.includes(sortBy) ? sortBy : 'total_points'
+    const asc = sortDir === 'asc'
 
     let query = this.supabase.client
       .from('participants')
       .select('*, predictions(count)', { count: 'exact' })
       .eq('business_id', business.id)
-      .order('total_points', { ascending: false })
+      .order(col, { ascending: asc })
       .range((page - 1) * limit, page * limit - 1);
 
     if (search) {

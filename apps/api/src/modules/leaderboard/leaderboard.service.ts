@@ -177,7 +177,7 @@ export class LeaderboardService {
   async getLeaderboard(businessId: string, limit = 50) {
     const { data: cached } = await this.supabase.client
       .from('leaderboard_cache')
-      .select('*, participants(name, email)')
+      .select('*, participants(name, email, phone)')
       .eq('business_id', businessId)
       .order('rank', { ascending: true })
       .limit(limit)
@@ -187,7 +187,7 @@ export class LeaderboardService {
     // Cache empty (no matches scored yet) — fall back to participants with 0 pts
     const { data: parts } = await this.supabase.client
       .from('participants')
-      .select('id, name, email')
+      .select('id, name, email, phone')
       .eq('business_id', businessId)
       .order('name', { ascending: true })
       .limit(limit)
@@ -198,7 +198,7 @@ export class LeaderboardService {
       exact_results: 0,
       correct_winners: 0,
       rank: i + 1,
-      participants: { name: p.name, email: p.email },
+      participants: { name: p.name, email: p.email, phone: p.phone },
     }))
   }
 

@@ -38,8 +38,12 @@ export class ParticipantsController {
     @Query('search') search?: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortDir') sortDir?: string,
   ) {
-    return this.participantsService.findByAdminUserId(req.user.id, search, Number(page), Number(limit));
+    return this.participantsService.findByAdminUserId(
+      req.user.id, search, Number(page), Number(limit), sortBy, sortDir as 'asc' | 'desc',
+    );
   }
 
   @Get('business/:businessId')
