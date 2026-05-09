@@ -41,19 +41,25 @@ export class NotificationsService {
       }
     }
 
-    const res = await fetch(`${WA_BASE}/${phoneId}/messages`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        messaging_product: 'whatsapp',
-        to,
-        type: 'text',
-        text: { body: text },
-      }),
-    })
+    const useTemplate = this.config.get<string>('app.metaWaTemplate')
+    const body = useTemplate
+      ? JSON.stringify({
+          messaging_product: 'whatsapp',
+          to,
+          type: 'template',
+          template: {
+            name: useTemplate,
+            language: { code: 'es' },
+            components: [{ type: 'body', parameters: [{ type: 'text', text }] }],
+          },
+        })
+      : JSON.stringify({ messaging_product: 'whatsapp', to, type: 'text', text: { body: text } })
+
+    const res = await fetch(`${WA_BASE}/${phoneId}/messages`, { method: 'POST', headers, body })
 
     if (!res.ok) {
-      this.logger.error(`WA send failed to ${to}: ${res.status}`)
+      const body = await res.json().catch(() => ({}))
+      this.logger.error(`WA send failed to ${to}: ${res.status} — ${JSON.stringify(body)}`)
       return false
     }
     return true

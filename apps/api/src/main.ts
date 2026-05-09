@@ -6,11 +6,26 @@ import { ValidationPipe, VersioningType } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { ConfigService } from '@nestjs/config'
 import { AppModule } from './app.module'
+import { LoggingInterceptor } from './shared/interceptors/logging.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: { level: 'info' } }),
+    new FastifyAdapter({
+      logger: {
+        level: 'info',
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            singleLine: true,
+            translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
+            ignore: 'pid,hostname,reqId,req,res,responseTime',
+          },
+        },
+      },
+      disableRequestLogging: true,
+    }),
   )
 
   const config = app.get(ConfigService)
@@ -22,6 +37,9 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
+
+  // HTTP logging interceptor
+  app.useGlobalInterceptors(new LoggingInterceptor())
 
   // Global validation
   app.useGlobalPipes(

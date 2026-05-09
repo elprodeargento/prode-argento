@@ -10,6 +10,7 @@ export default registerAs('app', () => ({
   metaWaToken: process.env.META_WA_TOKEN!,
   metaPhoneNumberId: process.env.META_PHONE_NUMBER_ID!,
   metaVerifyToken: process.env.META_VERIFY_TOKEN!,
+  metaWaTemplate: process.env.META_WA_TEMPLATE ?? 'prode_notificacion',
   mercadopagoToken: process.env.MERCADOPAGO_ACCESS_TOKEN!,
   mercadopagoWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET!,
   cloudflareR2AccountId: process.env.CLOUDFLARE_R2_ACCOUNT_ID!,
