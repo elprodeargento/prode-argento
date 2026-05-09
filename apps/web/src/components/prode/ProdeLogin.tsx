@@ -175,9 +175,9 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
               </div>
               <span className="text-sm text-slate-500 leading-relaxed" onClick={e => e.stopPropagation()}>
                 Acepto los{' '}
-                <a href="/terminos" target="_blank" rel="noopener noreferrer" className="text-[#002B72] font-bold underline" onClick={e => e.stopPropagation()}>Términos y Condiciones</a>
+                <a href="https://elprode.ar/terminos" target="_blank" rel="noopener noreferrer" className="text-[#002B72] font-bold underline" onClick={e => e.stopPropagation()}>Términos y Condiciones</a>
                 {' '}y la{' '}
-                <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="text-[#002B72] font-bold underline" onClick={e => e.stopPropagation()}>Política de Privacidad</a>
+                <a href="https://elprode.ar/privacidad" target="_blank" rel="noopener noreferrer" className="text-[#002B72] font-bold underline" onClick={e => e.stopPropagation()}>Política de Privacidad</a>
               </span>
             </div>
             {errors.terms && <p className="text-xs text-red-500 font-semibold -mt-2">{errors.terms}</p>}
