@@ -280,9 +280,17 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           .then(data => {
             const wcStart = new Date('2026-06-11')
             const now = new Date()
-            const weekIdx = Math.max(0, Math.floor((now.getTime() - wcStart.getTime()) / (7 * 24 * 60 * 60 * 1000)))
-            const current = data[String(weekIdx)] ?? []
-            setWeeklyPrizes(current)
+            const diffMs = now.getTime() - wcStart.getTime()
+
+            if (diffMs < 0) {
+              // Antes del mundial: mostrar premios de la semana 0 si existen
+              const firstAvailable = Object.values(data)[0] as Array<{ rank: number; description: string }> ?? []
+              setWeeklyPrizes(firstAvailable)
+            } else {
+              const weekIdx = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+              const current = data[String(weekIdx)] ?? []
+              setWeeklyPrizes(current)
+            }
           })
           .catch(() => {})
 
@@ -470,8 +478,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               👥 Invitá a un amigo
             </button>
 
-            <PromoCarousel promos={promos} />
-
             {!worldCupStarted && (
               <div className="mx-4 mt-4 rounded-2xl p-5 text-white text-center" style={{ background: color }}>
                 <div className="text-xs font-black text-white/60 uppercase tracking-widest mb-3">⚽ El Mundial arranca en</div>
@@ -586,6 +592,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 )}
               </div>
             )}
+
+            <PromoCarousel promos={promos} />
 
             {prizes.length > 0 && (
               <div className="px-4 pt-5">
