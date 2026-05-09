@@ -8,7 +8,31 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  return { title: `Prode Mundial 2026 — ${slug}` }
+  let name = slug
+  let color = '#002B72'
+  let logoUrl: string | undefined
+
+  try {
+    const res = await fetch(`${API_URL}/businesses/${slug}`, { cache: 'no-store' })
+    if (res.ok) {
+      const biz = await res.json()
+      name = biz.name ?? slug
+      color = biz.primary_color ?? color
+      logoUrl = biz.logo_url ?? undefined
+    }
+  } catch {}
+
+  return {
+    title: `${name} — Prode Mundial 2026`,
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: name,
+    },
+    icons: logoUrl ? { apple: logoUrl } : undefined,
+    themeColor: color,
+  }
 }
 
 export default async function PublicProdePage({ params }: Props) {

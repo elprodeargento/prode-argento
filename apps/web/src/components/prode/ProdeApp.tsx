@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
+import { useInstallPWA } from '@/hooks/useInstallPWA'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
@@ -178,6 +179,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
   const [exactAlert, setExactAlert] = useState(false)
   usePushNotifications(participant.id)
+  const { canInstall, install } = useInstallPWA()
 
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
@@ -1096,6 +1098,14 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 className="mt-4 w-full py-2.5 rounded-xl border-2 font-bold text-sm transition-all"
                 style={{ borderColor: color, color }}>
                 ✏️ Editar mis datos
+              </button>
+            )}
+            {canInstall && (
+              <button
+                onClick={install}
+                className="w-full mt-3 py-3 rounded-2xl font-black text-sm text-white transition-all flex items-center justify-center gap-2"
+                style={{ background: color }}>
+                📲 Instalar app
               </button>
             )}
             {onLogout && (
