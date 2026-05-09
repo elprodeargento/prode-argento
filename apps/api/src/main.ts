@@ -31,8 +31,22 @@ async function bootstrap() {
   const config = app.get(ConfigService)
   const webUrl = config.get<string>('app.webUrl') || 'http://localhost:3000'
 
+  const allowedOrigins = [
+    webUrl,
+    'http://localhost:3000',
+    'https://elprode.ar',
+    'https://borde.elprode.ar',
+    /\.elprode\.ar$/,
+  ]
+
   await app.register(cors, {
-    origin: true,
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true)
+      const allowed = allowedOrigins.some(o =>
+        typeof o === 'string' ? o === origin : o.test(origin),
+      )
+      cb(null, allowed)
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
