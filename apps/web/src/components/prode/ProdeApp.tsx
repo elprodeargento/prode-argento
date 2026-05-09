@@ -424,20 +424,35 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
         const logoSize = 160
         const logoX = (1080 - logoSize) / 2
-        const centerY = 220
+        const centerY = 260
 
-        // Círculo blanco detrás del logo
+        // Calcular dimensiones respetando aspect ratio
+        const aspectRatio = img.naturalWidth / img.naturalHeight
+        let drawW = logoSize
+        let drawH = logoSize
+        if (aspectRatio > 1) {
+          drawH = logoSize / aspectRatio
+        } else {
+          drawW = logoSize * aspectRatio
+        }
+        const drawX = logoX + (logoSize - drawW) / 2
+        const drawY = centerY - logoSize / 2 + (logoSize - drawH) / 2
+
+        // Círculo de fondo
         ctx.beginPath()
         ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2 + 15, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(255,255,255,0.2)'
+        ctx.fillStyle = 'rgba(255,255,255,0.15)'
         ctx.fill()
 
-        // Clip circular para el logo
+        // Clip circular
         ctx.save()
         ctx.beginPath()
         ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2, 0, Math.PI * 2)
         ctx.clip()
-        ctx.drawImage(img, logoX, centerY - logoSize / 2, logoSize, logoSize)
+        // Fondo blanco dentro del clip por si la imagen tiene transparencia
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(logoX, centerY - logoSize / 2, logoSize, logoSize)
+        ctx.drawImage(img, drawX, drawY, drawW, drawH)
         ctx.restore()
 
         URL.revokeObjectURL(objectUrl)
@@ -464,16 +479,22 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       ctx.fillText(businessName.charAt(0).toUpperCase(), 540, 248)
     }
 
-    // Nombre del comercio
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'
-    ctx.font = 'bold 48px system-ui, sans-serif'
+    // Nombre del comercio (ajusta font size para que entre)
+    const maxNameWidth = 950
+    let nameFontSize = 52
+    ctx.font = `bold ${nameFontSize}px system-ui, sans-serif`
+    while (ctx.measureText(businessName.toUpperCase()).width > maxNameWidth && nameFontSize > 24) {
+      nameFontSize -= 2
+      ctx.font = `bold ${nameFontSize}px system-ui, sans-serif`
+    }
+    ctx.fillStyle = 'rgba(255,255,255,0.9)'
     ctx.textAlign = 'center'
-    ctx.fillText(businessName.toUpperCase(), 540, 330)
+    ctx.fillText(businessName.toUpperCase(), 540, 390)
 
     // Tipo de ranking
     ctx.fillStyle = 'rgba(255,255,255,0.5)'
-    ctx.font = 'bold 32px system-ui, sans-serif'
-    ctx.fillText(type === 'semanal' ? 'RANKING SEMANAL' : 'RANKING GENERAL', 540, 380)
+    ctx.font = 'bold 30px system-ui, sans-serif'
+    ctx.fillText(type === 'semanal' ? 'RANKING SEMANAL' : 'RANKING GENERAL', 540, 435)
 
     // Posición grande
     const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null
