@@ -43,14 +43,14 @@ export class ReferralsService {
 
   private async sendRedemptionEmail(businessName: string, prize: string, points: number) {
     try {
-      await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'noreply@elprode.ar',
+          from: 'onboarding@resend.dev',
           to: 'elprodeargento@gmail.com',
           subject: `🎁 Nuevo canje — ${businessName}`,
           html: `
@@ -64,6 +64,8 @@ export class ReferralsService {
           `
         })
       })
+      const data = await res.json()
+      console.log('Resend response:', JSON.stringify(data))
     } catch (e) {
       console.error('Error sending redemption email:', e)
     }
@@ -75,8 +77,8 @@ export class ReferralsService {
       .select('name')
       .eq('admin_user_id', adminUserId)
       .single()
-
-    await this.sendRedemptionEmail(business?.name ?? 'Desconocido', prize, points)
+    if (!business) throw new Error('Business not found')
+    await this.sendRedemptionEmail(business.name, prize, points)
     return { success: true }
   }
 
