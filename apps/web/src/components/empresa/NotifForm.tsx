@@ -105,9 +105,12 @@ export function NotifForm() {
   // Push state
   const [pushTitle, setPushTitle] = useState('')
   const [pushBody, setPushBody] = useState('')
+  const [pushImageUrl, setPushImageUrl] = useState<string | null>(null)
   const [pushRecipients, setPushRecipients] = useState<Recipient>('all')
+  const [pushUploading, setPushUploading] = useState(false)
   const [pushSending, setPushSending] = useState(false)
   const [pushResult, setPushResult] = useState<{ sent: number; failed: number } | null>(null)
+  const pushFileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     apiGet<{ plan: string }>('/businesses/me')
@@ -156,6 +159,20 @@ export function NotifForm() {
     }
   }
 
+  const handlePushImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPushUploading(true)
+    try {
+      const url = await uploadToR2(file)
+      setPushImageUrl(url)
+    } catch {
+      alert('Error al subir la imagen')
+    } finally {
+      setPushUploading(false)
+    }
+  }
+
   const handleSendPush = async () => {
     if (!pushTitle.trim() || !pushBody.trim()) return
     setPushSending(true)
@@ -165,6 +182,7 @@ export function NotifForm() {
         title: pushTitle,
         body: pushBody,
         recipients: pushRecipients,
+        imageUrl: pushImageUrl ?? undefined,
       })
       setPushResult(res)
       setTimeout(() => setPushResult(null), 5000)
@@ -302,6 +320,31 @@ export function NotifForm() {
               value={pushBody}
               onChange={e => setPushBody(e.target.value)}
             />
+          </div>
+
+          <div className="field">
+            <div className="field-label">Imagen adjunta (opcional)</div>
+            <input ref={pushFileRef} type="file" accept="image/*" className="hidden" onChange={handlePushImageUpload} />
+            {pushImageUrl ? (
+              <div className="relative rounded-xl overflow-hidden border border-slate-200 h-24">
+                <img src={pushImageUrl} alt="" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => setPushImageUrl(null)}
+                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => pushFileRef.current?.click()}
+                disabled={pushUploading}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm font-bold text-slate-500 hover:border-[#002B72] hover:text-[#002B72] transition-all disabled:opacity-50"
+              >
+                {pushUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+                {pushUploading ? 'Subiendo...' : 'Agregar imagen'}
+              </button>
+            )}
           </div>
 
           {pushResult && (
