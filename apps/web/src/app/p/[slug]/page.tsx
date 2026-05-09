@@ -2,6 +2,9 @@ import { ProdeLogin } from '@/components/prode/ProdeLogin'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 interface Props { params: Promise<{ slug: string }> }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
