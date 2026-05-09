@@ -85,6 +85,20 @@ export function DashboardChecklist({ business }: { business: any }) {
         setPoints(refData?.points || 0)
       })
       .catch(() => {})
+
+    apiGet<{ total: number }>('/participants/me?page=1&limit=1')
+      .then(partData => {
+        const totalParticipants = partData?.total || 0
+        setSteps(prev => prev.map(s =>
+          s.id === 'participants' ? { ...s, done: totalParticipants >= 3 } : s
+        ))
+      })
+      .catch(() => {})
+
+    const messageSent = localStorage.getItem('first_message_sent') === 'true'
+    setSteps(prev => prev.map(s =>
+      s.id === 'notification' ? { ...s, done: messageSent } : s
+    ))
   }, [])
 
   const handleCopyLink = async () => {

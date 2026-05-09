@@ -62,6 +62,7 @@ export function WhatsAppSendModal({
     setSending(true)
     try {
       await apiPost('/notifications/whatsapp', { message, imageUrl, recipients: recipient })
+      localStorage.setItem('first_message_sent', 'true')
       setSent(true)
       setTimeout(() => { setSent(false); onClose() }, 2500)
     } catch (e: any) {
