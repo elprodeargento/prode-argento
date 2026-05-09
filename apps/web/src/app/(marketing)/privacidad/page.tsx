@@ -24,7 +24,7 @@ export default function PrivacidadPage() {
           <h1 className="text-3xl font-extrabold text-[#002B72] mb-3">Política de Privacidad</h1>
           <p className="text-slate-600 text-sm leading-relaxed">
             Esta Política de Privacidad describe cómo <strong>elprode.ar</strong> ("nosotros", "nuestro" o "el Servicio"),
-            operado por Agilesrivas Tech — CUIT / DNI de contacto: aestheriontech@gmail.com —, recopila, usa,
+            operado por Agilesrivas Tech — CUIT / DNI de contacto: elprodeargento@gmail.com —, recopila, usa,
             almacena y comparte información cuando utilizás nuestra plataforma de prodes deportivos para el
             Mundial 2026. Al usar el Servicio, aceptás las prácticas descritas en este documento.
           </p>
@@ -111,7 +111,7 @@ export default function PrivacidadPage() {
             </p>
             <ul className="list-disc pl-5 space-y-1 mt-1">
               <li>Respondiendo <strong>"STOP"</strong> a cualquier mensaje de WhatsApp que te enviemos.</li>
-              <li>Enviando un correo a <strong>aestheriontech@gmail.com</strong> con el asunto
+              <li>Enviando un correo a <strong>elprodeargento@gmail.com</strong> con el asunto
               "Baja WhatsApp" indicando tu número de celular.</li>
             </ul>
             <p className="mt-2">
@@ -233,8 +233,8 @@ export default function PrivacidadPage() {
             </ul>
             <p className="mt-2">
               Para ejercer cualquiera de estos derechos, escribinos a{' '}
-              <a href="mailto:aestheriontech@gmail.com" className="text-[#002B72] underline font-medium">
-                aestheriontech@gmail.com
+              <a href="mailto:elprodeargento@gmail.com" className="text-[#002B72] underline font-medium">
+                elprodeargento@gmail.com
               </a>{' '}
               con el asunto "Datos Personales". Responderemos dentro de los 30 días corridos.
               El titular de los datos podrá también radicar su reclamo ante la{' '}
@@ -252,8 +252,8 @@ export default function PrivacidadPage() {
             <ol className="list-decimal pl-5 space-y-2">
               <li>
                 <strong>Por correo electrónico:</strong> enviá un email a{' '}
-                <a href="mailto:aestheriontech@gmail.com" className="text-[#002B72] underline font-medium">
-                  aestheriontech@gmail.com
+                <a href="mailto:elprodeargento@gmail.com" className="text-[#002B72] underline font-medium">
+                  elprodeargento@gmail.com
                 </a>{' '}
                 con el asunto <strong>"Solicitud de eliminación de datos"</strong> indicando el correo
                 electrónico o número de teléfono asociado a tu cuenta. Procesaremos tu solicitud en
@@ -323,8 +323,8 @@ export default function PrivacidadPage() {
               <p>República Argentina</p>
               <p>
                 Email:{' '}
-                <a href="mailto:aestheriontech@gmail.com" className="text-[#002B72] underline">
-                  aestheriontech@gmail.com
+                <a href="mailto:elprodeargento@gmail.com" className="text-[#002B72] underline">
+                  elprodeargento@gmail.com
                 </a>
               </p>
               <p>Sitio web: elprode.ar</p>

@@ -98,27 +98,26 @@ export default function TerminosPage() {
                     <td className="px-3 py-2 font-semibold">Free</td>
                     <td className="px-3 py-2">Gratis</td>
                     <td className="px-3 py-2">Hasta 5</td>
-                    <td className="px-3 py-2">Funciones básicas, sin datos de contacto</td>
+                    <td className="px-3 py-2">Ranking en tiempo real, página pública con marca propia</td>
                   </tr>
-                  <tr>
-                    <td className="px-3 py-2 font-semibold text-[#002B72]">Premium</td>
-                    <td className="px-3 py-2">USD 15 único</td>
+                  <tr className="bg-[#F5F8FF]">
+                    <td className="px-3 py-2 font-semibold text-[#002B72]">Pro</td>
+                    <td className="px-3 py-2 font-semibold">$40.000</td>
                     <td className="px-3 py-2">Ilimitados</td>
-                    <td className="px-3 py-2">Datos de contacto, WhatsApp, ranking completo</td>
+                    <td className="px-3 py-2">Premios semanales, notificaciones WhatsApp, podio en Instagram, QR descargable, exportar participantes</td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-semibold text-[#F5C518] bg-[#002B72]">Pro</td>
-                    <td className="px-3 py-2 bg-[#002B72] text-white">USD 25 único</td>
-                    <td className="px-3 py-2 bg-[#002B72] text-white">Ilimitados</td>
-                    <td className="px-3 py-2 bg-[#002B72] text-white">Todo Premium + promos geo + Instagram + sin marca elprode.ar</td>
+                    <td className="px-3 py-2 font-semibold text-[#b8960a]">Premium</td>
+                    <td className="px-3 py-2 font-semibold">$80.000</td>
+                    <td className="px-3 py-2">Ilimitados</td>
+                    <td className="px-3 py-2">Todo lo del plan Pro + publicidad geolocalizada, estadísticas de visualizaciones, soporte por WhatsApp</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <p className="mt-3">
-              Los precios están expresados en dólares estadounidenses (USD) y se cobran en pesos
-              argentinos (ARS) al tipo de cambio oficial al momento del pago, según lo determine
-              MercadoPago. El precio es por torneo (Mundial 2026) y no es una suscripción.
+              Los precios están expresados en pesos argentinos (ARS) e incluyen impuestos.
+              El precio es por torneo (Mundial 2026), es un pago único y no constituye una suscripción.
             </p>
           </section>
 
@@ -139,8 +138,8 @@ export default function TerminosPage() {
               una falla técnica grave que nos sea imputable y que impida el uso de las funciones
               principales durante más de 7 días corridos. En ese caso, evaluaremos el reembolso
               proporcional. Contactanos a{' '}
-              <a href="mailto:aestheriontech@gmail.com" className="text-[#002B72] underline">
-                aestheriontech@gmail.com
+              <a href="mailto:elprodeargento@gmail.com" className="text-[#002B72] underline">
+                elprodeargento@gmail.com
               </a>.
             </p>
           </section>
@@ -336,8 +335,8 @@ export default function TerminosPage() {
               <p>República Argentina</p>
               <p>
                 Email:{' '}
-                <a href="mailto:aestheriontech@gmail.com" className="text-[#002B72] underline">
-                  aestheriontech@gmail.com
+                <a href="mailto:elprodeargento@gmail.com" className="text-[#002B72] underline">
+                  elprodeargento@gmail.com
                 </a>
               </p>
               <p>Sitio web: elprode.ar</p>
