@@ -73,7 +73,7 @@ export class NotificationsScheduler {
       for (const result of results) {
         const { data: participant } = await this.supabase.client
           .from('participants')
-          .select('phone, name, rank, businesses(name, plan)')
+          .select('id, phone, name, rank, last_wa_sent_at, businesses(name, plan, slug)')
           .eq('id', result.participantId)
           .single()
 
@@ -83,12 +83,15 @@ export class NotificationsScheduler {
         if (!participant.phone) continue
 
         await this.notifications.sendResultNotification(
+          participant.id,
           participant.phone,
           participant.name,
           biz.name,
+          biz.slug ?? '',
           `Partido ${match.id}`,
           result.pointsEarned,
           participant.rank ?? 0,
+          participant.last_wa_sent_at ?? null,
         )
       }
     }
