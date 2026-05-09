@@ -15,12 +15,12 @@ export class StorageController {
       const response = await fetch(url)
       const buffer = await response.arrayBuffer()
       const contentType = response.headers.get('content-type') || 'image/jpeg'
-      res.set('Content-Type', contentType)
-      res.set('Access-Control-Allow-Origin', '*')
-      res.set('Cache-Control', 'public, max-age=86400')
+      res.header('Content-Type', contentType)
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Cache-Control', 'public, max-age=86400')
       res.send(Buffer.from(buffer))
     } catch {
-      res.status(400).send('Error fetching image')
+      res.code(400).send('Error fetching image')
     }
   }
 
