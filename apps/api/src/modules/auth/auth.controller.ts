@@ -14,10 +14,31 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
-    const slug =
-      dto.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') +
-      '-' +
-      Math.random().toString(36).substring(2, 7);
+    const base = dto.name
+      .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'comercio';
+
+    // Check if slug already exists and append numeric suffix if needed
+    let slug = base;
+    const { data: existing } = await this.supabase.client
+      .from('businesses')
+      .select('slug')
+      .eq('slug', base)
+      .maybeSingle();
+    if (existing) {
+      const { data: siblings } = await this.supabase.client
+        .from('businesses')
+        .select('slug')
+        .like('slug', `${base}-%`);
+      const taken = new Set([base, ...(siblings ?? []).map((r: any) => r.slug)]);
+      let i = 2;
+      while (taken.has(`${base}-${i}`)) i++;
+      slug = `${base}-${i}`;
+    }
 
     // 1. Create Supabase auth user
     const { data: authData, error: authError } = await this.supabase.client.auth.admin.createUser({

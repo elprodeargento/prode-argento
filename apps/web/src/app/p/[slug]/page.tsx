@@ -38,9 +38,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PublicProdePage({ params }: Props) {
   const { slug } = await params
 
+  console.log(`[/p/${slug}] fetching business from ${API_URL}/businesses/${slug}`)
   const bizRes = await fetch(`${API_URL}/businesses/${slug}`, { cache: 'no-store' })
-  if (!bizRes.ok) notFound()
+  console.log(`[/p/${slug}] businesses response status: ${bizRes.status}`)
+  if (!bizRes.ok) {
+    console.error(`[/p/${slug}] business not found — status ${bizRes.status}`)
+    notFound()
+  }
   const business = await bizRes.json()
+  console.log(`[/p/${slug}] business loaded: id=${business.id} slug=${business.slug}`)
 
   const prizesRes = await fetch(`${API_URL}/prizes/business/${business.id}`, { cache: 'no-store' })
   const prizes: Array<{ rank: number; description: string }> = prizesRes.ok ? await prizesRes.json() : []

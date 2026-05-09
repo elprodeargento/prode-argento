@@ -62,21 +62,28 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
     setLoading(true)
     setApiError('')
     try {
+      const payload = { slug: empresa.slug, name: form.name, email: form.email, phone: form.phone }
+      console.log('[ProdeLogin] POST /participants/join →', payload)
       const res = await fetch(`${API_URL}/participants/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug: empresa.slug, name: form.name, email: form.email, phone: form.phone }),
+        body: JSON.stringify(payload),
       })
+      console.log('[ProdeLogin] response status:', res.status)
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
+        console.error('[ProdeLogin] error body:', err)
         throw new Error(err.message ?? 'Error al unirse al prode')
       }
-      const { participant: p } = await res.json()
+      const json = await res.json()
+      console.log('[ProdeLogin] success body:', json)
+      const { participant: p } = json
       const saved: Participant = { id: p.id, name: form.name, email: form.email, phone: form.phone }
       setParticipant(saved)
       if (remember) localStorage.setItem(storageKey(empresa.slug), JSON.stringify(saved))
       setStep('app')
     } catch (err: any) {
+      console.error('[ProdeLogin] caught error:', err)
       setApiError(err.message ?? 'Hubo un error. Intentá de nuevo.')
     } finally {
       setLoading(false)

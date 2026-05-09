@@ -27,6 +27,7 @@ export function OnboardingWizard() {
   const [prizeCount, setPrizeCount] = useState(3)
   const [prizes, setPrizes] = useState<string[]>(['', '', ''])
   const [copied, setCopied] = useState(false)
+  const [qrDownloading, setQrDownloading] = useState(false)
 
   useEffect(() => {
     async function getBusiness() {
@@ -108,11 +109,45 @@ export function OnboardingWizard() {
     }
   }
 
+  const shareUrl = business?.slug ? `https://${business.slug}.elprode.ar` : ''
+
   const copyLink = () => {
-    const url = `https://${business?.slug}.elprode.ar`
-    navigator.clipboard?.writeText(url)
+    if (!shareUrl) return
+    navigator.clipboard?.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const shareWA = () => {
+    if (!shareUrl) return
+    const text = `¡Participá del Prode Mundial 2026 de ${businessName || business?.name || 'nuestra empresa'}! Entrá acá: ${shareUrl}`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
+  }
+
+  const shareEmail = () => {
+    if (!shareUrl) return
+    const subject = `¡Participá del Prode Mundial 2026!`
+    const body = `¡Hola!\n\nTe invitamos a participar del Prode Mundial 2026 de ${businessName || business?.name || 'nuestra empresa'}.\n\nIngresá acá: ${shareUrl}\n\n¡Muchos éxitos!`
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank')
+  }
+
+  const downloadQR = async () => {
+    if (!shareUrl) return
+    setQrDownloading(true)
+    try {
+      const qrColor = (color ?? '#002B72').replace('#', '')
+      const src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(shareUrl)}&size=512x512&color=${qrColor}&bgcolor=ffffff&margin=20`
+      const res = await fetch(src)
+      const blob = await res.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = `qr-${business?.slug}.png`
+      a.click()
+      URL.revokeObjectURL(blobUrl)
+    } finally {
+      setQrDownloading(false)
+    }
   }
 
   if (!business && step === 'config') {
@@ -133,7 +168,7 @@ export function OnboardingWizard() {
 
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 mb-4 border border-slate-200">
             <span className="flex-1 text-left text-sm font-black text-[#002B72] truncate italic">
-              {business?.slug}.elprode.ar
+              {shareUrl}
             </span>
             <button 
               onClick={copyLink}
@@ -144,23 +179,31 @@ export function OnboardingWizard() {
             </button>
           </div>
 
-          <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 mb-6 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 transition-all">
-            <QrCode className="h-10 w-10 text-slate-400 mb-2" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descargar QR</span>
-          </div>
+          <button
+            onClick={downloadQR}
+            disabled={qrDownloading}
+            className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 mb-6 flex flex-col items-center justify-center cursor-pointer hover:bg-blue-50 hover:border-[#002B72] transition-all disabled:opacity-50"
+          >
+            {qrDownloading
+              ? <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mb-2" />
+              : <QrCode className="h-10 w-10 text-slate-400 mb-2" />}
+            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              {qrDownloading ? 'Descargando...' : 'Descargar QR'}
+            </span>
+          </button>
 
           <div className="flex gap-2 mb-8">
-            <button className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all">
+            <button onClick={shareWA} className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-emerald-50 hover:border-emerald-300 transition-all">
               <MessageCircle className="h-5 w-5 text-emerald-500" />
               <span className="text-[10px] font-black text-slate-400">WhatsApp</span>
             </button>
-            <button className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all">
+            <button onClick={shareEmail} className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-blue-50 hover:border-blue-300 transition-all">
               <Mail className="h-5 w-5 text-blue-500" />
               <span className="text-[10px] font-black text-slate-400">Email</span>
             </button>
-            <button className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all">
-              <Copy className="h-5 w-5 text-slate-400" />
-              <span className="text-[10px] font-black text-slate-400">Link</span>
+            <button onClick={copyLink} className="flex-1 flex flex-col items-center gap-1 p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all">
+              {copied ? <Check className="h-5 w-5 text-emerald-500" /> : <Copy className="h-5 w-5 text-slate-400" />}
+              <span className="text-[10px] font-black text-slate-400">{copied ? 'Copiado' : 'Link'}</span>
             </button>
           </div>
 

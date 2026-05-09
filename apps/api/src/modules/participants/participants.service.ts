@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
@@ -6,6 +6,8 @@ import { normalizeE164AR } from '../../shared/utils/phone';
 
 @Injectable()
 export class ParticipantsService {
+  private readonly logger = new Logger(ParticipantsService.name);
+
   constructor(
     private readonly supabase: SupabaseService,
     private readonly notifications: NotificationsService,
@@ -54,19 +56,26 @@ export class ParticipantsService {
   }
 
   async joinBySlug(slug: string, name: string, email: string, phone?: string) {
+    this.logger.log(`joinBySlug called — slug="${slug}" email="${email}" name="${name}" phone="${phone}"`);
+
     const { data: business, error: bizError } = await this.supabase.client
       .from('businesses')
       .select('id, name, primary_color, logo_url, plan')
       .eq('slug', slug)
       .single();
 
-    if (bizError || !business) throw new BadRequestException('Prode no encontrado');
+    if (bizError || !business) {
+      this.logger.warn(`Business not found for slug="${slug}" — supabase error: ${bizError?.message}`);
+      throw new BadRequestException('Prode no encontrado');
+    }
+    this.logger.log(`Business found: id="${business.id}" name="${business.name}" plan="${business.plan}"`);
 
     if (business.plan === 'free') {
       const { count } = await this.supabase.client
         .from('participants')
         .select('*', { count: 'exact', head: true })
         .eq('business_id', business.id);
+      this.logger.log(`Free plan check: current count=${count}`);
       if (count && count >= 5) throw new BadRequestException('Límite del plan gratuito alcanzado');
     }
 
@@ -78,9 +87,13 @@ export class ParticipantsService {
       .eq('email', email)
       .single();
 
-    if (existing) return { participant: existing, business };
+    if (existing) {
+      this.logger.log(`Participant already exists for email="${email}", returning existing id="${existing.id}"`);
+      return { participant: existing, business };
+    }
 
     const normalizedPhone = normalizeE164AR(phone) ?? phone ?? ''
+    this.logger.log(`Inserting new participant — normalizedPhone="${normalizedPhone}"`);
 
     const { data, error } = await this.supabase.client
       .from('participants')
@@ -88,7 +101,12 @@ export class ParticipantsService {
       .select()
       .single();
 
-    if (error) throw new Error(error.message);
+    if (error) {
+      this.logger.error(`Insert participant failed — code="${error.code}" message="${error.message}"`);
+      throw new Error(error.message);
+    }
+
+    this.logger.log(`Participant inserted successfully id="${data.id}"`);
 
     // Fire-and-forget: notify admin of new participant
     this.notifications
