@@ -584,6 +584,11 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 Cerrar sesión
               </button>
             )}
+            <div className="flex justify-center gap-4 mt-5 text-xs text-slate-400">
+              <a href="/terminos" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Términos y Condiciones</a>
+              <span>·</span>
+              <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Política de Privacidad</a>
+            </div>
           </div>
         )}
 
