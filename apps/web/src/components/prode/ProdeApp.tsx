@@ -408,22 +408,58 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     // Logo del comercio (si existe)
     if (logoUrl) {
       try {
+        // Descargar la imagen via fetch para evitar CORS
+        const response = await fetch(logoUrl)
+        const blob = await response.blob()
+        const objectUrl = URL.createObjectURL(blob)
+
         const img = new Image()
-        img.crossOrigin = 'anonymous'
-        await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = logoUrl! })
+        await new Promise<void>((res, rej) => {
+          img.onload = () => res()
+          img.onerror = () => rej()
+          img.src = objectUrl
+        })
+
         const logoSize = 160
         const logoX = (1080 - logoSize) / 2
+        const centerY = 220
+
+        // Círculo blanco detrás del logo
         ctx.beginPath()
-        ctx.arc(logoX + logoSize / 2, 200, logoSize / 2 + 10, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(255,255,255,0.15)'
+        ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2 + 15, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255,255,255,0.2)'
         ctx.fill()
+
+        // Clip circular para el logo
         ctx.save()
         ctx.beginPath()
-        ctx.arc(logoX + logoSize / 2, 200, logoSize / 2, 0, Math.PI * 2)
+        ctx.arc(logoX + logoSize / 2, centerY, logoSize / 2, 0, Math.PI * 2)
         ctx.clip()
-        ctx.drawImage(img, logoX, 200 - logoSize / 2, logoSize, logoSize)
+        ctx.drawImage(img, logoX, centerY - logoSize / 2, logoSize, logoSize)
         ctx.restore()
-      } catch {}
+
+        URL.revokeObjectURL(objectUrl)
+      } catch {
+        // Fallback: inicial del comercio
+        ctx.beginPath()
+        ctx.arc(540, 220, 90, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(255,255,255,0.2)'
+        ctx.fill()
+        ctx.fillStyle = '#ffffff'
+        ctx.font = 'bold 80px system-ui, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText(businessName.charAt(0).toUpperCase(), 540, 248)
+      }
+    } else {
+      // Sin logo: inicial del comercio
+      ctx.beginPath()
+      ctx.arc(540, 220, 90, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(255,255,255,0.2)'
+      ctx.fill()
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 80px system-ui, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(businessName.charAt(0).toUpperCase(), 540, 248)
     }
 
     // Nombre del comercio
