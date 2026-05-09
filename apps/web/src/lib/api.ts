@@ -30,7 +30,13 @@ export async function apiGet<T>(path: string): Promise<T> {
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await apiFetch(path, { method: 'POST', body: JSON.stringify(body) })
-  if (!res.ok) throw new Error(`POST ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}))
+    const msg = json?.message ?? `Error ${res.status}`
+    const err = new Error(Array.isArray(msg) ? msg[0] : msg) as Error & { status: number }
+    err.status = res.status
+    throw err
+  }
   return res.json()
 }
 

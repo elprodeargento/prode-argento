@@ -12,6 +12,7 @@ export function RegistroEmpresaForm() {
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [emailExists, setEmailExists] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', password: '' })
 
   const handleGoogle = async () => {
@@ -42,7 +43,11 @@ export function RegistroEmpresaForm() {
         ...(referrerSlug ? { referrerSlug } : {}),
       })
     } catch (err: any) {
-      setError(err?.message ?? 'Error al registrar el comercio')
+      if (err?.status === 409) {
+        setEmailExists(true)
+      } else {
+        setError(err?.message ?? 'Error al registrar el comercio')
+      }
       setLoading(false)
       return
     }
@@ -99,13 +104,21 @@ export function RegistroEmpresaForm() {
           <div className="flex-1 border-t border-slate-200"/>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3" autoComplete="off">
           <Input label="Nombre del comercio" placeholder="Ej: Distribuidora García SA"
-            value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} required />
+            value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} required autoComplete="off" />
           <Input label="Email corporativo" type="email" placeholder="admin@tucomercio.com"
-            value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required />
+            value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required autoComplete="off" />
           <Input label="Contraseña" type="password" placeholder="Mínimo 8 caracteres"
-            value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required />
+            value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required autoComplete="new-password" />
+          {emailExists && (
+            <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 font-semibold">
+              Ya existe una cuenta con ese email.{' '}
+              <a href="/empresa/login" className="underline font-black text-[#002B72] hover:opacity-80">
+                Iniciá sesión →
+              </a>
+            </div>
+          )}
           {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
           <Button type="submit" size="lg" disabled={loading} className="w-full rounded-full font-black mt-2">
             {loading ? 'Creando cuenta...' : 'Crear cuenta y configurar →'}

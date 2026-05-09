@@ -57,11 +57,11 @@ export function LoginEmpresaForm() {
           </svg>
           Entrar con Google
         </button>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3" autoComplete="off">
           <Input label="Email" type="email" placeholder="admin@tucomercio.com"
-            value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required />
+            value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} required autoComplete="off" />
           <Input label="Contraseña" type="password" placeholder="Tu contraseña"
-            value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required />
+            value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} required autoComplete="new-password" />
           {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
           <Button type="submit" size="lg" disabled={loading} className="w-full rounded-full font-black mt-2">
             {loading ? 'Entrando...' : 'Entrar al panel →'}
