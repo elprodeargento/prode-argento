@@ -43,9 +43,7 @@ export class ReferralsService {
 
   private async sendRedemptionEmail(businessName: string, prize: string, points: number) {
     try {
-      console.log('RESEND_API_KEY exists:', !!process.env.RESEND_API_KEY)
-      console.log('RESEND_API_KEY prefix:', process.env.RESEND_API_KEY?.substring(0, 10))
-      const res = await fetch('https://api.resend.com/emails', {
+      await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
@@ -66,9 +64,6 @@ export class ReferralsService {
           `
         })
       })
-      console.log('Resend status:', res.status)
-      const data = await res.json()
-      console.log('Resend body:', JSON.stringify(data))
     } catch (e) {
       console.error('Error sending redemption email:', e)
     }
