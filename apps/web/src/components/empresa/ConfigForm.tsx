@@ -307,7 +307,7 @@ export function ConfigForm() {
                 className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] text-[#5A6480] font-black text-[12px] hover:bg-[#003FA3] hover:text-white hover:border-[#003FA3] transition-all disabled:opacity-50"
               >
                 {qrDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
-                Bajar QR
+                Descargar QR
               </button>
             </div>
 
