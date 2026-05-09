@@ -118,46 +118,28 @@ export class LeaderboardService {
   }
 
   async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
-    const now = new Date()
-    const dayOfWeek = now.getDay()
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) - offset * 7)
-    monday.setHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    sunday.setHours(23, 59, 59, 999)
-
-    // Primero obtener los participant_ids del business
     const { data: participants, error: pErr } = await this.supabase.client
       .from('participants')
       .select('id, name')
       .eq('business_id', businessId)
 
     if (pErr) throw new Error(pErr.message)
-    if (!participants?.length) return { entries: [], weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
+    if (!participants?.length) return { entries: [], weekStart: new Date().toISOString(), weekEnd: new Date().toISOString() }
 
     const participantIds = participants.map(p => p.id)
 
-    // Luego obtener las predicciones de esa semana
     const { data: predictions, error: predErr } = await this.supabase.client
       .from('predictions')
       .select('participant_id, points_earned')
       .in('participant_id', participantIds)
-      .gte('created_at', monday.toISOString())
-      .lte('created_at', sunday.toISOString())
       .not('points_earned', 'is', null)
 
     if (predErr) throw new Error(predErr.message)
 
-    // Agrupar por participante
     const map: Record<string, { name: string; points: number; exact: number }> = {}
-
-    // Inicializar todos los participantes con 0
     for (const p of participants) {
       map[p.id] = { name: p.name, points: 0, exact: 0 }
     }
-
-    // Sumar puntos
     for (const pred of predictions ?? []) {
       if (map[pred.participant_id]) {
         map[pred.participant_id].points += pred.points_earned ?? 0
@@ -177,8 +159,8 @@ export class LeaderboardService {
 
     return {
       entries,
-      weekStart: monday.toISOString(),
-      weekEnd: sunday.toISOString(),
+      weekStart: new Date().toISOString(),
+      weekEnd: new Date().toISOString(),
     }
   }
 
