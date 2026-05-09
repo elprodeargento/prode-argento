@@ -29,8 +29,9 @@ export function usePushNotifications(participantId: string | undefined) {
         if (!messaging) { console.warn('[FCM] messaging null'); return }
 
         console.log('[FCM] registering SW...')
-        const sw = await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
-        console.log('[FCM] SW registered:', sw.scope)
+        await navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
+        const sw = await navigator.serviceWorker.ready
+        console.log('[FCM] SW active:', sw.active?.state)
 
         console.log('[FCM] getting token...')
         const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: sw })
