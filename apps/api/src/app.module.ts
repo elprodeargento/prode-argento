@@ -15,6 +15,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { InstagramModule } from './modules/instagram/instagram.module'
 import { PaymentsModule } from './modules/payments/payments.module'
 import { StorageModule } from './modules/storage/storage.module'
+import { ReferralsModule } from './modules/referrals/referrals.module'
 import appConfig from './config/app.config'
 
 @Module({
@@ -40,6 +41,7 @@ import appConfig from './config/app.config'
     InstagramModule,
     PaymentsModule,
     StorageModule,
+    ReferralsModule,
   ],
 })
 export class AppModule {}

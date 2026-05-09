@@ -2,6 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import MercadoPago, { Preference } from 'mercadopago'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
+import { ReferralsService } from '../referrals/referrals.service'
 
 export const PLANS = {
   pro:     { label: 'Plan Pro',     price: 40000, max_participants: null },
@@ -18,6 +19,7 @@ export class PaymentsService {
   constructor(
     private readonly config: ConfigService,
     private readonly supabase: SupabaseService,
+    private readonly referralsService: ReferralsService,
   ) {
     this.mp = new MercadoPago({ accessToken: this.config.get<string>('app.mercadopagoToken')! })
     this.preference = new Preference(this.mp)
@@ -83,6 +85,8 @@ export class PaymentsService {
       .eq('id', ref.businessId)
 
     if (error) throw new BadRequestException(error.message)
+
+    await this.referralsService.confirmPayment(ref.businessId)
 
     return { updated: true, businessId: ref.businessId, plan: ref.plan }
   }

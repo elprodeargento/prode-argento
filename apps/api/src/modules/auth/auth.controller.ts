@@ -1,12 +1,16 @@
 import { Body, Controller, Post, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
+import { ReferralsService } from '../referrals/referrals.service';
 import { RegisterDto } from './dto/register.dto';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
-  constructor(private readonly supabase: SupabaseService) { }
+  constructor(
+    private readonly supabase: SupabaseService,
+    private readonly referralsService: ReferralsService,
+  ) { }
 
   @Post('register')
   async register(@Body() dto: RegisterDto) {
@@ -31,23 +35,28 @@ export class AuthController {
     }
 
     // 2. Create business record
-    const { error: bizError } = await this.supabase.client
+    const { data: newBusiness, error: bizError } = await this.supabase.client
       .from('businesses')
       .insert({
         name: dto.name,
         slug,
         admin_user_id: authData.user.id,
         admin_email: authData.user.email ?? dto.email,
-      });
+      })
+      .select('id')
+      .single();
 
-    if (bizError) {
+    if (bizError || !newBusiness) {
       // Rollback: delete the auth user so the email isn't blocked
       await this.supabase.client.auth.admin.deleteUser(authData.user.id);
-      throw new InternalServerErrorException(bizError.message);
+      throw new InternalServerErrorException(bizError?.message ?? 'Error creating business');
+    }
+
+    // 3. Register referral if referrerSlug is provided
+    if (dto.referrerSlug) {
+      await this.referralsService.registerReferral(newBusiness.id, dto.referrerSlug).catch(() => {});
     }
 
     return { userId: authData.user.id };
-
   }
 }
-
