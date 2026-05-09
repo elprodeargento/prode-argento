@@ -1,11 +1,15 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { normalizeE164AR } from '../../shared/utils/phone';
 
 @Injectable()
 export class ParticipantsService {
-  constructor(private readonly supabase: SupabaseService) {}
+  constructor(
+    private readonly supabase: SupabaseService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(createParticipantDto: CreateParticipantDto) {
     // Basic limit check - assumes checking business plan limits is required here.
@@ -85,6 +89,12 @@ export class ParticipantsService {
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Fire-and-forget: notify admin of new participant
+    this.notifications
+      .sendPushToAdmin(business.id, '🎉 Nuevo participante', `${name} se unió a tu prode`)
+      .catch(() => {})
+
     return { participant: data, business };
   }
 

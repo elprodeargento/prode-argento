@@ -4,10 +4,12 @@ import { useState } from 'react'
 import { EmpresaSidebar } from '@/components/layout/EmpresaSidebar'
 import { EmpresaHeader } from '@/components/layout/EmpresaHeader'
 import { EmpresaBottomNav } from '@/components/layout/EmpresaBottomNav'
+import { useAdminPushNotifications } from '@/hooks/useAdminPushNotifications'
 
 import { usePathname } from 'next/navigation'
 
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {
+  useAdminPushNotifications()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
   const isOnboarding = pathname === '/empresa/onboarding'

@@ -18,4 +18,5 @@ export default registerAs('app', () => ({
   cloudflareR2SecretKey: process.env.CLOUDFLARE_R2_SECRET_KEY!,
   cloudflareR2Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
   cloudflareR2PublicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL!,
+  firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? '',
 }))

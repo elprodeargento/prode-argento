@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
+import { FirebaseService } from '../../infrastructure/firebase/firebase.service'
 import { normalizeE164AR } from '../../shared/utils/phone'
 import { SendWhatsappDto } from './dto/send-whatsapp.dto'
+import { SendPushDto } from './dto/send-push.dto'
 
 const WA_BASE = 'https://graph.facebook.com/v22.0'
 const WINDOW_MS = 24 * 60 * 60 * 1000
@@ -14,7 +16,10 @@ export class NotificationsService {
   constructor(
     private supabase: SupabaseService,
     private config: ConfigService,
+    private firebase: FirebaseService,
   ) {}
+
+  // ─── WhatsApp ──────────────────────────────────────────────────────────────
 
   private async sendWA(to: string, text: string, imageUrl?: string): Promise<boolean> {
     const phoneId = this.config.get('app.metaPhoneNumberId')
@@ -139,7 +144,6 @@ export class NotificationsService {
     return ok
   }
 
-  /** Blast a WhatsApp message to a business's participants with recipient filtering */
   async sendWhatsappBlast(
     businessId: string,
     dto: SendWhatsappDto,
@@ -222,7 +226,6 @@ export class NotificationsService {
     return { sent, skipped, failed }
   }
 
-  /** Send reminder to participants who haven't submitted predictions for a fecha */
   async sendReminderForFecha(businessId: string, fechaLabel: string) {
     const { data: business } = await this.supabase.client
       .from('businesses')
@@ -272,10 +275,16 @@ export class NotificationsService {
     )
 
     const sent = results.filter((r) => r.status === 'fulfilled' && r.value === true).length
-    this.logger.log(`Reminders sent: ${sent}/${participants.length} for business ${businessId}`)
+    this.logger.log(`WA Reminders sent: ${sent}/${participants.length} for business ${businessId}`)
+
+    // Also send push reminders
+    await this.sendPushReminderForBusiness(
+      businessId,
+      '⚽ Recordatorio de pronósticos',
+      `La ${fechaLabel} arranca pronto. ¡Cargá tus predicciones!`,
+    )
   }
 
-  /** Notify a participant of their match result */
   async sendResultNotification(
     participantId: string,
     phone: string,
@@ -306,5 +315,124 @@ export class NotificationsService {
       message,
       lastWaSentAt,
     )
+  }
+
+  // ─── Push Notifications ────────────────────────────────────────────────────
+
+  private async getFilteredParticipantIds(
+    businessId: string,
+    recipients: 'all' | 'no_pred' | 'top10',
+  ): Promise<string[]> {
+    if (recipients === 'all') {
+      const { data } = await this.supabase.client
+        .from('participants')
+        .select('id')
+        .eq('business_id', businessId)
+      return (data ?? []).map((p: any) => p.id)
+    }
+
+    if (recipients === 'no_pred') {
+      const { data: withPred } = await this.supabase.client
+        .from('predictions')
+        .select('participant_id')
+        .eq('business_id', businessId)
+      const predIds = (withPred ?? []).map((p: any) => p.participant_id)
+
+      let query = this.supabase.client
+        .from('participants')
+        .select('id')
+        .eq('business_id', businessId)
+      if (predIds.length > 0) {
+        query = query.not('id', 'in', `(${predIds.join(',')})`)
+      }
+      const { data } = await query
+      return (data ?? []).map((p: any) => p.id)
+    }
+
+    // top10
+    const { data } = await this.supabase.client
+      .from('leaderboard_cache')
+      .select('participant_id')
+      .eq('business_id', businessId)
+      .order('rank', { ascending: true })
+      .lte('rank', 10)
+    return (data ?? []).map((r: any) => r.participant_id)
+  }
+
+  async sendPushBlast(
+    businessId: string,
+    dto: SendPushDto,
+  ): Promise<{ sent: number; failed: number }> {
+    const participantIds = await this.getFilteredParticipantIds(businessId, dto.recipients)
+    if (!participantIds.length) return { sent: 0, failed: 0 }
+
+    const { data } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('fcm_token')
+      .in('participant_id', participantIds)
+
+    const tokens = (data ?? []).map((r: any) => r.fcm_token)
+    if (!tokens.length) return { sent: 0, failed: 0 }
+
+    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl)
+    this.logger.log(`Push blast: ${result.sent} sent, ${result.failed} failed for business ${businessId}`)
+    return result
+  }
+
+  async sendPushToParticipant(
+    participantId: string,
+    title: string,
+    body: string,
+    imageUrl?: string,
+  ): Promise<void> {
+    const { data } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('fcm_token')
+      .eq('participant_id', participantId)
+
+    const tokens = (data ?? []).map((r: any) => r.fcm_token)
+    if (!tokens.length) return
+
+    await this.firebase.sendPush(tokens, title, body, imageUrl)
+  }
+
+  async sendPushToAdmin(businessId: string, title: string, body: string): Promise<void> {
+    const { data } = await this.supabase.client
+      .from('admin_push_subscriptions')
+      .select('fcm_token')
+      .eq('business_id', businessId)
+
+    const tokens = (data ?? []).map((r: any) => r.fcm_token)
+    if (!tokens.length) return
+
+    await this.firebase.sendPush(tokens, title, body, undefined, 'admin_push_subscriptions')
+  }
+
+  private async sendPushReminderForBusiness(
+    businessId: string,
+    title: string,
+    body: string,
+  ): Promise<void> {
+    const { data } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('fcm_token, participants!inner(business_id)')
+      .eq('participants.business_id', businessId)
+
+    const tokens = (data ?? []).map((r: any) => r.fcm_token)
+    if (!tokens.length) return
+
+    await this.firebase.sendPush(tokens, title, body)
+  }
+
+  async registerParticipantToken(participantId: string, token: string): Promise<void> {
+    await this.supabase.client
+      .from('push_subscriptions')
+      .upsert({ participant_id: participantId, fcm_token: token }, { onConflict: 'participant_id,fcm_token' })
+  }
+
+  async registerAdminToken(businessId: string, token: string): Promise<void> {
+    await this.supabase.client
+      .from('admin_push_subscriptions')
+      .upsert({ business_id: businessId, fcm_token: token }, { onConflict: 'business_id,fcm_token' })
   }
 }

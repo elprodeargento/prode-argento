@@ -93,6 +93,12 @@ export class NotificationsScheduler {
           participant.rank ?? 0,
           participant.last_wa_sent_at ?? null,
         )
+
+        await this.notifications.sendPushToParticipant(
+          participant.id,
+          `🏆 Sumaste ${result.pointsEarned} pts`,
+          `Quedaste ${participant.rank ?? '?'}° en ${biz.name}`,
+        )
       }
     }
   }

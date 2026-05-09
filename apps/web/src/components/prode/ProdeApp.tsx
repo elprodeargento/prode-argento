@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
@@ -176,6 +177,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [showPointsInfo, setShowPointsInfo] = useState(false)
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
   const [exactAlert, setExactAlert] = useState(false)
+  usePushNotifications(participant.id)
+
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
 

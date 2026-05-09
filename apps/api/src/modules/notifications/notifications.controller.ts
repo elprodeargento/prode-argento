@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config'
 import { FastifyReply } from 'fastify'
 import { NotificationsService } from './notifications.service'
 import { SendWhatsappDto } from './dto/send-whatsapp.dto'
+import { SendPushDto } from './dto/send-push.dto'
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 
@@ -30,11 +31,6 @@ export class NotificationsController {
     private readonly config: ConfigService,
   ) {}
 
-  /**
-   * POST /notifications/whatsapp
-   * Blast a WhatsApp message to business participants.
-   * Requires premium or pro plan.
-   */
   @Post('whatsapp')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()
@@ -49,20 +45,58 @@ export class NotificationsController {
     if (!business) throw new NotFoundException('Negocio no encontrado')
 
     if (!['premium', 'pro'].includes(business.plan)) {
-      throw new ForbiddenException(
-        'Los envíos por WhatsApp requieren plan Premium o Pro',
-      )
+      throw new ForbiddenException('Los envíos por WhatsApp requieren plan Premium o Pro')
     }
 
     return this.notificationsService.sendWhatsappBlast(business.id, dto)
   }
 
-  /**
-   * GET /notifications/whatsapp/webhook
-   * Meta webhook verification challenge.
-   * Meta sends this GET request when registering the webhook URL.
-   * Must return hub.challenge as plain text — critical for Fastify which serializes strings as JSON.
-   */
+  @Post('push')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enviar push web a participantes (premium/pro)' })
+  async sendPush(@Req() req: any, @Body() dto: SendPushDto) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id, plan')
+      .eq('admin_user_id', req.user.id)
+      .single()
+
+    if (!business) throw new NotFoundException('Negocio no encontrado')
+
+    if (!['premium', 'pro'].includes(business.plan)) {
+      throw new ForbiddenException('Las notificaciones push requieren plan Premium o Pro')
+    }
+
+    return this.notificationsService.sendPushBlast(business.id, dto)
+  }
+
+  @Post('fcm-token')
+  @ApiOperation({ summary: 'Registrar token FCM de participante (público)' })
+  async registerParticipantToken(
+    @Body() body: { participantId: string; token: string },
+  ) {
+    await this.notificationsService.registerParticipantToken(body.participantId, body.token)
+    return { ok: true }
+  }
+
+  @Post('admin-fcm-token')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Registrar token FCM del admin (autenticado)' })
+  async registerAdminToken(@Req() req: any, @Body() body: { token: string }) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', req.user.id)
+      .single()
+
+    if (!business) throw new NotFoundException('Negocio no encontrado')
+
+    await this.notificationsService.registerAdminToken(business.id, body.token)
+    return { ok: true }
+  }
+
   @Get('whatsapp/webhook')
   @ApiOperation({ summary: 'Verificación de webhook Meta (pública)' })
   verifyWebhook(
@@ -78,11 +112,6 @@ export class NotificationsController {
     return reply.status(403).send({ error: 'Forbidden' })
   }
 
-  /**
-   * POST /notifications/whatsapp/webhook
-   * Receives Meta webhook events: delivery status, read receipts, inbound replies.
-   * Must respond 200 within 20s or Meta will retry.
-   */
   @Post('whatsapp/webhook')
   @ApiOperation({ summary: 'Recibir eventos de webhook Meta (pública)' })
   receiveWebhook(@Body() body: any) {
