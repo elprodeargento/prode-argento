@@ -6,7 +6,7 @@ const ROOT_DOMAINS = ['elprode.ar', 'localhost']
 const RESERVED_SLUGS = new Set([
   'www', 'api', 'app', 'admin', 'mail', 'smtp', 'ftp', 'cdn',
   'static', 'assets', 'media', 'dev', 'staging', 'test', 'demo',
-  'blog', 'docs', 'help', 'support', 'status', 'auth',
+  'blog', 'docs', 'help', 'support', 'status', 'auth', 'ref',
 ])
 
 function getSlug(host: string): string | null {
@@ -28,6 +28,21 @@ export async function middleware(request: NextRequest) {
     const rest = request.nextUrl.pathname === '/' ? '' : request.nextUrl.pathname
     url.pathname = `/p/${slug}${rest}`
     return NextResponse.rewrite(url)
+  }
+
+  if (slug === null) {
+    // Verificar si es ref.elprode.ar
+    const host = request.headers.get('host') ?? ''
+    const isRef = host.startsWith('ref.')
+    if (isRef) {
+      // El path es /slug-del-referrer
+      const refSlug = request.nextUrl.pathname.replace('/', '')
+      if (refSlug) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/ref/${refSlug}`
+        return NextResponse.rewrite(url)
+      }
+    }
   }
 
   return await updateSession(request)

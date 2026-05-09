@@ -24,6 +24,7 @@ const navGroups = [
       { href: '/empresa/notificaciones', icon: '🔔', label: 'Notificaciones', iconColor: '#D93025', badgeKey: null },
       { href: '/empresa/promos', icon: '🏷️', label: 'Mis Promos', iconColor: '#18A06A', badgeKey: null },
       { href: '/empresa/planes', icon: '💳', label: 'Planes', iconColor: '#F5C518', badgeKey: null },
+      { href: '/empresa/referidos', icon: '🤝', label: 'Referidos', iconColor: '#18A06A', badgeKey: 'referral_points' },
     ]
   },
   {
@@ -51,7 +52,11 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
 
   useEffect(() => {
     apiGet<{ data: unknown[]; total: number }>('/participants/me?page=1&limit=1')
-      .then(res => setBadges({ participants: String(res.total) }))
+      .then(res => setBadges(prev => ({ ...prev, participants: String(res.total) })))
+      .catch(() => {})
+
+    apiGet<{ points: number }>('/referrals/me')
+      .then(res => { if (res.points > 0) setBadges(prev => ({ ...prev, referral_points: String(res.points) })) })
       .catch(() => {})
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
