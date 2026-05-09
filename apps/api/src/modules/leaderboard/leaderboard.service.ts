@@ -127,31 +127,51 @@ export class LeaderboardService {
     sunday.setDate(monday.getDate() + 6)
     sunday.setHours(23, 59, 59, 999)
 
-    const { data, error } = await this.supabase.client
+    // Primero obtener los participant_ids del business
+    const { data: participants, error: pErr } = await this.supabase.client
+      .from('participants')
+      .select('id, name')
+      .eq('business_id', businessId)
+
+    if (pErr) throw new Error(pErr.message)
+    if (!participants?.length) return { entries: [], weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
+
+    const participantIds = participants.map(p => p.id)
+
+    // Luego obtener las predicciones de esa semana
+    const { data: predictions, error: predErr } = await this.supabase.client
       .from('predictions')
-      .select(`
-        participant_id,
-        points_earned,
-        participants!inner(name, business_id)
-      `)
-      .eq('participants.business_id', businessId)
+      .select('participant_id, points_earned')
+      .in('participant_id', participantIds)
       .gte('created_at', monday.toISOString())
       .lte('created_at', sunday.toISOString())
       .not('points_earned', 'is', null)
 
-    if (error) throw new Error(error.message)
+    if (predErr) throw new Error(predErr.message)
 
+    // Agrupar por participante
     const map: Record<string, { name: string; points: number; exact: number }> = {}
-    for (const row of data ?? []) {
-      const pid = row.participant_id
-      const name = (row.participants as any)?.name ?? 'Participante'
-      if (!map[pid]) map[pid] = { name, points: 0, exact: 0 }
-      map[pid].points += row.points_earned ?? 0
-      if (row.points_earned === 3) map[pid].exact++
+
+    // Inicializar todos los participantes con 0
+    for (const p of participants) {
+      map[p.id] = { name: p.name, points: 0, exact: 0 }
+    }
+
+    // Sumar puntos
+    for (const pred of predictions ?? []) {
+      if (map[pred.participant_id]) {
+        map[pred.participant_id].points += pred.points_earned ?? 0
+        if (pred.points_earned === 3) map[pred.participant_id].exact++
+      }
     }
 
     const entries = Object.entries(map)
-      .map(([id, v]) => ({ participant_id: id, name: v.name, weekly_points: v.points, exact_results: v.exact }))
+      .map(([id, v]) => ({
+        participant_id: id,
+        name: v.name,
+        weekly_points: v.points,
+        exact_results: v.exact,
+      }))
       .sort((a, b) => b.weekly_points - a.weekly_points)
       .map((e, i) => ({ ...e, rank: i + 1 }))
 
