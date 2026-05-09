@@ -486,7 +486,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto relative">
+    <div className="h-[100dvh] bg-slate-50 flex flex-col max-w-md mx-auto relative overflow-hidden">
       {/* Header */}
       <div className="text-white px-5 py-4 pb-5" style={{
         background: color,
@@ -511,7 +511,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-20">
+      <div className="flex-1 overflow-y-auto pb-20 overscroll-none">
 
         {/* HOME */}
         {tab === 'home' && (
@@ -757,6 +757,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 </div>
               </div>
             )}
+            <div className="h-4" />
           </div>
         )}
 
