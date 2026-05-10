@@ -35,21 +35,34 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/empresa/login?error=no_session`)
   }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
-  const bizRes = await fetch(`${apiUrl}/businesses/me`, {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    cache: 'no-store',
-  })
+  // Convert localhost to 127.0.0.1 to avoid Node.js IPv6 fetch issues with NestJS
+  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:4000/api/v1').replace('localhost', '127.0.0.1')
+  
+  try {
+    const bizRes = await fetch(`${apiUrl}/businesses/me`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: 'no-store',
+    })
 
-  if (bizRes.ok) {
-    return NextResponse.redirect(`${origin}/empresa/dashboard`)
+    if (bizRes.ok) {
+      return NextResponse.redirect(`${origin}/empresa/dashboard`)
+    }
+
+    // New OAuth user — create business from Google profile, then go to onboarding
+    const postRes = await fetch(`${apiUrl}/businesses/me`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+
+    if (!postRes.ok) {
+      console.error('API Error creating business:', await postRes.text())
+      return NextResponse.redirect(`${origin}/empresa/login?error=create_failed`)
+    }
+
+    // Use the `next` param provided by the frontend, fallback to onboarding
+    return NextResponse.redirect(`${origin}${next === '/empresa/dashboard' ? '/empresa/onboarding' : next}`)
+  } catch (err) {
+    console.error('Fetch exception in auth callback:', err)
+    return NextResponse.redirect(`${origin}/empresa/login?error=api_unreachable`)
   }
-
-  // New OAuth user — create business from Google profile, then go to onboarding
-  await fetch(`${apiUrl}/businesses/me`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${session.access_token}` },
-  })
-
-  return NextResponse.redirect(`${origin}/empresa/onboarding`)
 }
