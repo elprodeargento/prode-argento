@@ -19,4 +19,8 @@ export default registerAs('app', () => ({
   cloudflareR2Bucket: process.env.CLOUDFLARE_R2_BUCKET!,
   cloudflareR2PublicUrl: process.env.CLOUDFLARE_R2_PUBLIC_URL!,
   firebaseServiceAccount: process.env.FIREBASE_SERVICE_ACCOUNT_JSON ?? '',
+  metaIgAppId: process.env.META_IG_APP_ID!,
+  metaIgAppSecret: process.env.META_IG_APP_SECRET!,
+  metaIgEncryptionKey: process.env.META_IG_ENCRYPTION_KEY!,
+  apiUrl: process.env.NEXT_PUBLIC_API_URL ?? 'https://prode-argento.onrender.com/api/v1',
 }))

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Loader2 } from 'lucide-react'
+import { apiPost } from '@/lib/api'
 
 function IgIcon({ className }: { className?: string }) {
   return (
@@ -24,6 +25,7 @@ interface IgPublishModalProps {
   empresa?: string
   igConnected?: boolean
   defaultHashtags?: string
+  imageUrl?: string
 }
 
 const HASHTAG_OPTIONS = [
@@ -51,6 +53,7 @@ export function IgPublishModal({
   empresa = 'MI COMERCIO',
   igConnected = false,
   defaultHashtags = '#ProdeMundial2026 #Mundial2026',
+  imageUrl,
 }: IgPublishModalProps) {
   const [caption, setCaption] = useState(
     `🏆 ¡Terminó la fecha! Así quedó el podio del prode de ${empresa}.\n¡Felicitaciones a los campeones! ⚽`
@@ -58,6 +61,7 @@ export function IgPublishModal({
   const [activeHashtags, setActiveHashtags] = useState<string[]>(['#ProdeMundial2026', '#Mundial2026'])
   const [posting, setPosting] = useState(false)
   const [posted, setPosted] = useState(false)
+  const [postError, setPostError] = useState('')
 
   const p1 = podium.find((i) => i.position === 1)
   const p2 = podium.find((i) => i.position === 2)
@@ -66,6 +70,7 @@ export function IgPublishModal({
   useEffect(() => {
     if (open) {
       setPosted(false)
+      setPostError('')
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
@@ -84,10 +89,20 @@ export function IgPublishModal({
   const fullCaption = `${caption}\n\n${activeHashtags.join(' ')}`
 
   const handlePost = async () => {
+    if (!imageUrl) {
+      setPostError('No hay imagen del podio para publicar. Generá la imagen primero.')
+      return
+    }
     setPosting(true)
-    await new Promise((r) => setTimeout(r, 2000))
-    setPosting(false)
-    setPosted(true)
+    setPostError('')
+    try {
+      await apiPost('/instagram/publish', { image_url: imageUrl, caption: fullCaption })
+      setPosted(true)
+    } catch (e: any) {
+      setPostError(e.message ?? 'Error al publicar en Instagram. Intentá de nuevo.')
+    } finally {
+      setPosting(false)
+    }
   }
 
   return (
@@ -302,6 +317,13 @@ export function IgPublishModal({
             </div>
           )}
         </div>
+
+        {/* Post error */}
+        {postError && (
+          <div className="mx-6 mb-2 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 leading-relaxed">
+            ⚠️ {postError}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex gap-2.5 px-6 pt-2" style={{ paddingBottom: 'max(1.5rem, calc(1rem + env(safe-area-inset-bottom)))' }}>

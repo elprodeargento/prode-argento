@@ -1,9 +1,12 @@
-import { Module } from '@nestjs/common';
-import { InstagramController } from './instagram.controller';
-import { InstagramService } from './instagram.service';
+import { Module } from '@nestjs/common'
+import { SupabaseModule } from '../../infrastructure/supabase/supabase.module'
+import { InstagramController } from './instagram.controller'
+import { InstagramScheduler } from './instagram.scheduler'
+import { InstagramService } from './instagram.service'
 
 @Module({
+  imports: [SupabaseModule],
   controllers: [InstagramController],
-  providers: [InstagramService],
+  providers: [InstagramService, InstagramScheduler],
 })
 export class InstagramModule {}

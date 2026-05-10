@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Image from 'next/image'
 import { Loader2, AlertTriangle, Copy, Check, QrCode } from 'lucide-react'
+import { apiGet, apiFetch } from '@/lib/api'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
 import { generateQRCard } from '@/lib/qr/card'
@@ -58,6 +59,7 @@ type ConfigFormValues = z.infer<typeof configSchema>
 
 export function ConfigForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -68,6 +70,10 @@ export function ConfigForm() {
   const [success, setSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [igConnected, setIgConnected] = useState(false)
+  const [igUsername, setIgUsername] = useState('')
+  const [igConnectLoading, setIgConnectLoading] = useState(false)
+  const [igStatus, setIgStatus] = useState<null | 'success' | 'error'>(null)
+  const [igError, setIgError] = useState('')
   const [businessId, setBusinessId] = useState<string | undefined>()
   const [slug, setSlug] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -170,6 +176,15 @@ export function ConfigForm() {
           setBusinessId(data.id)
           setSlug(data.slug ?? null)
         }
+
+        // Load IG connection status
+        try {
+          const igData = await apiGet<{ connected: boolean; username?: string; accountType?: string; daysLeft?: number }>('/instagram/status')
+          setIgConnected(igData.connected)
+          if (igData.connected && igData.username) setIgUsername(igData.username)
+        } catch {
+          // non-fatal
+        }
       } catch (err) {
         console.error('Failed to fetch config:', err)
       } finally {
@@ -178,6 +193,19 @@ export function ConfigForm() {
     }
     fetchConfig()
   }, [reset])
+
+  // Read ig_status / username / reason from URL params (set after OAuth redirect)
+  useEffect(() => {
+    const status = searchParams.get('ig_status')
+    if (status === 'success') {
+      setIgConnected(true)
+      setIgStatus('success')
+      setIgUsername(searchParams.get('username') || '')
+    } else if (status === 'error') {
+      setIgStatus('error')
+      setIgError(searchParams.get('reason') || 'Error al conectar')
+    }
+  }, [searchParams])
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -560,54 +588,86 @@ export function ConfigForm() {
           </div>
         </div>
         <div className="config-section-body">
-           {!igConnected ? (
-             <div className="text-center py-[20px]">
-                <div className="text-[40px] mb-3">📸</div>
-                <div className="text-[15px] font-extrabold text-[#0D1A3A] mb-1.5">Conectá tu Instagram</div>
-                <div className="text-[13px] text-[#5A6480] font-medium max-w-[300px] mx-auto mb-5 leading-relaxed">Publicá el podio de tu prode directamente en tu cuenta con un solo toque</div>
-                <button 
-                  type="button" 
-                  onClick={() => setIgConnected(true)} 
-                  className="inline-flex items-center gap-2 px-[24px] py-[12px] rounded-full border-none bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#cc2366] text-white text-[14px] font-extrabold shadow-[0_4px_16px_rgba(220,39,67,0.3)] hover:opacity-90 transition-all"
+          {/* Status toasts */}
+          {igStatus === 'success' && (
+            <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#E8F8F1] border border-[#18A06A]/30 rounded-xl text-[13px] font-bold text-[#18A06A]">
+              ✓ Instagram conectado correctamente{igUsername ? ` como @${igUsername}` : ''}
+            </div>
+          )}
+          {igStatus === 'error' && (
+            <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#FDECEB] border border-[#D93025]/30 rounded-xl text-[13px] font-bold text-[#D93025]">
+              ❌ {igError}
+            </div>
+          )}
+
+          {!igConnected ? (
+            <div className="text-center py-[20px]">
+              <div className="text-[40px] mb-3">📸</div>
+              <div className="text-[15px] font-extrabold text-[#0D1A3A] mb-1.5">Conectá tu Instagram</div>
+              <div className="text-[13px] text-[#5A6480] font-medium max-w-[300px] mx-auto mb-5 leading-relaxed">Publicá el podio de tu prode directamente en tu cuenta con un solo toque</div>
+              <button
+                type="button"
+                disabled={igConnectLoading}
+                onClick={async () => {
+                  setIgConnectLoading(true)
+                  try {
+                    const { url } = await apiGet<{ url: string }>('/instagram/oauth/url')
+                    window.location.href = url
+                  } catch (e: any) {
+                    setIgError(e.message)
+                    setIgStatus('error')
+                  } finally {
+                    setIgConnectLoading(false)
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-[24px] py-[12px] rounded-full border-none bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#cc2366] text-white text-[14px] font-extrabold shadow-[0_4px_16px_rgba(220,39,67,0.3)] hover:opacity-90 transition-all disabled:opacity-60"
+              >
+                {igConnectLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <span>📸</span>}
+                {igConnectLoading ? 'Redirigiendo...' : 'Conectar con Instagram'}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-[14px] bg-gradient-to-br from-[#f09433]/5 via-[#dc2743]/5 to-[#cc2366]/5 border border-[#dc2747]/15 rounded-xl">
+                <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#cc2366] flex items-center justify-center text-white text-xl flex-shrink-0">
+                  📸
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[14px] font-extrabold text-[#0D1A3A] truncate">
+                    {igUsername ? `@${igUsername}` : 'Cuenta conectada'}
+                  </div>
+                  <div className="text-[12px] font-extrabold text-[#18A06A]">✓ Cuenta conectada</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await apiFetch('/instagram/disconnect', { method: 'DELETE' })
+                    setIgConnected(false)
+                    setIgUsername('')
+                    setIgStatus(null)
+                  }}
+                  className="text-[12px] font-bold text-[#D93025] bg-[#FDECEB] px-3 py-1.5 rounded-lg hover:bg-red-100"
                 >
-                  <span>📸</span> Conectar con Instagram
+                  Desconectar
                 </button>
-             </div>
-           ) : (
-             <div className="space-y-4">
-                <div className="flex items-center gap-3 p-[14px] bg-gradient-to-br from-[#f09433]/5 via-[#dc2743]/5 to-[#cc2366]/5 border border-[#dc2747]/15 rounded-xl">
-                  <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#cc2366] flex items-center justify-center text-white text-xl flex-shrink-0">
-                    📸
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[14px] font-extrabold text-[#0D1A3A] truncate">@distribuidoragarcia</div>
-                    <div className="text-[12px] font-extrabold text-[#18A06A]">✓ Cuenta conectada</div>
-                  </div>
-                  <button 
-                    type="button"
-                    onClick={() => setIgConnected(false)} 
-                    className="text-[12px] font-bold text-[#D93025] bg-[#FDECEB] px-3 py-1.5 rounded-lg hover:bg-red-100"
-                  >
-                    Desconectar
-                  </button>
+              </div>
+              <div className="field">
+                <div className="field-label">Hashtags por defecto</div>
+                <input
+                  {...register('ig_hashtags')}
+                  className="field-input"
+                />
+                <div className="field-hint mt-1">Se agregan automáticamente a cada publicación</div>
+              </div>
+              <div className="toggle-row">
+                <div>
+                  <div className="toggle-label">Publicar automáticamente al terminar cada fecha</div>
+                  <div className="toggle-desc">El podio parcial se postea solo cuando terminan los partidos</div>
                 </div>
-                <div className="field">
-                  <div className="field-label">Hashtags por defecto</div>
-                  <input 
-                    {...register('ig_hashtags')}
-                    className="field-input"
-                  />
-                  <div className="field-hint mt-1">Se agregan automáticamente a cada publicación</div>
-                </div>
-                <div className="toggle-row">
-                  <div>
-                    <div className="toggle-label">Publicar automáticamente al terminar cada fecha</div>
-                    <div className="toggle-desc">El podio parcial se postea solo cuando terminan los partidos</div>
-                  </div>
-                  <Toggle checked={!!watch('auto_post_ig')} onChange={() => setValue('auto_post_ig', !watch('auto_post_ig'))} />
-                </div>
-             </div>
-           )}
+                <Toggle checked={!!watch('auto_post_ig')} onChange={() => setValue('auto_post_ig', !watch('auto_post_ig'))} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -20,6 +20,8 @@ export type Database = {
           ig_user_id: string | null
           ig_access_token: string | null
           ig_hashtags: string[]
+          ig_token_expires_at: string | null
+          ig_account_type: string | null
           mp_payment_id: string | null
           paid_at: string | null
           created_at: string
