@@ -85,6 +85,12 @@ export class NotificationsService {
           language: { code: 'es_AR' },
           components: [
             {
+              type: 'header',
+              parameters: [
+                { type: 'text', text: businessName },
+              ],
+            },
+            {
               type: 'body',
               parameters: [
                 { type: 'text', text: businessName },
