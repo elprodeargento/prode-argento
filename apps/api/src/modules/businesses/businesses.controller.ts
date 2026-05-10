@@ -52,6 +52,14 @@ export class BusinessesController {
     return this.businessesService.updateByAdminId(req.user.id, updateBusinessDto);
   }
 
+  @Delete('me')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete the current user business' })
+  removeMe(@Req() req: any) {
+    return this.businessesService.removeByAdminId(req.user.id);
+  }
+
   @Get(':slug')
   @ApiOperation({ summary: 'Get a business by slug' })
   findOneBySlug(@Param('slug') slug: string) {

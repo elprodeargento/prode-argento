@@ -140,4 +140,14 @@ export class BusinessesService {
     if (error) throw new Error(error.message);
     return { success: true };
   }
+
+  async removeByAdminId(adminId: string) {
+    const { error } = await this.supabase.client
+      .from('businesses')
+      .delete()
+      .eq('admin_user_id', adminId);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  }
 }

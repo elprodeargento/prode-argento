@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import MercadoPago, { Preference } from 'mercadopago'
+import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 import { ReferralsService } from '../referrals/referrals.service'
 
@@ -13,7 +13,7 @@ export type UpgradeablePlan = keyof typeof PLANS
 
 @Injectable()
 export class PaymentsService {
-  private mp: MercadoPago
+  private mp: MercadoPagoConfig
   private preference: Preference
 
   constructor(
@@ -21,7 +21,7 @@ export class PaymentsService {
     private readonly supabase: SupabaseService,
     private readonly referralsService: ReferralsService,
   ) {
-    this.mp = new MercadoPago({ accessToken: this.config.get<string>('app.mercadopagoToken')! })
+    this.mp = new MercadoPagoConfig({ accessToken: this.config.get<string>('app.mercadopagoToken')! })
     this.preference = new Preference(this.mp)
   }
 

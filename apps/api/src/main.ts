@@ -36,7 +36,7 @@ async function bootstrap() {
     'http://localhost:3000',
     'https://elprode.ar',
     'https://borde.elprode.ar',
-    /\.elprode\.ar$/,
+    /^https?:\/\/([a-z0-9-]+\.)*elprode\.ar(:\d+)?$/,
   ]
 
   await app.register(cors, {

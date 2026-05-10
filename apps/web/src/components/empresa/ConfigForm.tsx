@@ -730,12 +730,22 @@ export function ConfigForm() {
           </p>
           <button
             type="button"
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm('¿Estás seguro que querés eliminar este prode? Esta acción es irreversible.')) {
-                alert('Prode eliminado (demo)')
+                try {
+                  setSaving(true)
+                  await apiFetch('/businesses/me', { method: 'DELETE' })
+                  await supabase.auth.signOut()
+                  window.location.href = '/empresa/login'
+                } catch (err) {
+                  console.error(err)
+                  alert('Error al eliminar el prode.')
+                  setSaving(false)
+                }
               }
             }}
-            className="px-5 py-2.5 text-[13px] font-black text-red-600 border-[1.5px] border-red-200 rounded-xl hover:bg-red-50 transition-all"
+            disabled={saving}
+            className="px-5 py-2.5 text-[13px] font-black text-red-600 border-[1.5px] border-red-200 rounded-xl hover:bg-red-50 transition-all disabled:opacity-50"
           >
             Eliminar este prode
           </button>
