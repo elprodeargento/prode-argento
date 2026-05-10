@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { apiGet, apiPatch, apiPut } from '@/lib/api'
+import { apiGet, apiPatch, apiPut, apiPost } from '@/lib/api'
 import { Card } from '@/components/ui/Card'
 import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check } from 'lucide-react'
 
@@ -29,6 +29,8 @@ export function OnboardingWizard() {
   const [prizes, setPrizes] = useState<string[]>(['', '', ''])
   const [copied, setCopied] = useState(false)
   const [qrDownloading, setQrDownloading] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState<'pro' | 'premium' | null>(null)
+  const [checkoutError, setCheckoutError] = useState('')
 
   useEffect(() => {
     async function getBusiness() {
@@ -107,6 +109,19 @@ export function OnboardingWizard() {
       console.error('Error saving:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleCheckout = async (plan: 'pro' | 'premium') => {
+    setCheckoutLoading(plan)
+    setCheckoutError('')
+    try {
+      const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan })
+      window.location.href = initPoint
+    } catch (e: any) {
+      setCheckoutError(e.message ?? 'Error al iniciar el pago')
+    } finally {
+      setCheckoutLoading(null)
     }
   }
 
@@ -216,6 +231,12 @@ export function OnboardingWizard() {
             ¿Querés sacarle más provecho?
           </p>
 
+          {checkoutError && (
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-semibold text-center">
+              {checkoutError}
+            </div>
+          )}
+
           <div className="space-y-3 mb-6">
               {/* FREE */}
               <div className="border-2 border-slate-200 rounded-2xl p-4 text-left">
@@ -254,7 +275,9 @@ export function OnboardingWizard() {
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
                 </div>
-                <button className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20">Contratar Pro — $40.000 →</button>
+                <button onClick={() => handleCheckout('pro')} disabled={checkoutLoading === 'pro'} className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20 disabled:opacity-60">
+                  {checkoutLoading === 'pro' ? 'Redirigiendo...' : 'Contratar Pro — $40.000 →'}
+                </button>
               </div>
 
               {/* PREMIUM */}
@@ -274,7 +297,9 @@ export function OnboardingWizard() {
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
                 </div>
-                <button className="w-full py-3 rounded-full bg-[#F5C518] text-[#002B72] text-[13px] font-black shadow-lg">Contratar Premium — $80.000 →</button>
+                <button onClick={() => handleCheckout('premium')} disabled={checkoutLoading === 'premium'} className="w-full py-3 rounded-full bg-[#F5C518] text-[#002B72] text-[13px] font-black shadow-lg disabled:opacity-60">
+                  {checkoutLoading === 'premium' ? 'Redirigiendo...' : 'Contratar Premium — $80.000 →'}
+                </button>
               </div>
             </div>
 
