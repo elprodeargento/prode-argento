@@ -95,8 +95,10 @@ export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igC
             <h3 className="text-[15px] font-extrabold text-[#0D1A3A]">Podio</h3>
           </div>
           <button
-            onClick={() => setIgOpen(true)}
-            className="flex items-center justify-center gap-2 px-[14px] py-[7px] rounded-lg text-white text-[12px] font-black hover:opacity-90 transition-all shadow-lg shadow-pink-500/10"
+            onClick={() => igConnected && setIgOpen(true)}
+            disabled={!igConnected}
+            title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
+            className="flex items-center justify-center gap-2 px-[14px] py-[7px] rounded-lg text-white text-[12px] font-black hover:opacity-90 transition-all shadow-lg shadow-pink-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
           >
             <IgIcon className="w-4 h-4" /> Publicar en Instagram

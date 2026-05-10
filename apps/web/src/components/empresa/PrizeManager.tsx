@@ -182,6 +182,7 @@ export function PrizeManager() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  const [igConnected, setIgConnected] = useState(false)
   const [igModalOpen, setIgModalOpen] = useState(false)
   const [igFinalModalOpen, setIgFinalModalOpen] = useState(false)
   const [waModalOpen, setWaModalOpen] = useState(false)
@@ -200,12 +201,14 @@ export function PrizeManager() {
   useEffect(() => {
     async function fetchPrizes() {
       try {
-        const [prizeData, weeklyData] = await Promise.all([
+        const [prizeData, weeklyData, igStatus] = await Promise.all([
           apiGet<Prize[]>('/prizes/me'),
           apiGet<Record<string, Array<{ rank: number; description: string }>>>('/prizes/weekly/me'),
+          apiGet<{ connected: boolean }>('/instagram/status').catch(() => ({ connected: false })),
         ])
         setPrizes(prizeData || [])
         setWpPrizesMap(weeklyData || {})
+        setIgConnected(igStatus?.connected ?? false)
       } catch (error) {
         console.error('Error fetching prizes:', error)
       } finally {
@@ -470,7 +473,8 @@ export function PrizeManager() {
               </button>
               <button
                 onClick={() => setIgModalOpen(true)}
-                disabled={!wpWeeklyData?.entries?.length}
+                disabled={!wpWeeklyData?.entries?.length || !igConnected}
+                title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-[13px] font-black hover:opacity-90 transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
               >
@@ -558,7 +562,9 @@ export function PrizeManager() {
             </div>
             <button
               onClick={() => setIgFinalModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[11px] font-black hover:opacity-90 transition-all shadow-md"
+              disabled={!igConnected}
+              title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[11px] font-black hover:opacity-90 transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
             >
               Publicar en Instagram
@@ -615,6 +621,7 @@ export function PrizeManager() {
         open={igModalOpen}
         onClose={() => setIgModalOpen(false)}
         empresa="MI COMERCIO"
+        igConnected={igConnected}
         podium={(wpWeeklyData?.entries ?? []).slice(0, 3).map(e => ({
           name: e.name,
           points: e.weekly_points,
@@ -627,6 +634,7 @@ export function PrizeManager() {
         open={igFinalModalOpen}
         onClose={() => setIgFinalModalOpen(false)}
         empresa="MI COMERCIO"
+        igConnected={igConnected}
         podium={prizes.slice(0, 3).map((p, i) => ({
           name: p.description || `Puesto ${i + 1}`,
           points: 0,

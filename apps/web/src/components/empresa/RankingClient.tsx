@@ -134,15 +134,18 @@ export function RankingClient() {
   const [items, setItems] = useState<RankingItem[]>([])
   const [prizes, setPrizes] = useState<Prize[]>([])
   const [loading, setLoading] = useState(true)
+  const [igConnected, setIgConnected] = useState(false)
 
   useEffect(() => {
     Promise.all([
       apiGet<LeaderboardEntry[]>('/leaderboard/me'),
       apiGet<Prize[]>('/prizes/me').catch(() => []),
+      apiGet<{ connected: boolean }>('/instagram/status').catch(() => ({ connected: false })),
     ])
-      .then(([lb, pz]) => {
+      .then(([lb, pz, igStatus]) => {
         setItems((lb ?? []).map(toRankingItem))
         setPrizes(pz ?? [])
+        setIgConnected(igStatus?.connected ?? false)
       })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -171,7 +174,7 @@ export function RankingClient() {
       <StatsCard items={items} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RankingPodium items={items.slice(0, 3)} prizes={prizes} igConnected={false} />
+        <RankingPodium items={items.slice(0, 3)} prizes={prizes} igConnected={igConnected} />
         <DistributionCard items={items} />
       </div>
 
