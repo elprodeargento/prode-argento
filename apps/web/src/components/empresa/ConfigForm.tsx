@@ -610,11 +610,18 @@ export function ConfigForm() {
                 disabled={igConnectLoading}
                 onClick={async () => {
                   setIgConnectLoading(true)
+                  setIgStatus(null)
+                  setIgError('')
                   try {
-                    const { url } = await apiGet<{ url: string }>('/instagram/oauth/url')
-                    window.location.href = url
+                    const res = await apiGet<{ url: string | null; error?: string }>('/instagram/oauth/url')
+                    if (!res.url) {
+                      setIgError(res.error ?? 'No se pudo obtener la URL de autenticación')
+                      setIgStatus('error')
+                      return
+                    }
+                    window.location.href = res.url
                   } catch (e: any) {
-                    setIgError(e.message)
+                    setIgError(e.message ?? 'Error al conectar con el servidor')
                     setIgStatus('error')
                   } finally {
                     setIgConnectLoading(false)
