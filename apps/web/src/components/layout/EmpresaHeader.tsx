@@ -53,11 +53,6 @@ export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) 
       </div>
 
       <div className="flex items-center gap-2.5">
-        <button className="relative w-10 h-10 bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] rounded-xl flex items-center justify-center text-[18px] hover:bg-[#DDE1EF] transition-all">
-          🔔
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D93025] rounded-full border-2 border-white" />
-        </button>
-
         {prodeUrl && (
           <a
             href={prodeUrl}

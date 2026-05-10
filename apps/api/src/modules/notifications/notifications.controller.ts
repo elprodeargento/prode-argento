@@ -71,6 +71,21 @@ export class NotificationsController {
     return this.notificationsService.sendPushBlast(business.id, dto)
   }
 
+  @Get('history')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Historial de notificaciones enviadas' })
+  async getHistory(@Req() req: any) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', req.user.id)
+      .single()
+
+    if (!business) throw new NotFoundException('Negocio no encontrado')
+    return this.notificationsService.getNotificationHistory(business.id)
+  }
+
   @Post('fcm-token')
   @ApiOperation({ summary: 'Registrar token FCM de participante (público)' })
   async registerParticipantToken(

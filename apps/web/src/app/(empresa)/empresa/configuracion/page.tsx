@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
+import { Loader2 } from 'lucide-react'
 import { ConfigForm } from '@/components/empresa/ConfigForm'
 
 export const metadata: Metadata = { title: 'Configuración' }
@@ -14,7 +16,9 @@ export default function ConfiguracionPage() {
           <p className="text-[14px] text-[#5A6480] font-medium">Personalizá tu prode y ajustá las reglas</p>
         </div>
       </div>
-      <ConfigForm />
+      <Suspense fallback={<div className="flex h-64 items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-slate-300" /></div>}>
+        <ConfigForm />
+      </Suspense>
     </div>
   )
 }

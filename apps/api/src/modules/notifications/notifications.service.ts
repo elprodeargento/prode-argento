@@ -223,7 +223,38 @@ export class NotificationsService {
     }
 
     this.logger.log(`Blast: ${sent} sent, ${skipped} sin teléfono, ${failed} fallidos for business ${businessId}`)
+    await this.logNotification(businessId, 'whatsapp', dto.recipients, dto.message, sent, failed, skipped)
     return { sent, skipped, failed }
+  }
+
+  private async logNotification(
+    businessId: string,
+    channel: 'whatsapp' | 'push',
+    recipients: string,
+    message: string,
+    sent: number,
+    failed: number,
+    skipped = 0,
+  ) {
+    await this.supabase.client.from('notification_logs').insert({
+      business_id: businessId,
+      channel,
+      recipients,
+      message,
+      sent,
+      failed,
+      skipped,
+    })
+  }
+
+  async getNotificationHistory(businessId: string, limit = 20) {
+    const { data } = await this.supabase.client
+      .from('notification_logs')
+      .select('id, channel, recipients, message, sent, failed, skipped, sent_at')
+      .eq('business_id', businessId)
+      .order('sent_at', { ascending: false })
+      .limit(limit)
+    return data ?? []
   }
 
   async sendReminderForFecha(businessId: string, fechaLabel: string) {
@@ -390,6 +421,7 @@ export class NotificationsService {
     const { icon, link } = await this.getBusinessInfo(businessId)
     const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon, link)
     this.logger.log(`Push blast: ${result.sent} sent, ${result.failed} failed for business ${businessId}`)
+    await this.logNotification(businessId, 'push', dto.recipients, dto.body, result.sent, result.failed)
     return result
   }
 
