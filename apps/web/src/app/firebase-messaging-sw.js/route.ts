@@ -19,9 +19,29 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   const title = payload.notification?.title || 'Prode Mundial 2026';
   const body = payload.notification?.body || '';
-  const icon = payload.notification?.icon || '/icon-192.png';
+  const icon = payload.notification?.icon || '/web-app-manifest-192x192.png';
   const image = payload.notification?.image;
-  self.registration.showNotification(title, { body, icon, ...(image ? { image } : {}) });
+  const link = payload.fcmOptions?.link || payload.data?.link;
+
+  self.registration.showNotification(title, {
+    body,
+    icon,
+    ...(image ? { image } : {}),
+    data: { link },
+  });
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const link = event.notification.data?.link;
+  if (!link) return;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const existing = list.find((c) => c.url === link);
+      if (existing) return existing.focus();
+      return clients.openWindow(link);
+    }),
+  );
 });
 `.trim()
 
@@ -29,7 +49,7 @@ messaging.onBackgroundMessage((payload) => {
     headers: {
       'Content-Type': 'application/javascript; charset=utf-8',
       'Service-Worker-Allowed': '/',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
     },
   })
 }

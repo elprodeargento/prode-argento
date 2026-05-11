@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Providers } from '@/components/layout/Providers'
+import { IOSInstallBanner } from '@/components/layout/IOSInstallBanner'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
@@ -29,7 +30,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className="antialiased bg-slate-50 text-slate-900">
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+          <IOSInstallBanner />
+        </Providers>
       </body>
     </html>
   )

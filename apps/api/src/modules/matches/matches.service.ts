@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
+import { LeaderboardService } from '../leaderboard/leaderboard.service'
 
 // ── football-data.org response types ──────────────────────────────────────
 interface FdTeam { name: string; shortName: string | null; crest: string }
@@ -80,6 +81,7 @@ export class MatchesService {
   constructor(
     private supabase: SupabaseService,
     private config: ConfigService,
+    private leaderboard: LeaderboardService,
   ) {}
 
   async findAll() {
@@ -126,18 +128,38 @@ export class MatchesService {
       .upsert(rows, { onConflict: 'fd_match_id' })
     if (error) throw new Error(error.message)
 
-    // Mark finished matches as scored (only once — only if scored_at is null)
-    const { data: nowFinished, error: sfErr } = await this.supabase.client
+    // Identify matches that just finished but haven't been scored yet
+    const { data: toScore, error: tsErr } = await this.supabase.client
       .from('matches')
-      .update({ scored_at: new Date().toISOString() })
+      .select('id, home_score, away_score')
       .eq('status', 'finished')
       .not('home_score', 'is', null)
       .not('away_score', 'is', null)
       .is('scored_at', null)
-      .select('id')
-    if (sfErr) throw new Error(sfErr.message)
 
-    return { synced: rows.length, markedFinished: nowFinished?.length ?? 0 }
+    if (tsErr) throw new Error(tsErr.message)
+
+    let markedFinished = 0
+    if (toScore && toScore.length > 0) {
+      for (const match of toScore) {
+        try {
+          // 1. Calculate points and update leaderboard cache
+          await this.leaderboard.scoreMatch(match.id, match.home_score, match.away_score)
+
+          // 2. Mark as scored so we don't process it again
+          await this.supabase.client
+            .from('matches')
+            .update({ scored_at: new Date().toISOString() })
+            .eq('id', match.id)
+
+          markedFinished++
+        } catch (err) {
+          console.error(`Error scoring match ${match.id}:`, err)
+        }
+      }
+    }
+
+    return { synced: rows.length, markedFinished }
   }
 
   async seedMatches() {
