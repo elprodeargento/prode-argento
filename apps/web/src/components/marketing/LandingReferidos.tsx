@@ -25,7 +25,7 @@ export function LandingReferidos() {
         {/* 3-column grid */}
         <div className="grid grid-cols-3 gap-3 mb-10 max-w-lg mx-auto">
           {[
-            { pts: '30 pts', label: '$12.000', plan: 'Plan Starter', emoji: '⭐' },
+            { pts: '100 pts', label: '$80.000', plan: 'Cashback', emoji: '⭐' },
             { pts: '50 pts', label: '$20.000', plan: 'Plan Pro', emoji: '🚀' },
             { pts: '100 pts', label: '$40.000', plan: 'Plan Premium', emoji: '👑' },
           ].map(item => (
