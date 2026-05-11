@@ -99,7 +99,7 @@ export function LandingHero() {
           <div className="relative w-full max-w-full overflow-hidden whitespace-nowrap before:absolute before:left-0 before:top-0 before:z-10 before:h-full before:w-[15%] before:bg-gradient-to-r before:from-[#002B72] before:to-transparent after:absolute after:right-0 after:top-0 after:z-10 after:h-full after:w-[15%] after:bg-gradient-to-l after:from-[#002B72] after:to-transparent">
 
             <div className="inline-flex items-center gap-16 animate-marquee opacity-90 pl-16">
-              {[...["EL PRODE ARGENTO-02.png", "borde.webp", "EL PRODE ARGENTO-04.png", "EL PRODE ARGENTO-05.png"], ...["EL PRODE ARGENTO-02.png", "borde.webp", "EL PRODE ARGENTO-04.png", "EL PRODE ARGENTO-05.png"]].map((logo, i) => (
+              {[...["aestherion.svg", "borde.webp", "pupys-10.png", "aestherion.svg", "borde.webp", "pupys-10.png"], ...["aestherion.svg", "borde.webp", "pupys-10.png", "aestherion.svg", "borde.webp", "pupys-10.png"]].map((logo, i) => (
                 <div key={i} className="relative h-16 w-32 sm:h-20 sm:w-36 flex-shrink-0 hover:scale-110 transition-transform duration-300 cursor-pointer">
                   <img
                     src={`/${logo}`}
