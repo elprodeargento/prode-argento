@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { apiGet, apiPatch, apiPut, apiPost } from '@/lib/api'
 import { Card } from '@/components/ui/Card'
-import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check } from 'lucide-react'
+import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check, X } from 'lucide-react'
 
 import { uploadToR2 } from '@/lib/storage/r2'
 import { generateQRCard } from '@/lib/qr/card'
@@ -392,8 +392,17 @@ export function OnboardingWizard() {
             {loading ? (
               <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mx-auto" />
             ) : logoUrl ? (
-              <div className="flex flex-col items-center">
-                <img src={logoUrl} className="w-20 h-20 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Logo" />
+              <div className="flex flex-col items-center relative inline-block group/img">
+                <div className="relative">
+                  <img src={logoUrl} className="w-20 h-20 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Logo" />
+                  <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setLogoUrl(''); }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full shadow-sm hover:bg-red-600 transition-colors opacity-0 group-hover/img:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
                 <span className="text-[11px] font-black text-slate-400">Tocá para cambiar</span>
               </div>
             ) : (
@@ -422,8 +431,17 @@ export function OnboardingWizard() {
             {loading ? (
               <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mx-auto" />
             ) : backgroundUrl ? (
-              <div className="flex flex-col items-center">
-                <img src={backgroundUrl} className="w-full h-24 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Fondo" />
+              <div className="flex flex-col items-center relative inline-block group/img w-full">
+                <div className="relative w-full">
+                  <img src={backgroundUrl} className="w-full h-24 rounded-2xl object-cover mb-2 border-4 border-white shadow-md" alt="Fondo" />
+                  <button 
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setBackgroundUrl(''); }}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white p-1.5 rounded-full shadow-sm hover:bg-red-600 transition-colors opacity-0 group-hover/img:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
                 <span className="text-[11px] font-black text-slate-400">Tocá para cambiar</span>
               </div>
             ) : (
@@ -541,13 +559,22 @@ export function OnboardingWizard() {
              </div>
              <div className="p-6 bg-white space-y-4">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Partidos · Fecha 1</p>
-                <div className="bg-slate-50 rounded-2xl p-4 flex items-center gap-3 border border-slate-100">
-                   <span className="text-2xl">🇦🇷</span>
-                   <span className="flex-1 text-[13px] font-black text-slate-900">Argentina</span>
-                   <div className="w-10 h-10 bg-white rounded-xl border-2 border-slate-100 flex items-center justify-center font-bebas text-xl text-slate-900">2</div>
-                   <div className="w-10 h-10 bg-white rounded-xl border-2 border-slate-100 flex items-center justify-center font-bebas text-xl text-slate-900">0</div>
-                   <span className="flex-1 text-[13px] font-black text-slate-900 text-right">Marruecos</span>
-                   <span className="text-2xl">🇲🇦</span>
+                <div className="bg-slate-50 rounded-2xl p-3 sm:p-4 flex items-center justify-between gap-1 sm:gap-3 border border-slate-100">
+                   <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                     <span className="text-lg sm:text-2xl flex-shrink-0">🇦🇷</span>
+                     <span className="text-[11px] sm:text-[13px] font-black text-slate-900 truncate hidden sm:block">Argentina</span>
+                     <span className="text-[11px] sm:text-[13px] font-black text-slate-900 truncate sm:hidden">ARG</span>
+                   </div>
+                   <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-xl border-2 border-slate-100 flex items-center justify-center font-bebas text-lg sm:text-xl text-slate-900">2</div>
+                     <span className="text-slate-300 font-bold hidden sm:block">-</span>
+                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-xl border-2 border-slate-100 flex items-center justify-center font-bebas text-lg sm:text-xl text-slate-900">0</div>
+                   </div>
+                   <div className="flex items-center justify-end gap-1.5 sm:gap-2 flex-1 min-w-0">
+                     <span className="text-[11px] sm:text-[13px] font-black text-slate-900 text-right truncate hidden sm:block">Marruecos</span>
+                     <span className="text-[11px] sm:text-[13px] font-black text-slate-900 text-right truncate sm:hidden">MAR</span>
+                     <span className="text-lg sm:text-2xl flex-shrink-0">🇲🇦</span>
+                   </div>
                 </div>
              </div>
           </div>

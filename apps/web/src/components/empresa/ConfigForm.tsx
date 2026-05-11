@@ -388,6 +388,12 @@ export function ConfigForm() {
                 <p className="text-[11px] text-[#8E96AE] mt-1.5 leading-snug">
                   💡 Usá imagen cuadrada con fondo transparente para que se vea bien en todos los dispositivos.
                 </p>
+                {logoUrl && (
+                  <button type="button" onClick={() => setLogoUrl(null)}
+                    className="mt-2 text-xs font-bold text-red-500 hover:text-red-700">
+                    Quitar logo
+                  </button>
+                )}
               </div>
             </div>
           </div>
