@@ -14,8 +14,8 @@ export default function HomePage() {
       <LandingHero />
       <LandingProblem />
       <LandingFeatures />
-      <LandingHowItWorks />
       <LandingReferidos />
+      <LandingHowItWorks />
       <LandingPricing />
       <LandingCTA />
     </main>
