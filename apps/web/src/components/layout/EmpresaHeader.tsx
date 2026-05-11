@@ -46,7 +46,7 @@ export function EmpresaHeader({ onOpenSidebar }: { onOpenSidebar: () => void }) 
           ☰
         </button>
         <div className="flex items-center gap-1.5 text-[13px] font-bold text-[#5A6480]">
-          <span>Prode 2026</span>
+          <span className="text-[#5A6480] uppercase tracking-widest text-[12px] font-black">Prode 2026</span>
           <span className="text-[#8E96AE]">›</span>
           <span className="text-[#0D1A3A] text-base font-extrabold">{title}</span>
         </div>

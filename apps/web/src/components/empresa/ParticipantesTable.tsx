@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Search, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download } from 'lucide-react'
 import { apiGet } from '@/lib/api'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface Participant {
   id: string
@@ -119,10 +120,16 @@ function ParticipantDrawer({ participant, onClose }: { participant: Participant;
 
         <div className="px-5 py-3 flex gap-2 border-b border-[#DDE1EF]">
           {participant.phone && (
-            <a href={waLink(participant.phone)} target="_blank" rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#25D366] text-white text-[12px] font-black hover:opacity-90 transition-all">
-              💬 WhatsApp
-            </a>
+            SOCIAL_ENABLED ? (
+              <a href={waLink(participant.phone)} target="_blank" rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#25D366] text-white text-[12px] font-black hover:opacity-90 transition-all">
+                💬 WhatsApp
+              </a>
+            ) : (
+              <span title="Próximamente" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-[#F1F3F9] text-[#8E96AE] text-[12px] font-black cursor-help border border-[#DDE1EF]">
+                💬 WhatsApp
+              </span>
+            )
           )}
           <a href={`mailto:${participant.email}`}
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg border border-[#DDE1EF] text-[#5A6480] text-[12px] font-bold hover:bg-[#F1F3F9] transition-all">
@@ -356,11 +363,17 @@ export function ParticipantesTable() {
                         <span className="text-[13px] font-extrabold text-[#0D1A3A] truncate">{p.name}</span>
                         <span className="text-[11px] font-medium text-[#8E96AE] truncate">{p.email}</span>
                         {p.phone && (
-                          <a href={waLink(p.phone)} target="_blank" rel="noopener noreferrer"
-                            className="text-[11px] text-[#25D366] font-bold hover:underline"
-                            onClick={e => e.stopPropagation()}>
-                            {p.phone}
-                          </a>
+                          SOCIAL_ENABLED ? (
+                            <a href={waLink(p.phone)} target="_blank" rel="noopener noreferrer"
+                              className="text-[11px] text-[#25D366] font-bold hover:underline"
+                              onClick={e => e.stopPropagation()}>
+                              {p.phone}
+                            </a>
+                          ) : (
+                            <span title="Próximamente" className="text-[11px] text-[#8E96AE] font-bold cursor-help" onClick={e => e.stopPropagation()}>
+                              {p.phone}
+                            </span>
+                          )
                         )}
                       </div>
                     </div>
@@ -405,10 +418,16 @@ export function ParticipantesTable() {
                         Ver
                       </button>
                       {p.phone && (
-                        <a href={waLink(p.phone)} target="_blank" rel="noopener noreferrer"
-                          className="px-3 py-1.5 text-[11px] font-black text-[#25D366] bg-[#E8F8F1] border-[1.5px] border-[#25D366]/20 rounded-lg hover:bg-[#25D366] hover:text-white transition-all">
-                          💬
-                        </a>
+                        SOCIAL_ENABLED ? (
+                          <a href={waLink(p.phone)} target="_blank" rel="noopener noreferrer"
+                            className="px-3 py-1.5 text-[11px] font-black text-[#25D366] bg-[#E8F8F1] border-[1.5px] border-[#25D366]/20 rounded-lg hover:bg-[#25D366] hover:text-white transition-all">
+                            💬
+                          </a>
+                        ) : (
+                          <span title="Próximamente" className="px-3 py-1.5 text-[11px] font-black text-[#8E96AE] bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] rounded-lg cursor-help">
+                            💬
+                          </span>
+                        )
                       )}
                     </div>
                   </td>

@@ -5,6 +5,7 @@ import { apiGet, apiPut } from '@/lib/api'
 import { Loader2, Save, ChevronLeft, ChevronRight } from 'lucide-react'
 import { IgPublishModal } from './IgPublishModal'
 import { WhatsAppSendModal } from './WhatsAppSendModal'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface Prize {
   id: string
@@ -107,13 +108,14 @@ const TIPS = [
 ]
 
 function TipsSlider() {
+  const activeTips = SOCIAL_ENABLED ? TIPS : TIPS.filter(t => !t.titulo.includes('Instagram') && !t.titulo.includes('WhatsApp'))
   const [current, setCurrent] = useState(0)
   const [visible, setVisible] = useState(true)
 
   const navigate = (idx: number) => {
     setVisible(false)
     setTimeout(() => {
-      setCurrent(((idx % TIPS.length) + TIPS.length) % TIPS.length)
+      setCurrent(((idx % activeTips.length) + activeTips.length) % activeTips.length)
       setVisible(true)
     }, 200)
   }
@@ -122,14 +124,14 @@ function TipsSlider() {
     const timer = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
-        setCurrent(c => (c + 1) % TIPS.length)
+        setCurrent(c => (c + 1) % activeTips.length)
         setVisible(true)
       }, 200)
     }, 15000)
     return () => clearInterval(timer)
-  }, [])
+  }, [activeTips.length])
 
-  const tip = TIPS[current]
+  const tip = activeTips[current]
 
   return (
     <div className="rounded-2xl px-6 py-5" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>
@@ -152,7 +154,7 @@ function TipsSlider() {
           <ChevronLeft className="h-4 w-4" />
         </button>
         <div className="flex gap-1.5">
-          {TIPS.map((_, i) => (
+          {activeTips.map((_, i) => (
             <button
               key={i}
               onClick={() => navigate(i)}
@@ -464,21 +466,23 @@ export function PrizeManager() {
           {/* Botones de acción — solo si hay premios configurados para esta semana */}
           {wpCurrentPrizes.length > 0 && (
             <div className="flex gap-2 pt-1 border-t border-[#DDE1EF]">
+              {SOCIAL_ENABLED && (
+                <button
+                  onClick={() => setWaModalOpen(true)}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-[13px] font-black hover:opacity-90 transition-all shadow-md"
+                  style={{ background: '#25D366' }}
+                >
+                  💬 Enviar por WhatsApp
+                </button>
+              )}
               <button
-                onClick={() => setWaModalOpen(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-[13px] font-black hover:opacity-90 transition-all shadow-md"
-                style={{ background: '#25D366' }}
-              >
-                💬 Enviar por WhatsApp
-              </button>
-              <button
-                onClick={() => setIgModalOpen(true)}
-                disabled={!wpWeeklyData?.entries?.length || !igConnected}
-                title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
+                onClick={() => (!SOCIAL_ENABLED || igConnected) && setIgModalOpen(true)}
+                disabled={!wpWeeklyData?.entries?.length || (SOCIAL_ENABLED && !igConnected)}
+                title={SOCIAL_ENABLED && !igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-[13px] font-black hover:opacity-90 transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
               >
-                📸 Publicar ganador
+                📸 {SOCIAL_ENABLED ? 'Publicar ganador' : 'Exportar para Instagram'}
               </button>
             </div>
           )}
@@ -561,13 +565,13 @@ export function PrizeManager() {
               <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">Vista previa del podio</h3>
             </div>
             <button
-              onClick={() => setIgFinalModalOpen(true)}
-              disabled={!igConnected}
-              title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
+              onClick={() => (!SOCIAL_ENABLED || igConnected) && setIgFinalModalOpen(true)}
+              disabled={SOCIAL_ENABLED && !igConnected}
+              title={SOCIAL_ENABLED && !igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-[11px] font-black hover:opacity-90 transition-all shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
             >
-              Publicar en Instagram
+              {SOCIAL_ENABLED ? 'Publicar en Instagram' : 'Exportar para Instagram'}
             </button>
           </div>
           <div className="p-5 flex flex-col gap-3">

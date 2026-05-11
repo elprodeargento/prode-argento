@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Loader2, ImagePlus, X, Bell } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiGet, apiPost } from '@/lib/api'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 const DEFAULT_MSG = '⚽ ¡Hola! Recordá cargar tus pronósticos antes del próximo partido. ¡No te quedés afuera del ranking! 🏆'
 
@@ -15,6 +16,20 @@ const RECIPIENTS = [
 
 type Recipient = typeof RECIPIENTS[number]['value']
 type Tab = 'whatsapp' | 'push'
+
+function SoonGate() {
+  return (
+    <div className="p-[20px] flex flex-col items-center gap-4 text-center py-12">
+      <div className="w-16 h-16 rounded-full bg-[#F1F3F9] flex items-center justify-center text-3xl">🔜</div>
+      <div>
+        <div className="text-[16px] font-black text-[#0D1A3A] mb-1">Próximamente: Notificaciones por WhatsApp</div>
+        <div className="text-[13px] text-[#5A6480] font-medium leading-relaxed max-w-sm mx-auto">
+          Estamos integrando la API oficial de Meta para que puedas enviar mensajes a todos tus participantes con un solo click.
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function UpgradeGate() {
   return (
@@ -202,7 +217,10 @@ export function NotifForm({ onSent }: { onSent?: () => void }) {
       </div>
 
       {/* WhatsApp tab */}
-      {tab === 'whatsapp' && (
+      {tab === 'whatsapp' && !SOCIAL_ENABLED && (
+        <SoonGate />
+      )}
+      {tab === 'whatsapp' && SOCIAL_ENABLED && (
         <div className="p-[20px] flex flex-col gap-5">
           <div className="field">
             <div className="field-label">¿A quién enviás?</div>

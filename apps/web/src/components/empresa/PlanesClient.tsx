@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { apiPost, apiGet } from '@/lib/api'
 import { Check } from 'lucide-react'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 type Plan = 'free' | 'premium' | 'pro'
 
@@ -34,8 +35,8 @@ const PLANS = [
       'Participantes ilimitados',
       'Todo lo del plan Free',
       'Premios semanales configurables',
-      'Notificaciones por WhatsApp',
-      'Publicar podio en Instagram',
+      SOCIAL_ENABLED ? 'Notificaciones por WhatsApp' : 'Notificaciones por WhatsApp 🔜',
+      SOCIAL_ENABLED ? 'Publicar podio en Instagram' : 'Publicar podio en Instagram 🔜',
       'QR descargable para tu local',
       'Exportar lista de participantes',
     ],
@@ -149,12 +150,17 @@ export function PlanesClient() {
               </div>
 
               <ul className="flex flex-col gap-2.5 flex-1">
-                {plan.features.map(f => (
-                  <li key={f} className="flex items-start gap-2 text-sm text-[#2D3A5A] font-medium">
-                    <Check className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
-                    {f}
-                  </li>
-                ))}
+                {plan.features.map(f => {
+                  const isSoon = f.endsWith(' 🔜')
+                  const text = f.replace(' 🔜', '')
+                  return (
+                    <li key={f} className="flex items-start gap-2 text-sm text-[#2D3A5A] font-medium">
+                      <Check className="h-4 w-4 mt-0.5 flex-shrink-0 text-green-500" />
+                      {text}
+                      {isSoon && <span className="text-[9px] px-1.5 py-0.5 rounded-md ml-1 font-black uppercase tracking-wider mt-0.5" style={{ background: isCurrent ? 'rgba(0,43,114,0.1)' : 'rgba(0,0,0,0.05)', color: isCurrent ? '#002B72' : '#5A6480' }}>Próximamente</span>}
+                    </li>
+                  )
+                })}
               </ul>
 
               <button

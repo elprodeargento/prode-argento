@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 const checkGreen = <span className="text-green-500 font-black">✓</span>
 const checkYellow = <span className="text-[#F5C518] font-black">✓</span>
@@ -39,14 +40,19 @@ export function LandingPricing() {
             {[
               'Participantes ilimitados',
               'Premios semanales',
-              'Notificaciones por WhatsApp',
+              SOCIAL_ENABLED ? 'Notificaciones por WhatsApp' : 'Notificaciones por WhatsApp 🔜',
               'QR descargable',
               'Exportar lista de participantes',
-            ].map(f => (
-              <li key={f} className="flex items-center gap-2 text-[13px] text-white/80 font-medium">
-                {checkYellow} {f}
-              </li>
-            ))}
+            ].map((f: string) => {
+              const isSoon = f.endsWith(' 🔜')
+              const text = f.replace(' 🔜', '')
+              return (
+                <li key={f} className="flex items-center gap-2 text-[13px] text-white/80 font-medium">
+                  {checkYellow} {text}
+                  {isSoon && <span className="text-[9px] bg-white/20 text-white px-1.5 py-0.5 rounded-md ml-1 font-black uppercase tracking-wider">Próximamente</span>}
+                </li>
+              )
+            })}
           </ul>
           <Link
             href="/empresa/registro"

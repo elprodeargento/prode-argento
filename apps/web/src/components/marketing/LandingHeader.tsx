@@ -14,8 +14,14 @@ export function LandingHeader() {
   }, [])
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-[52px] bg-[#002B72]/95 backdrop-blur-sm flex items-center justify-between px-5">
-      <span className="font-bebas text-white text-[18px] tracking-wide">elprode.ar</span>
+    <header className="fixed top-0 left-0 right-0 z-50 h-[72px] bg-[#002B72]/95 backdrop-blur-sm flex items-center justify-between px-5">
+      <Link href="/">
+        <img
+          src="/EL PRODE ARGENTO-02.png"
+          alt="El Prode Argento"
+          className="h-14 w-auto object-contain"
+        />
+      </Link>
       <Link
         href={hasSession ? '/empresa/dashboard' : '/empresa/login'}
         className="border border-white/40 text-white text-[13px] font-bold px-4 py-1.5 rounded-full hover:bg-white/10 transition-all"

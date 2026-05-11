@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { WhatsAppSendModal } from './WhatsAppSendModal'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 const DEFAULT_PRIZE_DESCS = new Set([
   'Trofeo + Diploma ⚽', 'Medalla de plata 🥈', 'Medalla de bronce 🥉',
@@ -68,7 +69,7 @@ export function DashboardChecklist({ business }: { business: any }) {
       href: '/empresa/referidos',
       cta: 'Ver mi link de referido',
     },
-  ])
+  ].filter(s => SOCIAL_ENABLED || s.id !== 'notification'))
 
   const [copied, setCopied] = useState(false)
   const [waModalOpen, setWaModalOpen] = useState(false)

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
 import { WhatsAppSendModal } from './WhatsAppSendModal'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface Match {
   id: string
@@ -122,12 +123,21 @@ export function DashboardNextMatch() {
                 <div className="bg-[#FFF4E5] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#FF8A00] mb-[12px] border border-[#FF8A00]/10">
                   ⚠️ {sinCargar} participante{sinCargar !== 1 ? 's' : ''} sin cargar aún
                 </div>
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
-                >
-                  📢 Recordar a los {sinCargar}
-                </button>
+                {SOCIAL_ENABLED ? (
+                  <button
+                    onClick={() => setModalOpen(true)}
+                    className="w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
+                  >
+                    📢 Recordar a los {sinCargar}
+                  </button>
+                ) : (
+                  <a
+                    href="/empresa/notificaciones"
+                    className="w-full block bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
+                  >
+                    🔔 Enviar notificación a los {sinCargar}
+                  </a>
+                )}
               </>
             ) : (
               <div className="bg-[#E8F8F1] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#18A06A] border border-[#18A06A]/10">

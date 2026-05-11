@@ -11,6 +11,7 @@ import { apiGet, apiFetch } from '@/lib/api'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
 import { generateQRCard } from '@/lib/qr/card'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
@@ -588,17 +589,27 @@ export function ConfigForm() {
           </div>
         </div>
         <div className="config-section-body">
-          {/* Status toasts */}
-          {igStatus === 'success' && (
-            <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#E8F8F1] border border-[#18A06A]/30 rounded-xl text-[13px] font-bold text-[#18A06A]">
-              ✓ Instagram conectado correctamente{igUsername ? ` como @${igUsername}` : ''}
+          {!SOCIAL_ENABLED ? (
+            <div className="text-center py-[20px]">
+              <div className="text-[40px] mb-3">🔜</div>
+              <div className="text-[15px] font-extrabold text-[#0D1A3A] mb-1.5">Próximamente: Integración con Instagram</div>
+              <div className="text-[13px] text-[#5A6480] font-medium max-w-[300px] mx-auto leading-relaxed">
+                Estamos trabajando para que puedas conectar tu cuenta y publicar el podio directamente de forma automática.
+              </div>
             </div>
-          )}
-          {igStatus === 'error' && (
-            <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#FDECEB] border border-[#D93025]/30 rounded-xl text-[13px] font-bold text-[#D93025]">
-              ❌ {igError}
-            </div>
-          )}
+          ) : (
+            <>
+              {/* Status toasts */}
+              {igStatus === 'success' && (
+                <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#E8F8F1] border border-[#18A06A]/30 rounded-xl text-[13px] font-bold text-[#18A06A]">
+                  ✓ Instagram conectado correctamente{igUsername ? ` como @${igUsername}` : ''}
+                </div>
+              )}
+              {igStatus === 'error' && (
+                <div className="flex items-center gap-2 px-4 py-3 mb-3 bg-[#FDECEB] border border-[#D93025]/30 rounded-xl text-[13px] font-bold text-[#D93025]">
+                  ❌ {igError}
+                </div>
+              )}
 
           {!igConnected ? (
             <div className="text-center py-[20px]">
@@ -634,29 +645,31 @@ export function ConfigForm() {
               </button>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 p-[14px] bg-gradient-to-br from-[#f09433]/5 via-[#dc2743]/5 to-[#cc2366]/5 border border-[#dc2747]/15 rounded-xl">
-                <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#cc2366] flex items-center justify-center text-white text-xl flex-shrink-0">
-                  📸
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-[14px] font-extrabold text-[#0D1A3A] truncate">
-                    {igUsername ? `@${igUsername}` : 'Cuenta conectada'}
+            <>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-[14px] bg-gradient-to-br from-[#f09433]/5 via-[#dc2743]/5 to-[#cc2366]/5 border border-[#dc2747]/15 rounded-xl">
+                  <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#cc2366] flex items-center justify-center text-white text-xl flex-shrink-0">
+                    📸
                   </div>
-                  <div className="text-[12px] font-extrabold text-[#18A06A]">✓ Cuenta conectada</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[14px] font-extrabold text-[#0D1A3A] truncate">
+                      {igUsername ? `@${igUsername}` : 'Cuenta conectada'}
+                    </div>
+                    <div className="text-[12px] font-extrabold text-[#18A06A]">✓ Cuenta conectada</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await apiFetch('/instagram/disconnect', { method: 'DELETE' })
+                      setIgConnected(false)
+                      setIgUsername('')
+                      setIgStatus(null)
+                    }}
+                    className="text-[12px] font-bold text-[#D93025] bg-[#FDECEB] px-3 py-1.5 rounded-lg hover:bg-red-100"
+                  >
+                    Desconectar
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await apiFetch('/instagram/disconnect', { method: 'DELETE' })
-                    setIgConnected(false)
-                    setIgUsername('')
-                    setIgStatus(null)
-                  }}
-                  className="text-[12px] font-bold text-[#D93025] bg-[#FDECEB] px-3 py-1.5 rounded-lg hover:bg-red-100"
-                >
-                  Desconectar
-                </button>
               </div>
               <div className="field">
                 <div className="field-label">Hashtags por defecto</div>
@@ -673,8 +686,10 @@ export function ConfigForm() {
                 </div>
                 <Toggle checked={!!watch('auto_post_ig')} onChange={() => setValue('auto_post_ig', !watch('auto_post_ig'))} />
               </div>
-            </div>
+            </>
           )}
+          </>
+        )}
         </div>
       </div>
 
@@ -697,13 +712,20 @@ export function ConfigForm() {
              <div key={i}>
                <div className="toggle-row py-2">
                  <div>
-                   <div className="toggle-label">{row.title}</div>
+                   <div className="toggle-label flex items-center gap-2">
+                     {row.title}
+                     {!SOCIAL_ENABLED && row.id === 'notify_whatsapp' && <span className="text-[9px] bg-[#F1F3F9] text-[#8E96AE] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider">Próximamente</span>}
+                   </div>
                    <p className="toggle-desc">{row.desc}</p>
                  </div>
-                 <Toggle
-                   checked={!!watch(row.id)}
-                   onChange={() => setValue(row.id, !watch(row.id))}
-                 />
+                 {(!SOCIAL_ENABLED && row.id === 'notify_whatsapp') ? (
+                   <button type="button" disabled className="toggle" />
+                 ) : (
+                   <Toggle
+                     checked={!!watch(row.id)}
+                     onChange={() => setValue(row.id, !watch(row.id))}
+                   />
+                 )}
                </div>
                {i < arr.length - 1 && (
                  <div className="h-[1px] bg-[#DDE1EF] my-1" />

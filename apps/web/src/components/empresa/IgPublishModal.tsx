@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { X, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { X, Loader2, Download } from 'lucide-react'
 import { apiPost } from '@/lib/api'
+import { SOCIAL_ENABLED } from '@/lib/features'
+import { toPng } from 'html-to-image'
 
 function IgIcon({ className }: { className?: string }) {
   return (
@@ -58,6 +60,7 @@ export function IgPublishModal({
   const [caption, setCaption] = useState(
     `🏆 ¡Terminó la fecha! Así quedó el podio del prode de ${empresa}.\n¡Felicitaciones a los campeones! ⚽`
   )
+  const podiumRef = useRef<HTMLDivElement>(null)
   const [activeHashtags, setActiveHashtags] = useState<string[]>(['#ProdeMundial2026', '#Mundial2026'])
   const [posting, setPosting] = useState(false)
   const [posted, setPosted] = useState(false)
@@ -89,6 +92,34 @@ export function IgPublishModal({
   const fullCaption = `${caption}\n\n${activeHashtags.join(' ')}`
 
   const handlePost = async () => {
+    if (!SOCIAL_ENABLED) {
+      if (!podiumRef.current) return
+      setPosting(true)
+      try {
+        const pixelRatio = 1080 / podiumRef.current.offsetWidth
+        const image = await toPng(podiumRef.current, {
+          backgroundColor: '#0a0a0a',
+          pixelRatio,
+          style: {
+            margin: '0',
+            transform: 'none'
+          }
+        })
+        const link = document.createElement('a')
+        link.href = image
+        link.download = `podio-${empresa.toLowerCase().replace(/\\s+/g, '')}.png`
+        link.click()
+        setPosted(true)
+        setTimeout(() => onClose(), 2000)
+      } catch (e: any) {
+        console.error('html-to-image error:', e)
+        setPostError(`Error al exportar la imagen. ${e?.message || ''}`)
+      } finally {
+        setPosting(false)
+      }
+      return
+    }
+
     if (!imageUrl) {
       setPostError('No hay imagen del podio para publicar. Generá la imagen primero.')
       return
@@ -125,8 +156,8 @@ export function IgPublishModal({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2 text-base font-black text-slate-900">
-            <IgIcon className="h-5 w-5 text-pink-500" />
-            Publicar en Instagram
+            {SOCIAL_ENABLED ? <IgIcon className="h-5 w-5 text-pink-500" /> : <Download className="h-5 w-5 text-blue-500" />}
+            {SOCIAL_ENABLED ? 'Publicar en Instagram' : 'Exportar para Instagram'}
           </div>
           <button
             onClick={onClose}
@@ -176,7 +207,7 @@ export function IgPublishModal({
               </div>
 
               {/* Post image — podio CSS art */}
-              <div className="w-full aspect-square relative overflow-hidden flex items-end" style={{ background: '#0a0a0a' }}>
+              <div ref={podiumRef} className="w-full aspect-[4/5] relative overflow-hidden flex items-end" style={{ background: '#0a0a0a' }}>
                 {/* Gradient background */}
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #001040 0%, #002B72 35%, #0a0a1a 70%, #000 100%)' }} />
                 {/* Dot texture */}
@@ -306,7 +337,7 @@ export function IgPublishModal({
           </div>
 
           {/* Connect notice if not connected */}
-          {!igConnected && (
+          {SOCIAL_ENABLED && !igConnected && (
             <div className="flex items-start gap-2.5 bg-orange-50 border border-orange-200/60 rounded-xl p-3.5">
               <span className="text-xl flex-shrink-0">⚠️</span>
               <p className="text-xs font-semibold text-orange-700 leading-relaxed">
@@ -335,21 +366,23 @@ export function IgPublishModal({
           </button>
           <button
             onClick={handlePost}
-            disabled={posting || posted || !igConnected}
+            disabled={posting || posted || (SOCIAL_ENABLED && !igConnected)}
             className="flex-[2] py-3 rounded-xl text-sm font-black text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:opacity-92 active:scale-[0.98]"
             style={{
               background: posted
                 ? '#18A06A'
-                : 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366)',
-              boxShadow: posted ? '0 4px 16px rgba(24,160,106,0.3)' : '0 4px 16px rgba(220,39,67,0.3)',
+                : SOCIAL_ENABLED
+                  ? 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366)'
+                  : '#002B72',
+              boxShadow: posted ? '0 4px 16px rgba(24,160,106,0.3)' : SOCIAL_ENABLED ? '0 4px 16px rgba(220,39,67,0.3)' : '0 4px 16px rgba(0,43,114,0.3)',
             }}
           >
             {posting ? (
-              <><Loader2 className="h-4 w-4 animate-spin" /> Publicando...</>
+              <><Loader2 className="h-4 w-4 animate-spin" /> {SOCIAL_ENABLED ? 'Publicando...' : 'Exportando...'}</>
             ) : posted ? (
-              <>✓ Publicado en Instagram</>
+              <>{SOCIAL_ENABLED ? '✓ Publicado en Instagram' : '✓ Imagen descargada'}</>
             ) : (
-              <><IgIcon className="h-4 w-4" /> Publicar en Instagram</>
+              <>{SOCIAL_ENABLED ? <><IgIcon className="h-4 w-4" /> Publicar en Instagram</> : <><Download className="h-4 w-4" /> Descargar imagen</>}</>
             )}
           </button>
         </div>

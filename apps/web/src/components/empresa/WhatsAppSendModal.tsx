@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { X, Loader2, ImagePlus } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiPost } from '@/lib/api'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 export interface WhatsAppSendModalProps {
   open: boolean
@@ -42,7 +43,7 @@ export function WhatsAppSendModal({
     return () => { document.body.style.overflow = '' }
   }, [open, defaultMessage, defaultImageUrl])
 
-  if (!open) return null
+  if (!open || !SOCIAL_ENABLED) return null
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import { IgPublishModal } from './IgPublishModal'
 import type { Prize } from './RankingClient'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 function IgIcon({ className }: { className?: string }) {
   return (
@@ -70,14 +71,23 @@ export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igC
           </div>
         )}
         {p?.phone && (
-          <a
-            href={waLink(p.phone)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] font-black text-[#25D366] bg-[#E8F8F1] px-2 py-0.5 rounded-full mb-2 hover:opacity-80 transition-all"
-          >
-            💬 WA
-          </a>
+          SOCIAL_ENABLED ? (
+            <a
+              href={waLink(p.phone)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] font-black text-[#25D366] bg-[#E8F8F1] px-2 py-0.5 rounded-full mb-2 hover:opacity-80 transition-all"
+            >
+              💬 WA
+            </a>
+          ) : (
+            <span
+              title="Próximamente"
+              className="text-[10px] font-black text-[#8E96AE] bg-[#F1F3F9] px-2 py-0.5 rounded-full mb-2 cursor-help"
+            >
+              💬 WA
+            </span>
+          )
         )}
         <div className={`w-full ${style.barH} ${style.barColor} rounded-t-xl flex items-center justify-center font-bebas text-[22px] ${style.barText}`}>
           {pos}°
@@ -95,13 +105,13 @@ export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igC
             <h3 className="text-[15px] font-extrabold text-[#0D1A3A]">Podio</h3>
           </div>
           <button
-            onClick={() => igConnected && setIgOpen(true)}
-            disabled={!igConnected}
-            title={!igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
+            onClick={() => (!SOCIAL_ENABLED || igConnected) && setIgOpen(true)}
+            disabled={SOCIAL_ENABLED && !igConnected}
+            title={SOCIAL_ENABLED && !igConnected ? 'Conectá tu cuenta de Instagram desde Configuración' : undefined}
             className="flex items-center justify-center gap-2 px-[14px] py-[7px] rounded-lg text-white text-[12px] font-black hover:opacity-90 transition-all shadow-lg shadow-pink-500/10 disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: 'linear-gradient(135deg, #f09433, #dc2743, #cc2366)' }}
           >
-            <IgIcon className="w-4 h-4" /> Publicar en Instagram
+            <IgIcon className="w-4 h-4" /> {SOCIAL_ENABLED ? 'Publicar en Instagram' : 'Exportar para Instagram'}
           </button>
         </div>
 

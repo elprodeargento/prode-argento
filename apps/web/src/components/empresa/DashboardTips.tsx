@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 const TIPS = [
   {
@@ -32,13 +33,18 @@ const TIPS = [
 ]
 
 export function DashboardTips() {
+  const activeTips = SOCIAL_ENABLED ? TIPS : TIPS.map(t => 
+    t.emoji === '👥' 
+      ? { ...t, texto: 'Cada persona que se suma a tu prode te está dando acceso directo a su email. Al terminar el mundial vas a tener una lista de clientes reales a los que podés comunicarte cuando quieras.' }
+      : t
+  )
   const [current, setCurrent] = useState(0)
   const [visible, setVisible] = useState(true)
 
   const navigate = (idx: number) => {
     setVisible(false)
     setTimeout(() => {
-      setCurrent(((idx % TIPS.length) + TIPS.length) % TIPS.length)
+      setCurrent(((idx % activeTips.length) + activeTips.length) % activeTips.length)
       setVisible(true)
     }, 200)
   }
@@ -47,14 +53,14 @@ export function DashboardTips() {
     const timer = setInterval(() => {
       setVisible(false)
       setTimeout(() => {
-        setCurrent(c => (c + 1) % TIPS.length)
+        setCurrent(c => (c + 1) % activeTips.length)
         setVisible(true)
       }, 200)
     }, 20000)
     return () => clearInterval(timer)
-  }, [])
+  }, [activeTips.length])
 
-  const tip = TIPS[current]
+  const tip = activeTips[current]
 
   return (
     <div className="rounded-2xl px-6 py-5" style={{ background: 'linear-gradient(135deg, #002B72, #003FA3)' }}>

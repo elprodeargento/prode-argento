@@ -9,6 +9,7 @@ import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Ch
 
 import { uploadToR2 } from '@/lib/storage/r2'
 import { generateQRCard } from '@/lib/qr/card'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 const MEDALS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
 const DEFAULTS = ['Trofeo + Diploma ⚽', 'Medalla de plata 🥈', 'Medalla de bronce 🥉', 'Aplauso del jefe 👏', 'El último puesto 😅']
@@ -271,9 +272,29 @@ export function OnboardingWizard() {
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {['Participantes ilimitados', 'Todo lo del plan Free', 'Premios semanales configurables', 'Notificaciones por WhatsApp', 'Publicar podio en Instagram', 'QR descargable para tu local', 'Exportar lista de participantes'].map(f => (
-                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
-                  ))}
+                  {[
+                    'Participantes ilimitados',
+                    'Todo lo del plan Free',
+                    'Premios semanales configurables',
+                    { text: 'Notificaciones por WhatsApp', social: true },
+                    { text: 'Publicar podio en Instagram', social: true },
+                    'QR descargable para tu local',
+                    'Exportar lista de participantes'
+                  ].map(f => {
+                    const isSocial = typeof f === 'object' && f.social
+                    const text = typeof f === 'object' ? f.text : f
+                    return (
+                      <div key={text} className={`text-[12px] text-[#0D1A3A] flex gap-2 items-center ${isSocial && !SOCIAL_ENABLED ? 'opacity-50 grayscale' : ''}`}>
+                        <span>✅</span>
+                        <span className={isSocial && !SOCIAL_ENABLED ? 'line-through' : ''}>{text}</span>
+                        {isSocial && !SOCIAL_ENABLED && (
+                          <span className="text-[9px] font-black bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider ml-auto">
+                            Próximamente
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
                 <button onClick={() => handleCheckout('pro')} disabled={checkoutLoading === 'pro'} className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20 disabled:opacity-60">
                   {checkoutLoading === 'pro' ? 'Redirigiendo...' : 'Contratar Pro — $40.000 →'}

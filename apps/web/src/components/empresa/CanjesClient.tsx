@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { apiGet, apiPost } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
+import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface ReferralsData {
   points: number
@@ -68,7 +69,7 @@ export function CanjesClient() {
   const handleRedeem = async (prize: string, points: number) => {
     try {
       await apiPost('/referrals/redeem', { prize, points })
-      alert('¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.')
+      alert(SOCIAL_ENABLED ? '¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.' : '¡Solicitud enviada! Nos contactaremos por email en las próximas 24hs.')
     } catch {
       alert('Error al procesar el canje. Intentá de nuevo.')
     }
