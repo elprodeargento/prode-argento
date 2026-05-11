@@ -20,7 +20,6 @@ export function LandingReferidos() {
         <div className="bg-[#F5C518] rounded-2xl px-6 py-5 text-center mb-8 max-w-sm mx-auto shadow-lg">
           <div className="text-[#002B72] text-5xl font-black leading-none">$12.000</div>
           <div className="text-[#002B72] text-sm font-bold mt-1">de cashback por cada referido pago</div>
-          <div className="text-[#002B72]/60 text-xs mt-1">equivale a 30 puntos · plan Starter</div>
         </div>
 
         {/* 3-column grid */}
