@@ -61,6 +61,11 @@ const GRADIENT_BY_CAT: Record<string, string> = {
   '🍕 Gastronomía':    'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
   '☕ Cafetería':       'linear-gradient(135deg, #3d1a00, #8B4513)',
   '🛒 Supermercado':   'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
+  '🥖 Panadería':      'linear-gradient(135deg, #5c3a1a, #8b5e34)',
+  '🥩 Carnicería':     'linear-gradient(135deg, #4a0000, #8b0000)',
+  '🥦 Verdulería':     'linear-gradient(135deg, #0d2e0d, #1a5e1a)',
+  '🍭 Kiosco':         'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🧊 Congelados':     'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
   '💊 Farmacia':       'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
   '👗 Indumentaria':   'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
   '💆 Bienestar':      'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
@@ -68,6 +73,14 @@ const GRADIENT_BY_CAT: Record<string, string> = {
   '🎬 Entretenimiento':'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
   '🔧 Servicios':      'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
   '🏠 Hogar':          'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
+  '🐶 Mascotas':       'linear-gradient(135deg, #3d2400, #5c3a1a)',
+  '⚽ Deportes':       'linear-gradient(135deg, #0d3b0d, #1a7a1a)',
+  '💻 Tecnología':     'linear-gradient(135deg, #0f172a, #334155)',
+  '🚗 Automotor':      'linear-gradient(135deg, #3b0d0d, #7a1a1a)',
+  '🧸 Juguetería':     'linear-gradient(135deg, #3b2e00, #8f6a00)',
+  '🧴 Estética':       'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🎨 Arte y Deco':    'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
+  '✨ Otros':          'linear-gradient(135deg, #334155, #475569)',
 }
 
 function PromoCarousel({ promos }: { promos: Promo[] }) {
