@@ -20,7 +20,7 @@ export function LandingPricing() {
           <div className="text-[11px] font-black text-[#5A6480] uppercase tracking-widest">Free</div>
           <div className="font-bebas text-[36px] text-[#0D1A3A]">Gratis</div>
           <ul className="flex flex-col gap-2 mt-3">
-            {['Hasta 5 participantes', 'Todo el mundial', 'Ranking en tiempo real'].map(f => (
+            {['Hasta 5 participantes', 'Ranking en tiempo real', 'Página pública con tu marca'].map(f => (
               <li key={f} className="flex items-center gap-2 text-[13px] text-slate-600 font-medium">
                 {checkGreen} {f}
               </li>
@@ -39,9 +39,9 @@ export function LandingPricing() {
           <ul className="flex flex-col gap-2 mt-3">
             {[
               'Participantes ilimitados',
-              'Premios semanales',
-              SOCIAL_ENABLED ? 'Notificaciones por WhatsApp' : 'Notificaciones por WhatsApp 🔜',
-              'QR descargable',
+              'Premios semanales configurables',
+              'Notificaciones push a tus clientes',
+              'QR descargable para tu local',
               'Exportar lista de participantes',
             ].map((f: string) => {
               const isSoon = f.endsWith(' 🔜')
@@ -70,7 +70,7 @@ export function LandingPricing() {
           <ul className="flex flex-col gap-2 mt-3">
             {[
               'Todo lo del plan Pro',
-              'Publicidad geolocalizada',
+              'Banner visible para jugadores a 5 km de tu local',
               'Estadísticas de visualizaciones',
               'Soporte por WhatsApp',
             ].map(f => (

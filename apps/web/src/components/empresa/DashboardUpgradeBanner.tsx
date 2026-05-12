@@ -12,7 +12,7 @@ export function DashboardUpgradeBanner({ plan, total }: { plan: string; total: n
             Plan Free — te quedan {remaining} lugares
           </div>
           <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">
-            Pasate a Pro y sumá clientes ilimitados por $40.000 pago único.
+            Pasate a Pro: participantes ilimitados, notificaciones push y más por $40.000 pago único.
           </div>
         </div>
         <a
@@ -33,7 +33,7 @@ export function DashboardUpgradeBanner({ plan, total }: { plan: string; total: n
           Alcanzaste el límite del plan Free
         </div>
         <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">
-          No podés sumar más clientes. Pasate a Pro para desbloquear participantes ilimitados.
+          No podés sumar más clientes. Pasate a Pro para desbloquear participantes ilimitados y notificaciones push.
         </div>
       </div>
       <a

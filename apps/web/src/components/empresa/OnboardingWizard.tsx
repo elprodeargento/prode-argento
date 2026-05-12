@@ -252,8 +252,11 @@ export function OnboardingWizard() {
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-3">
-                  {['Hasta 5 participantes', 'Todo el mundial', 'Ranking en tiempo real', 'Página pública con tu marca'].map(f => (
+                  {['Hasta 5 participantes', 'Todo el mundial', 'Ranking en tiempo real'].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
+                  ))}
+                  {['Sin notificaciones push', 'Sin exportar lista de participantes'].map(f => (
+                    <div key={f} className="text-[12px] text-slate-400 flex gap-2"><span>❌</span>{f}</div>
                   ))}
                 </div>
                 <div className="bg-slate-100 rounded-xl py-2 text-center text-[12px] font-black text-slate-400">Tu plan actual ✓</div>
@@ -274,27 +277,14 @@ export function OnboardingWizard() {
                 <div className="space-y-1.5 mb-4">
                   {[
                     'Participantes ilimitados',
-                    'Todo lo del plan Free',
+                    'Notificaciones push a tus clientes',
                     'Premios semanales configurables',
-                    { text: 'Notificaciones por WhatsApp', social: true },
-                    { text: 'Publicar podio en Instagram', social: true },
-                    'QR descargable para tu local',
-                    'Exportar lista de participantes'
-                  ].map(f => {
-                    const isSocial = typeof f === 'object' && f.social
-                    const text = typeof f === 'object' ? f.text : f
-                    return (
-                      <div key={text} className={`text-[12px] text-[#0D1A3A] flex gap-2 items-center ${isSocial && !SOCIAL_ENABLED ? 'opacity-50 grayscale' : ''}`}>
-                        <span>✅</span>
-                        <span className={isSocial && !SOCIAL_ENABLED ? 'line-through' : ''}>{text}</span>
-                        {isSocial && !SOCIAL_ENABLED && (
-                          <span className="text-[9px] font-black bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider ml-auto">
-                            Próximamente
-                          </span>
-                        )}
-                      </div>
-                    )
-                  })}
+                    'QR descargable + exportar lista',
+                  ].map(f => (
+                    <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2 items-center">
+                      <span>✅</span>{f}
+                    </div>
+                  ))}
                 </div>
                 <button onClick={() => handleCheckout('pro')} disabled={checkoutLoading === 'pro'} className="w-full py-3 rounded-full bg-[#002B72] text-white text-[13px] font-black shadow-lg shadow-blue-900/20 disabled:opacity-60">
                   {checkoutLoading === 'pro' ? 'Redirigiendo...' : 'Contratar Pro — $40.000 →'}
@@ -314,7 +304,11 @@ export function OnboardingWizard() {
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
-                  {['Todo lo del plan Pro', 'Publicidad geolocalizada en la zona', 'Estadísticas de visualizaciones', 'Soporte por WhatsApp', 'Exportar lista de participantes'].map(f => (
+                  {[
+                    'Todo lo del plan Pro',
+                    'Tu banner en el mapa de jugadores de la zona',
+                    'Soporte directo por WhatsApp',
+                  ].map(f => (
                     <div key={f} className="text-[12px] text-[#0D1A3A] flex gap-2"><span>✅</span>{f}</div>
                   ))}
                 </div>
