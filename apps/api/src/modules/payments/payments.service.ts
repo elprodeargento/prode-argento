@@ -40,6 +40,12 @@ export class PaymentsService {
           quantity: 1,
           unit_price: planInfo.price,
           currency_id: 'ARS',
+          taxes: [
+            {
+              type: 'IVA',
+              value: 21,
+            }
+          ],
         }],
         payer: { email: adminEmail },
         external_reference: JSON.stringify({ businessId, plan }),
