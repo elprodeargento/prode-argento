@@ -17,8 +17,11 @@ interface Match {
   group?: string
 }
 
-interface Participant {
-  predictions?: number
+interface LeaderboardEntry {
+  participant_id: string
+  total_points: number
+  exact_results: number
+  correct_winners: number
 }
 
 function formatKickoff(kickoff_at: string): string {
@@ -50,10 +53,12 @@ export function DashboardNextMatch() {
         try {
           const [totalRes, leaderboard] = await Promise.all([
             apiGet<{ total: number }>('/participants/me?page=1&limit=1'),
-            apiGet<Participant[]>('/leaderboard/me'),
+            apiGet<LeaderboardEntry[]>('/leaderboard/me'),
           ])
           const total = totalRes?.total ?? 0
-          const conPronos = leaderboard.filter(p => (p.predictions ?? 0) > 0).length
+          const conPronos = leaderboard.filter(e =>
+            (e.total_points > 0) || (e.exact_results > 0) || (e.correct_winners > 0)
+          ).length
           setSinCargar(Math.max(0, total - conPronos))
         } catch {
           setSinCargar(0)
