@@ -61,17 +61,17 @@ export function MatchList() {
   const groups: DateGroup[] = matches.reduce((acc: DateGroup[], match) => {
     const date = new Date(match.kickoff_at)
     const label = date.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
-    
+
     let group = acc.find(g => g.label === label)
     if (!group) {
       group = { label, status: match.status, matches: [] }
       acc.push(group)
     }
     group.matches.push(match)
-    
+
     // Update group status logic: if any is live, group is live. If all finished, group finished.
     if (match.status === 'live') group.status = 'live'
-    
+
     return acc
   }, [])
 
@@ -153,11 +153,10 @@ export function MatchList() {
                       match.coverage / match.total_participants < 0.6 && (
                         <button
                           onClick={() => handleRemind(match.id)}
-                          className={`text-[11px] font-black px-2.5 py-1 rounded-full transition-all whitespace-nowrap ${
-                            reminded.has(match.id)
+                          className={`text-[11px] font-black px-2.5 py-1 rounded-full transition-all whitespace-nowrap ${reminded.has(match.id)
                               ? 'bg-emerald-100 text-emerald-600'
                               : 'bg-[#F1F3F9] text-[#5A6480] hover:bg-[#EBF4FC] hover:text-[#003FA3]'
-                          }`}
+                            }`}
                         >
                           {reminded.has(match.id) ? '✓ Enviado' : '📢 Recordar'}
                         </button>
