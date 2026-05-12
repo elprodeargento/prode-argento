@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ProdeApp } from './ProdeApp'
+import { SORTED_COUNTRIES } from '@/shared/utils/countries'
 
 interface Empresa {
   id: string
@@ -28,7 +29,7 @@ const storageKey = (slug: string) => `prode:${slug}`
 export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const [step, setStep] = useState<'login' | 'confirm' | 'app'>('login')
   const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', phone: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', countryCode: '54' })
   const [remember, setRemember] = useState(false)
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -62,7 +63,8 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
     setLoading(true)
     setApiError('')
     try {
-      const payload = { slug: empresa.slug, name: form.name, email: form.email, phone: form.phone }
+      const fullPhone = form.phone.startsWith('+') ? form.phone : `+${form.countryCode}${form.phone}`
+      const payload = { slug: empresa.slug, name: form.name, email: form.email, phone: fullPhone }
       console.log('[ProdeLogin] POST /participants/join →', payload)
       const res = await fetch(`${API_URL}/participants/join`, {
         method: 'POST',
@@ -99,7 +101,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           localStorage.removeItem(storageKey(empresa.slug))
           setParticipant(null)
           setStep('login')
-          setForm({ name: '', email: '', phone: '' })
+          setForm({ name: '', email: '', phone: '', countryCode: '54' })
           setTerms(false)
         }}
       />
@@ -208,9 +210,17 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">Celular</label>
               <div className="flex gap-2">
-                <div className="flex items-center justify-center gap-1.5 px-3 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-500">
-                  🇦🇷 +54
-                </div>
+                <select 
+                  value={form.countryCode}
+                  onChange={e => setForm(f => ({ ...f, countryCode: e.target.value }))}
+                  className="flex items-center justify-center px-2 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-500 focus:outline-none focus:border-[#002B72] appearance-none cursor-pointer"
+                >
+                  {SORTED_COUNTRIES.map(c => (
+                    <option key={`${c.code}-${c.name}`} value={c.code}>
+                      {c.flag} +{c.code}
+                    </option>
+                  ))}
+                </select>
                 <input type="tel" placeholder="11 1234-5678"
                   value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))}
                   autoComplete="off"
