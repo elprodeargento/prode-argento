@@ -5,7 +5,7 @@ import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 import { ReferralsService } from '../referrals/referrals.service'
 
 export const PLANS = {
-  pro:     { label: 'Plan Pro',     price: 48400, max_participants: null },
+  pro: { label: 'Plan Pro', price: 48400, max_participants: null },
   premium: { label: 'Plan Premium', price: 96800, max_participants: null },
 } as const
 
@@ -28,7 +28,7 @@ export class PaymentsService {
   async createCheckoutPreference(businessId: string, plan: UpgradeablePlan, adminEmail: string) {
     const rawUrl = this.config.get<string>('app.webUrl') ?? ''
     const webUrl = rawUrl.includes('localhost') ? 'https://elprode.ar' : rawUrl
-    const apiUrl = process.env.API_PUBLIC_URL ?? 'https://prode-argento.onrender.com/api/v1'
+    const apiUrl = this.config.get<string>('app.apiUrl')
     const planInfo = PLANS[plan]
 
     const result = await this.preference.create({
@@ -57,39 +57,83 @@ export class PaymentsService {
   }
 
   async handleWebhook(body: any) {
-    if (body.type !== 'payment') return { ignored: true }
+    console.log('--- 💳 PROCESSING PAYMENT ---')
+    console.log('📦 Webhook Body:', JSON.stringify(body))
 
-    const paymentId = body.data?.id
-    if (!paymentId) return { ignored: true }
+    // Handle both Webhook (type) and IPN (topic)
+    const type = body.type || body.topic || (body.resource && 'payment')
+    if (type !== 'payment') {
+      console.log('⏭️ Ignoring non-payment event type:', type)
+      return { ignored: true }
+    }
 
+    const paymentId = body.data?.id || body.id
+    if (!paymentId) {
+      console.error('❌ No payment ID found in webhook body')
+      return { ignored: true }
+    }
+
+    console.log(`🔍 Fetching details for Payment #${paymentId}...`)
     const res = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: { Authorization: `Bearer ${this.config.get<string>('app.mercadopagoToken')}` },
     })
-    if (!res.ok) throw new BadRequestException('Could not fetch payment from MP')
-    const payment = await res.json()
 
-    if (payment.status !== 'approved') return { ignored: true, status: payment.status }
+    if (!res.ok) {
+      console.error(`❌ MercadoPago API Error: ${res.status}`)
+      throw new BadRequestException('Could not fetch payment from MP')
+    }
+
+    const payment = await res.json()
+    console.log(`📊 MP Status: ${payment.status} (${payment.status_detail})`)
+
+    if (payment.status !== 'approved') {
+      console.log(`⏳ Payment not approved yet. Current status: ${payment.status}`)
+      return { ignored: true, status: payment.status }
+    }
 
     let ref: { businessId: string; plan: UpgradeablePlan }
     try {
-      ref = JSON.parse(payment.external_reference)
-    } catch {
+      ref = typeof payment.external_reference === 'string'
+        ? JSON.parse(payment.external_reference)
+        : payment.external_reference
+      console.log('🔗 External Reference found:', JSON.stringify(ref))
+    } catch (err) {
+      console.error('❌ Failed to parse external_reference:', payment.external_reference)
       throw new BadRequestException('Invalid external_reference')
     }
 
-    if (!PLANS[ref.plan]) throw new BadRequestException('Unknown plan')
+    if (!PLANS[ref.plan]) {
+      console.error('❌ Unknown plan in metadata:', ref.plan)
+      throw new BadRequestException('Unknown plan')
+    }
 
+    console.log(`✨ Updating Business ${ref.businessId} to Plan: ${ref.plan}...`)
     const { error } = await this.supabase.client
       .from('businesses')
-      .update({ plan: ref.plan })
+      .update({
+        plan: ref.plan,
+        paid_at: new Date().toISOString(),
+        mp_payment_id: paymentId.toString()
+      })
       .eq('id', ref.businessId)
 
-    if (error) throw new BadRequestException(error.message)
+    if (error) {
+      console.error('❌ Supabase Update Error:', error.message)
+      throw new BadRequestException(error.message)
+    }
 
-    await this.referralsService.confirmPayment(ref.businessId)
+    console.log('✅ DATABASE UPDATED SUCCESSFULLY')
+
+    try {
+      await this.referralsService.confirmPayment(ref.businessId)
+      console.log('🤝 Referral confirmed')
+    } catch (e) {
+      console.warn('⚠️ Could not confirm referral, but plan was updated')
+    }
 
     console.log(JSON.stringify({ event: 'plan_purchased', plan: ref.plan, businessId: ref.businessId }))
 
+    console.log('--- 🏁 PAYMENT PROCESS FINISHED ---')
     return { updated: true, businessId: ref.businessId, plan: ref.plan }
   }
 }

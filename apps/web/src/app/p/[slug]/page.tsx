@@ -63,6 +63,7 @@ export default async function PublicProdePage({ params }: Props) {
     logo_url: business.logo_url ?? null,
     background_url: business.background_url ?? null,
     welcome_msg: business.welcome_msg ?? '¡Bienvenido al prode del Mundial!',
+    plan: (business.plan ?? 'free') as 'free' | 'pro' | 'premium',
     match_visibility: (business.match_visibility ?? 'all') as 'all' | 'daily',
     close_minutes: business.close_minutes ?? 5,
     prizes: prizes.map((p, i) => ({

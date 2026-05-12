@@ -153,6 +153,7 @@ export function ConfigForm() {
         const { data: { session } } = await supabase.auth.getSession()
         const res = await fetch(`${apiUrl}/businesses/me`, {
           headers: { Authorization: `Bearer ${session?.access_token}` },
+          cache: 'no-store',
         })
         if (res.ok) {
           const data = await res.json()

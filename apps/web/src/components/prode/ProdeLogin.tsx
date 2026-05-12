@@ -14,6 +14,7 @@ interface Empresa {
   logo_url: string | null
   background_url?: string | null
   welcome_msg: string
+  plan: 'free' | 'pro' | 'premium'
   prizes?: Array<{ rank: number; medal: string; pos: string; description: string }>
 }
 

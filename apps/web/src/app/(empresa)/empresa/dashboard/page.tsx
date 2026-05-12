@@ -13,6 +13,8 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export const metadata = { title: 'Dashboard' }
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function EmpresaDashboardPage() {
   const cookieStore = await cookies()

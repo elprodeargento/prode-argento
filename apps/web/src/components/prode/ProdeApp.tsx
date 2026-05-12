@@ -59,29 +59,29 @@ interface Promo {
 }
 
 const GRADIENT_BY_CAT: Record<string, string> = {
-  '🍕 Gastronomía':    'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
-  '☕ Cafetería':       'linear-gradient(135deg, #3d1a00, #8B4513)',
-  '🛒 Supermercado':   'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
-  '🥖 Panadería':      'linear-gradient(135deg, #5c3a1a, #8b5e34)',
-  '🥩 Carnicería':     'linear-gradient(135deg, #4a0000, #8b0000)',
-  '🥦 Verdulería':     'linear-gradient(135deg, #0d2e0d, #1a5e1a)',
-  '🍭 Kiosco':         'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
-  '🧊 Congelados':     'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
-  '💊 Farmacia':       'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
-  '👗 Indumentaria':   'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
-  '💆 Bienestar':      'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
-  '📚 Librería':       'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
-  '🎬 Entretenimiento':'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
-  '🔧 Servicios':      'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
-  '🏠 Hogar':          'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
-  '🐶 Mascotas':       'linear-gradient(135deg, #3d2400, #5c3a1a)',
-  '⚽ Deportes':       'linear-gradient(135deg, #0d3b0d, #1a7a1a)',
-  '💻 Tecnología':     'linear-gradient(135deg, #0f172a, #334155)',
-  '🚗 Automotor':      'linear-gradient(135deg, #3b0d0d, #7a1a1a)',
-  '🧸 Juguetería':     'linear-gradient(135deg, #3b2e00, #8f6a00)',
-  '🧴 Estética':       'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
-  '🎨 Arte y Deco':    'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
-  '✨ Otros':          'linear-gradient(135deg, #334155, #475569)',
+  '🍕 Gastronomía': 'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
+  '☕ Cafetería': 'linear-gradient(135deg, #3d1a00, #8B4513)',
+  '🛒 Supermercado': 'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
+  '🥖 Panadería': 'linear-gradient(135deg, #5c3a1a, #8b5e34)',
+  '🥩 Carnicería': 'linear-gradient(135deg, #4a0000, #8b0000)',
+  '🥦 Verdulería': 'linear-gradient(135deg, #0d2e0d, #1a5e1a)',
+  '🍭 Kiosco': 'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🧊 Congelados': 'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
+  '💊 Farmacia': 'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
+  '👗 Indumentaria': 'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
+  '💆 Bienestar': 'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
+  '📚 Librería': 'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
+  '🎬 Entretenimiento': 'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
+  '🔧 Servicios': 'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
+  '🏠 Hogar': 'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
+  '🐶 Mascotas': 'linear-gradient(135deg, #3d2400, #5c3a1a)',
+  '⚽ Deportes': 'linear-gradient(135deg, #0d3b0d, #1a7a1a)',
+  '💻 Tecnología': 'linear-gradient(135deg, #0f172a, #334155)',
+  '🚗 Automotor': 'linear-gradient(135deg, #3b0d0d, #7a1a1a)',
+  '🧸 Juguetería': 'linear-gradient(135deg, #3b2e00, #8f6a00)',
+  '🧴 Estética': 'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🎨 Arte y Deco': 'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
+  '✨ Otros': 'linear-gradient(135deg, #334155, #475569)',
 }
 
 function PromoCarousel({ promos }: { promos: Promo[] }) {
@@ -139,6 +139,8 @@ interface Participant { id: string; name: string; email: string; phone: string }
 interface Empresa {
   id: string; name: string; slug: string; primary_color: string; logo_url: string | null
   background_url?: string | null
+  welcome_msg?: string
+  plan?: 'free' | 'pro' | 'premium'
   match_visibility?: 'all' | 'daily'
   close_minutes?: number
   prizes?: Array<{ rank: number; medal: string; pos: string; description: string }>
@@ -209,7 +211,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     function loadPromos(lat = 0, lon = 0) {
       publicFetch(`/promos/nearby?lat=${lat}&lon=${lon}`)
         .then((data: Promo[]) => setPromos(data ?? []))
-        .catch(() => {})
+        .catch(() => { })
     }
 
     if (typeof navigator !== 'undefined' && navigator.geolocation) {
@@ -317,12 +319,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               setWeeklyPrizes(current)
             }
           })
-          .catch(() => {})
+          .catch(() => { })
 
         // Leaderboard semanal
         publicFetch(`/leaderboard/${empresa.id}/weekly`)
           .then((data: any) => setWeeklyLeaderboard(data?.entries ?? []))
-          .catch(() => {})
+          .catch(() => { })
 
         // Detectar resultado exacto nuevo
         const exactKey = `prode:${empresa.slug}:exactAlerted`
@@ -631,23 +633,45 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               </div>
             </div>
 
-            <button
-              onClick={async () => {
-                track('share_invite_clicked')
-                const url = `https://${empresa.slug}.elprode.ar`
-                const text = `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
-                if (navigator.share) {
-                  await navigator.share({ title: empresa.name, text, url })
-                } else {
-                  await navigator.clipboard.writeText(`${text} ${url}`)
-                  alert('¡Link copiado!')
-                }
-              }}
-              className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-black text-sm transition-all"
-              style={{ borderColor: color, color, background: `${color}10` }}
-            >
-              👥 Invitá a un amigo
-            </button>
+            {(() => {
+              const isFree = empresa.plan === 'free'
+              const count = leaderboard.length
+              const isFull = isFree && count >= 5
+
+              if (isFull) {
+                return (
+                  <div className="mx-4 mt-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                    <div className="flex items-center gap-2 text-amber-600 font-black text-sm mb-1">
+                      ⚠️ Cupos agotados
+                    </div>
+                    <p className="text-[12px] text-amber-800/70 font-medium leading-tight">
+                      Este prode alcanzó el límite de 5 participantes del plan gratuito.
+                      Para sumar más amigos, el organizador debe subir de plan.
+                    </p>
+                  </div>
+                )
+              }
+
+              return (
+                <button
+                  onClick={async () => {
+                    const url = `https://${empresa.slug}.elprode.ar`
+                    const text = `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
+                    if (navigator.share) {
+                      await navigator.share({ title: empresa.name, text, url })
+                    } else {
+                      await navigator.clipboard.writeText(`${text} ${url}`)
+                      alert('¡Link copiado!')
+                    }
+                  }}
+                  className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-black text-sm transition-all"
+                  style={{ borderColor: color, color, background: `${color}10` }}
+                >
+                  👥 Invitá a un amigo
+                  {isFree && <span className="ml-1 opacity-50 text-[10px] font-bold">({count}/5)</span>}
+                </button>
+              )
+            })()}
 
             {!worldCupStarted && (
               <div className="mx-4 mt-4 rounded-2xl p-5 text-white text-center" style={{ background: color }}>
@@ -730,11 +754,11 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       const source = weeklyLeaderboard.length > 0
                         ? weeklyLeaderboard
                         : leaderboard.map(e => ({
-                            participant_id: e.participant_id,
-                            weekly_points: e.total_points,
-                            exact_results: e.exact_results,
-                            rank: e.rank,
-                          }))
+                          participant_id: e.participant_id,
+                          weekly_points: e.total_points,
+                          exact_results: e.exact_results,
+                          rank: e.rank,
+                        }))
                       const myWeeklyEntry = source.find(e => e.participant_id === participant.id)
                       if (!myWeeklyEntry) return
                       const blob = await generateShareImage({
@@ -769,12 +793,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   {(weeklyLeaderboard.length > 0
                     ? weeklyLeaderboard
                     : leaderboard.slice(0, 5).map(e => ({
-                        participant_id: e.participant_id,
-                        name: e.participants?.name ?? 'Participante',
-                        weekly_points: e.total_points,
-                        exact_results: e.exact_results,
-                        rank: e.rank,
-                      }))
+                      participant_id: e.participant_id,
+                      name: e.participants?.name ?? 'Participante',
+                      weekly_points: e.total_points,
+                      exact_results: e.exact_results,
+                      rank: e.rank,
+                    }))
                   ).slice(0, 5).map(entry => {
                     const isMe = entry.participant_id === participant.id
                     const medal = entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : `${entry.rank}°`
@@ -799,11 +823,11 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   const source = weeklyLeaderboard.length > 0
                     ? weeklyLeaderboard
                     : leaderboard.map(e => ({
-                        participant_id: e.participant_id,
-                        name: e.participants?.name ?? 'Participante',
-                        weekly_points: e.total_points,
-                        rank: e.rank,
-                      }))
+                      participant_id: e.participant_id,
+                      name: e.participants?.name ?? 'Participante',
+                      weekly_points: e.total_points,
+                      rank: e.rank,
+                    }))
                   const myIdx = source.findIndex(e => e.participant_id === participant.id)
                   const myEntry2 = source[myIdx]
                   if (myIdx < 5 || !myEntry2) return null
@@ -900,13 +924,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       <div className="flex items-center gap-1.5">
                         <input type="number" min={0} max={20} disabled={locked}
                           value={preds[m.id]?.h ?? ''}
-                          onChange={e => { setPreds(p => ({...p, [m.id]: {...p[m.id], h: e.target.value, a: p[m.id]?.a ?? ''}})); setHasChanges(true) }}
+                          onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], h: e.target.value, a: p[m.id]?.a ?? '' } })); setHasChanges(true) }}
                           className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
                           style={{ borderColor: preds[m.id]?.h !== undefined && preds[m.id]?.h !== '' ? color : undefined }} />
                         <span className="font-bebas text-xl text-slate-400">:</span>
                         <input type="number" min={0} max={20} disabled={locked}
                           value={preds[m.id]?.a ?? ''}
-                          onChange={e => { setPreds(p => ({...p, [m.id]: {...p[m.id], a: e.target.value, h: p[m.id]?.h ?? ''}})); setHasChanges(true) }}
+                          onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], a: e.target.value, h: p[m.id]?.h ?? '' } })); setHasChanges(true) }}
                           className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
                           style={{ borderColor: preds[m.id]?.a !== undefined && preds[m.id]?.a !== '' ? color : undefined }} />
                       </div>
@@ -1104,7 +1128,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
                   className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
                 <div className="flex gap-2">
-                  <select 
+                  <select
                     value={editForm.countryCode}
                     onChange={e => setEditForm(f => ({ ...f, countryCode: e.target.value }))}
                     className="flex items-center justify-center px-2 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-500 focus:outline-none focus:border-[#002B72] appearance-none cursor-pointer"
@@ -1174,8 +1198,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
             {saving
               ? <><span className="animate-spin">⚽</span> Guardando...</>
               : savedMsg
-              ? savedMsg
-              : '💾 Guardar pronósticos'}
+                ? savedMsg
+                : '💾 Guardar pronósticos'}
           </button>
         </div>
       )}

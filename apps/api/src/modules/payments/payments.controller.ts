@@ -44,6 +44,10 @@ export class PaymentsController {
     @Headers('x-signature') xSignature: string,
     @Headers('x-request-id') xRequestId: string,
   ) {
+    console.log('--- 🔔 WEBHOOK INCOMING ---');
+    console.log('Request ID:', xRequestId);
+    console.log('Signature:', xSignature);
+
     const secret = this.config.get<string>('app.mercadopagoWebhookSecret')
 
     // Skip validation if secret not configured (dev/testing)
@@ -68,7 +72,11 @@ export class PaymentsController {
       const expected = createHmac('sha256', secret).update(template).digest('hex')
 
       const match = timingSafeEqual(Buffer.from(v1), Buffer.from(expected))
-      if (!match) throw new UnauthorizedException('Invalid webhook signature')
+      if (!match) {
+        console.error('❌ Invalid MP Signature');
+        throw new UnauthorizedException('Invalid webhook signature');
+      }
+      console.log('✅ Signature verified');
     }
 
     return this.paymentsService.handleWebhook(body)
