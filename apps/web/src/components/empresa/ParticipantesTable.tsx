@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Search, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download } from 'lucide-react'
 import { apiGet } from '@/lib/api'
 import { SOCIAL_ENABLED } from '@/lib/features'
@@ -239,6 +240,7 @@ export function ParticipantesTable() {
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selected, setSelected] = useState<Participant | null>(null)
   const [exporting, setExporting] = useState(false)
+  const router = useRouter()
   const pageSize = 10
 
   useEffect(() => {
@@ -334,6 +336,12 @@ export function ParticipantesTable() {
           >
             {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
             Exportar CSV
+          </button>
+          <button
+            onClick={() => router.push('/empresa/notificaciones')}
+            className="flex items-center gap-2 px-4 py-[10px] bg-[#002B72] text-white rounded-[10px] text-[13px] font-black hover:bg-[#00318A] transition-all whitespace-nowrap"
+          >
+            📢 Notificar a todos
           </button>
         </div>
 
