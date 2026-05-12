@@ -21,7 +21,7 @@ export function LandingCTA() {
           <span className="hidden sm:inline text-slate-600">|</span>
           <Link href="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</Link>
           <span className="hidden sm:inline text-slate-600">|</span>
-          <a href="mailto:aestheriontech@gmail.com" className="hover:text-white transition-colors">Contacto</a>
+          <a href="mailto:elprodeargento@gmail.com" className="hover:text-white transition-colors">Contacto</a>
         </div>
       </footer>
     </>

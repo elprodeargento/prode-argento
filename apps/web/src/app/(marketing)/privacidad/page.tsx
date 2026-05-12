@@ -112,7 +112,7 @@ export default function PrivacidadPage() {
             <ul className="list-disc pl-5 space-y-1 mt-1">
               <li>Respondiendo <strong>"STOP"</strong> a cualquier mensaje de WhatsApp que te enviemos.</li>
               <li>Enviando un correo a <strong>elprodeargento@gmail.com</strong> con el asunto
-              "Baja WhatsApp" indicando tu número de celular.</li>
+                "Baja WhatsApp" indicando tu número de celular.</li>
             </ul>
             <p className="mt-2">
               Tu número se eliminará de la lista de envíos dentro de las 48 horas hábiles.
@@ -262,14 +262,14 @@ export default function PrivacidadPage() {
               </li>
               <li>
                 <strong>Desde tu cuenta (empresas):</strong> accedé a <em>Mi cuenta → Configuración →
-                Eliminar cuenta</em>. Esto elimina todos tus datos de forma permanente e irreversible,
+                  Eliminar cuenta</em>. Esto elimina todos tus datos de forma permanente e irreversible,
                 incluyendo el prode, participantes y tokens de redes sociales vinculadas.
               </li>
               <li>
                 <strong>Revocación del acceso a Instagram:</strong> si conectaste tu cuenta de Instagram
                 y querés revocar el acceso sin eliminar tu cuenta, podés hacerlo desde{' '}
                 <em>Facebook / Instagram → Configuración → Aplicaciones y sitios web → elprode.ar →
-                Eliminar</em>. Esto revocará todos los permisos y eliminaremos el token de acceso
+                  Eliminar</em>. Esto revocará todos los permisos y eliminaremos el token de acceso
                 dentro de las 24 horas.
               </li>
             </ol>
