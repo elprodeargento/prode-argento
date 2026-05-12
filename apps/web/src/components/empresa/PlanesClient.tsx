@@ -143,9 +143,14 @@ export function PlanesClient() {
                 </div>
                 <div className="font-bebas text-[42px] text-[#0D1A3A] leading-none">{plan.priceLabel}</div>
                 {plan.price > 0 && (
-                  <p className="text-[13px] font-black text-[#002B72] mt-1">
-                    🔒 Pago único · válido todo el Mundial 2026
-                  </p>
+                  <div className="flex flex-col gap-0.5 mt-1">
+                    <span className="text-[12px] font-black text-[#002B72]">
+                      🔒 Pago único · Todo el Mundial 2026
+                    </span>
+                    <span className="text-[11px] font-medium text-[#8E96AE]">
+                      No incluye IVA
+                    </span>
+                  </div>
                 )}
               </div>
 

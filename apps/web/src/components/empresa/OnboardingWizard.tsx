@@ -272,6 +272,7 @@ export function OnboardingWizard() {
                   <div className="text-right">
                     <div className="font-bebas text-2xl text-[#002B72]">$40.000</div>
                     <div className="text-[10px] text-slate-400 font-bold">pago único</div>
+                    <p className="text-[11px] text-slate-400 font-medium">No incluye IVA</p>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">
@@ -301,6 +302,7 @@ export function OnboardingWizard() {
                   <div className="text-right">
                     <div className="font-bebas text-2xl text-[#002B72]">$80.000</div>
                     <div className="text-[10px] text-slate-400 font-bold">pago único</div>
+                    <p className="text-[11px] text-slate-400 font-medium">No incluye IVA</p>
                   </div>
                 </div>
                 <div className="space-y-1.5 mb-4">

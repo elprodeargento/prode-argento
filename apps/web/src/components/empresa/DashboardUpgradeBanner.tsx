@@ -12,7 +12,7 @@ export function DashboardUpgradeBanner({ plan, total }: { plan: string; total: n
             Plan Free — te quedan {remaining} lugares
           </div>
           <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">
-            Pasate a Pro: participantes ilimitados, notificaciones push y más por $40.000 pago único.
+            Pasate a Pro: participantes ilimitados, notificaciones push y más por $40.000 + IVA, pago único.
           </div>
         </div>
         <a

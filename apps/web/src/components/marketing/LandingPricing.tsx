@@ -36,6 +36,7 @@ export function LandingPricing() {
           <div className="text-[11px] font-black text-white/60 uppercase tracking-widest">Pro</div>
           <div className="font-bebas text-[42px] text-white">$40.000</div>
           <div className="text-[12px] font-black text-[#F5C518] mt-0.5">🔒 Pago único · Todo el Mundial 2026</div>
+          <p className="text-[11px] text-white/50 font-medium mt-0.5">No incluye IVA</p>
           <ul className="flex flex-col gap-2 mt-3">
             {[
               'Participantes ilimitados',
@@ -67,6 +68,7 @@ export function LandingPricing() {
           <div className="text-[11px] font-black text-[#F5C518] uppercase tracking-widest">Premium</div>
           <div className="font-bebas text-[42px] text-[#0D1A3A]">$80.000</div>
           <div className="text-[12px] font-black text-[#002B72] mt-0.5">🔒 Pago único · Todo el Mundial 2026</div>
+          <p className="text-[11px] text-slate-400 font-medium mt-0.5">No incluye IVA</p>
           <ul className="flex flex-col gap-2 mt-3">
             {[
               'Todo lo del plan Pro',

@@ -5,8 +5,8 @@ import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 import { ReferralsService } from '../referrals/referrals.service'
 
 export const PLANS = {
-  pro:     { label: 'Plan Pro',     price: 40000, max_participants: null },
-  premium: { label: 'Plan Premium', price: 80000, max_participants: null },
+  pro:     { label: 'Plan Pro',     price: 48400, max_participants: null },
+  premium: { label: 'Plan Premium', price: 96800, max_participants: null },
 } as const
 
 export type UpgradeablePlan = keyof typeof PLANS
