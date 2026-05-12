@@ -91,10 +91,6 @@ export async function generateQRCard(params: {
   const logoCY = 108
 
   if (logoImg) {
-    ctx.fillStyle = 'rgba(255,255,255,0.18)'
-    ctx.beginPath()
-    ctx.arc(logoCX, logoCY, logoR + 8, 0, Math.PI * 2)
-    ctx.fill()
     ctx.save()
     ctx.beginPath()
     ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2)
