@@ -1,3 +1,5 @@
+drop function if exists get_empresa_stats(uuid);
+
 create or replace function get_empresa_stats(business_id uuid)
 returns table(
   total_participants bigint,
