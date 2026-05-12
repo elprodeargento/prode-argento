@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Loader2, ImagePlus, X, Bell } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiGet, apiPost } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 import { SOCIAL_ENABLED } from '@/lib/features'
 
 const DEFAULT_MSG = '⚽ ¡Hola! Recordá cargar tus pronósticos antes del próximo partido. ¡No te quedés afuera del ranking! 🏆'
@@ -151,6 +152,7 @@ export function NotifForm({ onSent }: { onSent?: () => void }) {
       const res = await apiPost<{ sent: number; skipped: number; failed: number }>('/notifications/whatsapp', {
         message, imageUrl: imageUrl ?? undefined, recipients,
       })
+      trackEvent('notification_sent', { channel: 'whatsapp' })
       setResult(res)
       onSent?.()
       setTimeout(() => setResult(null), 5000)
@@ -178,6 +180,7 @@ export function NotifForm({ onSent }: { onSent?: () => void }) {
       const res = await apiPost<{ sent: number; failed: number }>('/notifications/push', {
         title: pushTitle, body: pushBody, recipients: pushRecipients, imageUrl: pushImageUrl ?? undefined,
       })
+      trackEvent('notification_sent', { channel: 'push' })
       setPushResult(res)
       onSent?.()
       setTimeout(() => setPushResult(null), 5000)

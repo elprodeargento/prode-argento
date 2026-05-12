@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { apiPost, apiGet } from '@/lib/api'
 import { Check } from 'lucide-react'
 import { SOCIAL_ENABLED } from '@/lib/features'
+import { trackEvent } from '@/lib/analytics'
 
 type Plan = 'free' | 'premium' | 'pro'
 
@@ -89,6 +90,7 @@ export function PlanesClient() {
 
   const handleCheckout = async (plan: Plan) => {
     if (plan === 'free') return
+    trackEvent('plan_checkout_started', { plan })
     setLoading(plan)
     try {
       const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan })

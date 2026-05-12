@@ -1,3 +1,4 @@
+import { PageTracker } from '@/lib/analytics'
 import { DashboardStats } from '@/components/empresa/DashboardStats'
 import { DashboardLink } from '@/components/empresa/DashboardLink'
 import { DashboardRanking } from '@/components/empresa/DashboardRanking'
@@ -57,6 +58,7 @@ export default async function EmpresaDashboardPage() {
           <p className="text-[14px] text-[#5A6480] font-medium">Tu comercio hoy</p>
         </div>
       </div>
+      <PageTracker event="dashboard_view" />
       <DashboardChecklist business={business} />
       <DashboardStats stats={dashboardStats} empresa={business} />
       <DashboardUpgradeBanner plan={business.plan} total={dashboardStats.total_participants || 0} />

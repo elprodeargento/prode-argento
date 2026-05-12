@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Providers } from '@/components/layout/Providers'
 import { IOSInstallBanner } from '@/components/layout/IOSInstallBanner'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <IOSInstallBanner />
         </Providers>
+        <GoogleAnalytics gaId="G-EDEPKXWE2M" />
       </body>
     </html>
   )

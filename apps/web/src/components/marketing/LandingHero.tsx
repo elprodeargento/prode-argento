@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
+import { trackEvent } from '@/lib/analytics'
 
 export function LandingHero() {
   return (
@@ -78,7 +79,7 @@ export function LandingHero() {
             Creá tu propio prode con la imagen de tu negocio en minutos. Tus clientes juegan, vos vendés más.
           </p>
           <Link href="/empresa/registro">
-            <Button size="lg" className="w-full rounded-full font-black text-[#002B72] !bg-[#F5C518] hover:!bg-yellow-300 shadow-xl">
+            <Button size="lg" onClick={() => trackEvent('landing_cta_clicked')} className="w-full rounded-full font-black text-[#002B72] !bg-[#F5C518] hover:!bg-yellow-300 shadow-xl">
               🚀 Crear el prode de mi comercio
             </Button>
           </Link>

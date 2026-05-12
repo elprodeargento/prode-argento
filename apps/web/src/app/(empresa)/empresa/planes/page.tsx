@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { PlanesClient } from '@/components/empresa/PlanesClient'
+import { PageTracker } from '@/lib/analytics'
 
 export const metadata: Metadata = { title: 'Planes y precios' }
 
@@ -16,6 +17,7 @@ export default function PlanesPage() {
           </p>
         </div>
       </div>
+      <PageTracker event="plan_view" />
       <Suspense>
         <PlanesClient />
       </Suspense>

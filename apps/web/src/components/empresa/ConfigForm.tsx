@@ -8,6 +8,7 @@ import { z } from 'zod'
 import Image from 'next/image'
 import { Loader2, AlertTriangle, Copy, Check, ScanQrCode } from 'lucide-react'
 import { apiGet, apiFetch } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
 import { generateQRCard } from '@/lib/qr/card'
@@ -253,6 +254,7 @@ export function ConfigForm() {
         body: JSON.stringify({ ...data, logo_url: logoUrl, background_url: backgroundUrl }),
       })
       if (res.ok) {
+        trackEvent('config_saved')
         setSuccess(true)
         router.refresh()
         setTimeout(() => setSuccess(false), 3000)

@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInstallPWA } from '@/hooks/useInstallPWA'
 import { SORTED_COUNTRIES } from '@/shared/utils/countries'
+import { trackEvent } from '@/lib/analytics'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
@@ -198,6 +199,11 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const color = empresa.primary_color ?? '#002B72'
   const prizes = empresa.prizes ?? []
 
+  const track = (name: string, params?: Record<string, any>) =>
+    trackEvent(name, { business_slug: empresa.slug, business_name: empresa.name, ...params })
+
+  useEffect(() => { track('prode_view') }, [])
+
   useEffect(() => {
     // Fetch nearby promos silently using geolocation if available
     function loadPromos(lat = 0, lon = 0) {
@@ -360,6 +366,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         method: 'POST',
         body: JSON.stringify({ participantId: participant.id, predictions: items }),
       })
+      track('predictions_saved', { count: items.length })
       setSavedMsg('✅ Guardados')
       setHasChanges(false)
       // Refresh predictions
@@ -626,6 +633,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
             <button
               onClick={async () => {
+                track('share_invite_clicked')
                 const url = `https://${empresa.slug}.elprode.ar`
                 const text = `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
                 if (navigator.share) {
@@ -740,6 +748,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       })
                       if (!blob) return
                       const file = new File([blob], 'ranking-semanal.png', { type: 'image/png' })
+                      track('share_ranking_image', { type: 'semanal' })
                       if (navigator.share && navigator.canShare({ files: [file] })) {
                         await navigator.share({ files: [file], title: empresa.name })
                       } else {
@@ -940,6 +949,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   })
                   if (!blob) return
                   const file = new File([blob], 'mi-posicion.png', { type: 'image/png' })
+                  track('share_ranking_image', { type: 'ranking' })
                   if (navigator.share && navigator.canShare({ files: [file] })) {
                     await navigator.share({ files: [file], title: empresa.name })
                   } else {
@@ -1173,7 +1183,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       {/* Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-100 flex shadow-lg z-50">
         {navItems.map(item => (
-          <button key={item.id} onClick={() => setTab(item.id)}
+          <button key={item.id} onClick={() => { setTab(item.id); track('tab_view', { tab_name: item.id }) }}
             className="flex-1 flex flex-col items-center gap-1 py-3 transition-all"
             style={{ color: tab === item.id ? color : '#94a3b8' }}>
             <span className={`text-xl transition-transform ${tab === item.id ? 'scale-110' : ''}`}>{item.icon}</span>

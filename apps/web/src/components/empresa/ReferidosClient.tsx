@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 import { Loader2 } from 'lucide-react'
 
 interface Referral {
@@ -37,6 +38,7 @@ export function ReferidosClient() {
 
   const handleCopy = async () => {
     if (!data?.referralUrl) return
+    trackEvent('referral_link_copied')
     await navigator.clipboard?.writeText(data.referralUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -86,6 +88,7 @@ export function ReferidosClient() {
           href={`https://wa.me/?text=${waText}`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent('referral_shared_whatsapp')}
           className="flex items-center justify-center gap-2 w-full py-3 bg-[#25D366] text-white text-[13px] font-black rounded-xl hover:opacity-90 transition-all"
         >
           💬 Compartir por WhatsApp

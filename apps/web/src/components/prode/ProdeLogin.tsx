@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ProdeApp } from './ProdeApp'
 import { SORTED_COUNTRIES } from '@/shared/utils/countries'
+import { trackEvent } from '@/lib/analytics'
 
 interface Empresa {
   id: string
@@ -35,6 +36,10 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState('')
   const [participant, setParticipant] = useState<Participant | null>(null)
+
+  useEffect(() => {
+    trackEvent('prode_login_view', { business_slug: empresa?.slug })
+  }, [])
 
   useEffect(() => {
     const stored = localStorage.getItem(storageKey(empresa.slug))

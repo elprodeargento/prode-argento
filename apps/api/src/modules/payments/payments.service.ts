@@ -88,6 +88,8 @@ export class PaymentsService {
 
     await this.referralsService.confirmPayment(ref.businessId)
 
+    console.log(JSON.stringify({ event: 'plan_purchased', plan: ref.plan, businessId: ref.businessId }))
+
     return { updated: true, businessId: ref.businessId, plan: ref.plan }
   }
 }

@@ -1,14 +1,17 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 import { apiPost } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 
 export function RegistroEmpresaForm() {
   const router = useRouter()
+
+  useEffect(() => { trackEvent('registro_started') }, [])
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -63,6 +66,7 @@ export function RegistroEmpresaForm() {
       return
     }
 
+    trackEvent('registro_completed')
     router.push('/empresa/onboarding')
   }
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { apiGet, apiPatch, apiPut, apiPost } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 import { Card } from '@/components/ui/Card'
 import { Loader2, ScanQrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check, X } from 'lucide-react'
 
@@ -104,6 +105,7 @@ export function OnboardingWizard() {
         .filter(p => p.description)
       await apiPut('/prizes/me', { prizes: prizesToSave })
 
+      trackEvent('onboarding_completed')
       setStep('success')
       window.scrollTo(0, 0)
     } catch (error) {

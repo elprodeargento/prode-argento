@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet, apiPut } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 import { Loader2, Save, ChevronLeft, ChevronRight } from 'lucide-react'
 import { IgPublishModal } from './IgPublishModal'
 import { WhatsAppSendModal } from './WhatsAppSendModal'
@@ -266,6 +267,7 @@ export function PrizeManager() {
       await apiPut('/prizes/weekly/me', { weekIndex: wpWeekIdx, prizes: filtered })
       const updated = { ...wpPrizesMap, [String(wpWeekIdx)]: filtered }
       setWpPrizesMap(updated)
+      trackEvent('weekly_prize_configured')
       setWpSaved(true)
       setTimeout(() => setWpSaved(false), 2500)
     } catch {
@@ -299,6 +301,7 @@ export function PrizeManager() {
       await apiPut('/prizes/me', {
         prizes: prizes.map(p => ({ rank: p.rank, description: p.description })),
       })
+      trackEvent('prize_configured')
       alert('Premios guardados correctamente')
     } catch {
       alert('Error al guardar premios')

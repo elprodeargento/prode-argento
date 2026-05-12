@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { ScanQrCode, Mail, MessageCircle, Copy, CheckCircle2, X, Printer, Download, Loader2 } from 'lucide-react'
 import { generateQRCard } from '@/lib/qr/card'
+import { trackEvent } from '@/lib/analytics'
 
 export function DashboardLink({ empresa }: { empresa: any }) {
   const [copied, setCopied] = useState(false)
@@ -52,6 +53,7 @@ export function DashboardLink({ empresa }: { empresa: any }) {
 
   const downloadQR = () => {
     if (!qrImageUrl) return
+    trackEvent('qr_downloaded')
     const a = document.createElement('a')
     a.href = qrImageUrl
     a.download = `qr-${empresa.slug}.png`
