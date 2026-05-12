@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { apiGet } from '@/lib/api'
 import { Loader2 } from 'lucide-react'
-import { WhatsAppSendModal } from './WhatsAppSendModal'
-import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface Match {
   id: string
@@ -17,11 +16,10 @@ interface Match {
   group?: string
 }
 
-interface LeaderboardEntry {
-  participant_id: string
-  total_points: number
-  exact_results: number
-  correct_winners: number
+interface ParticipantStats {
+  total: number
+  with_predictions: number
+  without_predictions: number
 }
 
 function formatKickoff(kickoff_at: string): string {
@@ -35,10 +33,10 @@ function formatKickoff(kickoff_at: string): string {
 }
 
 export function DashboardNextMatch() {
+  const router = useRouter()
   const [match, setMatch] = useState<Match | null | undefined>(undefined)
   const [sinCargar, setSinCargar] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -51,15 +49,8 @@ export function DashboardNextMatch() {
         setMatch(next)
 
         try {
-          const [totalRes, leaderboard] = await Promise.all([
-            apiGet<{ total: number }>('/participants/me?page=1&limit=1'),
-            apiGet<LeaderboardEntry[]>('/leaderboard/me'),
-          ])
-          const total = totalRes?.total ?? 0
-          const conPronos = leaderboard.filter(e =>
-            (e.total_points > 0) || (e.exact_results > 0) || (e.correct_winners > 0)
-          ).length
-          setSinCargar(Math.max(0, total - conPronos))
+          const stats = await apiGet<ParticipantStats>('/participants/me/stats')
+          setSinCargar(stats?.without_predictions ?? 0)
         } catch {
           setSinCargar(0)
         }
@@ -88,12 +79,7 @@ export function DashboardNextMatch() {
     ? (match.group ? `${match.group} · ` : '') + formatKickoff(match.kickoff_at)
     : ''
 
-  const waMessage = match
-    ? `⚽ ¡Acordate de cargar tus pronósticos!\n\nPróximo partido: ${match.home_team} vs ${match.away_team}\n📅 ${dateLabel}\n\n¡No te quedes afuera del ranking! 🏆`
-    : `⚽ ¡Acordate de cargar tus pronósticos!\n\n¡No te quedes afuera del ranking! 🏆`
-
   return (
-    <>
     <div className="card">
       <div className="px-[20px] py-[14px] border-b border-[#DDE1EF] flex items-center justify-between">
         <div className="text-[14px] font-extrabold text-[#0D1A3A] flex items-center gap-2">
@@ -128,21 +114,12 @@ export function DashboardNextMatch() {
                 <div className="bg-[#FFF4E5] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#FF8A00] mb-[12px] border border-[#FF8A00]/10">
                   ⚠️ {sinCargar} participante{sinCargar !== 1 ? 's' : ''} sin cargar aún
                 </div>
-                {SOCIAL_ENABLED ? (
-                  <button
-                    onClick={() => setModalOpen(true)}
-                    className="w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
-                  >
-                    📢 Recordar a los {sinCargar}
-                  </button>
-                ) : (
-                  <a
-                    href="/empresa/notificaciones"
-                    className="w-full block bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
-                  >
-                    🔔 Enviar notificación a los {sinCargar}
-                  </a>
-                )}
+                <button
+                  onClick={() => router.push('/empresa/notificaciones?recipients=no_pred&channel=push')}
+                  className="w-full bg-[#002B72] text-white rounded-xl py-[12px] font-black text-[14px] hover:bg-[#00318A] transition-all shadow-lg shadow-[#002B72]/20"
+                >
+                  🔔 Recordar a los {sinCargar}
+                </button>
               </>
             ) : (
               <div className="bg-[#E8F8F1] rounded-[10px] py-[10px] px-[14px] text-[13px] font-extrabold text-[#18A06A] border border-[#18A06A]/10">
@@ -153,12 +130,5 @@ export function DashboardNextMatch() {
         )}
       </div>
     </div>
-    <WhatsAppSendModal
-      open={modalOpen}
-      onClose={() => setModalOpen(false)}
-      defaultMessage={waMessage}
-      title="Recordar a participantes"
-    />
-    </>
   )
 }

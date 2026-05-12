@@ -132,6 +132,36 @@ export class ParticipantsService {
     return updated
   }
 
+  async getStats(adminUserId: string) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .single()
+    if (!business) throw new Error('Business not found')
+
+    const { data: participants } = await this.supabase.client
+      .from('participants')
+      .select('id')
+      .eq('business_id', business.id)
+
+    const total = participants?.length ?? 0
+    if (total === 0) return { total: 0, with_predictions: 0, without_predictions: 0 }
+
+    const { data: withPreds } = await this.supabase.client
+      .from('predictions')
+      .select('participant_id')
+      .eq('business_id', business.id)
+
+    const withPredictions = new Set(withPreds?.map((p: any) => p.participant_id) ?? []).size
+
+    return {
+      total,
+      with_predictions: withPredictions,
+      without_predictions: total - withPredictions,
+    }
+  }
+
   async findAllByBusiness(businessId: string) {
     const { data, error } = await this.supabase.client
       .from('participants')

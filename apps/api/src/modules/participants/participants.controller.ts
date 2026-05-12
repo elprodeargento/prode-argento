@@ -29,6 +29,13 @@ export class ParticipantsController {
     return this.participantsService.joinBySlug(dto.slug, dto.name, dto.email, dto.phone);
   }
 
+  @Get('me/stats')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  getStats(@Req() req: any) {
+    return this.participantsService.getStats(req.user.id)
+  }
+
   @Get('me')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()

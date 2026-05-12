@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Loader2, ImagePlus, X, Bell } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiGet, apiPost } from '@/lib/api'
@@ -98,7 +99,8 @@ function WhatsAppPreview({ message, imageUrl }: { message: string; imageUrl?: st
   )
 }
 
-export function NotifForm({ onSent }: { onSent?: () => void }) {
+function NotifFormInner({ onSent }: { onSent?: () => void }) {
+  const searchParams = useSearchParams()
   const [plan, setPlan] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('push')
 
@@ -126,6 +128,17 @@ export function NotifForm({ onSent }: { onSent?: () => void }) {
       .then(b => setPlan(b.plan))
       .catch(() => setPlan('free'))
   }, [])
+
+  useEffect(() => {
+    const recipientsParam = searchParams.get('recipients')
+    const channel = searchParams.get('channel')
+    if (recipientsParam === 'no_pred') {
+      setRecipients('no_pred')
+      setPushRecipients('no_pred')
+    }
+    if (channel === 'push') setTab('push')
+    if (channel === 'whatsapp') setTab('whatsapp')
+  }, [searchParams])
 
   if (plan === null) return (
     <div className="card flex items-center justify-center py-12">
@@ -342,5 +355,13 @@ export function NotifForm({ onSent }: { onSent?: () => void }) {
         </div>
       )}
     </div>
+  )
+}
+
+export function NotifForm({ onSent }: { onSent?: () => void }) {
+  return (
+    <Suspense fallback={null}>
+      <NotifFormInner onSent={onSent} />
+    </Suspense>
   )
 }
