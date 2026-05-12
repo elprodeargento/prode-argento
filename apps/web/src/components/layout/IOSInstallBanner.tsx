@@ -34,8 +34,8 @@ export function IOSInstallBanner() {
         {/* Progress-like accent */}
         <div className="absolute top-0 left-0 w-1 h-full bg-[#002B72]" />
         
-        <div className="flex-shrink-0 w-12 h-12 bg-[#002B72] rounded-xl flex items-center justify-center shadow-inner">
-          <span className="text-white font-bebas text-xl mt-0.5">P</span>
+        <div className="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-slate-100">
+          <img src="/EL PRODE ARGENTO-03.png" alt="Prode Logo" className="w-full h-full object-contain" />
         </div>
 
         <div className="flex-1 pr-6">
