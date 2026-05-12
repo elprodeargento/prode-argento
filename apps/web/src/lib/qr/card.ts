@@ -1,12 +1,31 @@
 import QRCode from 'qrcode'
 
-function loadImg(src: string): Promise<HTMLImageElement> {
+async function loadImg(src: string): Promise<HTMLImageElement> {
+  // Para URLs de R2 usar proxy para evitar CORS
+  const isR2 = src.includes('r2.dev') || src.includes('r2.cloudflarestorage')
+
+  let objectUrl: string | null = null
+
+  if (isR2) {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
+    const proxiedUrl = `${API_BASE}/storage/proxy?url=${encodeURIComponent(src)}`
+    const response = await fetch(proxiedUrl)
+    const blob = await response.blob()
+    objectUrl = URL.createObjectURL(blob)
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
-    img.onload = () => resolve(img)
-    img.onerror = reject
-    img.src = src
+    img.onload = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      resolve(img)
+    }
+    img.onerror = () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      reject(new Error('Failed to load image'))
+    }
+    img.src = objectUrl ?? src
   })
 }
 
@@ -80,7 +99,16 @@ export async function generateQRCard(params: {
     ctx.beginPath()
     ctx.arc(logoCX, logoCY, logoR, 0, Math.PI * 2)
     ctx.clip()
-    ctx.drawImage(logoImg, logoCX - logoR, logoCY - logoR, logoR * 2, logoR * 2)
+    const ar = logoImg.naturalWidth / logoImg.naturalHeight
+    let dw = logoR * 2
+    let dh = logoR * 2
+    if (ar > 1) { dh = dw / ar } else { dw = dh * ar }
+    const dx = logoCX - dw / 2
+    const dy = logoCY - dh / 2
+    // Fondo del color principal dentro del círculo
+    ctx.fillStyle = primaryColor
+    ctx.fill() // rellena el clip actual
+    ctx.drawImage(logoImg, dx, dy, dw, dh)
     ctx.restore()
   } else {
     ctx.font = '76px serif'
