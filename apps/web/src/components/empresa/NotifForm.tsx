@@ -99,7 +99,7 @@ function WhatsAppPreview({ message, imageUrl }: { message: string; imageUrl?: st
 
 export function NotifForm({ onSent }: { onSent?: () => void }) {
   const [plan, setPlan] = useState<string | null>(null)
-  const [tab, setTab] = useState<Tab>('whatsapp')
+  const [tab, setTab] = useState<Tab>('push')
 
   // WhatsApp
   const [message, setMessage] = useState(DEFAULT_MSG)
