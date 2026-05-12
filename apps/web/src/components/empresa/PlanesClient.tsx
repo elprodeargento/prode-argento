@@ -23,7 +23,7 @@ const PLANS = [
       'Ranking en tiempo real',
       'Página pública con tu marca',
     ],
-    cta: 'Plan actual',
+    cta: 'Gratis',
     highlight: false,
   },
   {
@@ -183,7 +183,7 @@ export function PlanesClient() {
                     : 'bg-[#F5C518] text-[#002B72] hover:bg-yellow-300 disabled:opacity-60'
                   }`}
               >
-                {isLoading ? 'Redirigiendo...' : isCurrent ? '✓ Plan actual' : plan.cta}
+                {isLoading ? 'Redirigiendo...' : isCurrent ? '✓ Plan actual' : (plan.id === 'free' ? 'Plan gratuito' : plan.cta)}
               </button>
             </div>
           )
