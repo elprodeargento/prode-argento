@@ -20,7 +20,10 @@ export class FirebaseService implements OnModuleInit {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const { initializeApp, getApps, cert } = await import('firebase-admin/app')
+      // @ts-ignore
       const { getMessaging } = await import('firebase-admin/messaging')
 
       if (!getApps().length) {
