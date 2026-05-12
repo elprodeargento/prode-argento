@@ -16,11 +16,11 @@ language sql security definer as $$
          else round(count(distinct pred.participant_id)::numeric / count(distinct p.id) * 100, 1)
     end as coverage_pct,
     count(distinct case
-      when p.created_at >= now() - interval '24 hours'
+      when p.registered_at >= now() - interval '24 hours'
       then p.id
     end)::bigint as new_today,
     count(distinct case
-      when p.created_at >= now() - interval '7 days'
+      when p.registered_at >= now() - interval '7 days'
       then p.id
     end)::bigint as weekly_visits
   from participants p
