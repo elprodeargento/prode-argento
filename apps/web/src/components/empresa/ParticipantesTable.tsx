@@ -47,8 +47,7 @@ function Flag({ value }: { value: string }) {
 
 function waLink(phone: string) {
   const digits = phone.replace(/\D/g, '')
-  const num = digits.startsWith('54') ? digits : `54${digits}`
-  return `https://wa.me/${num}`
+  return `https://wa.me/${digits}`
 }
 
 function formatDate(iso: string) {

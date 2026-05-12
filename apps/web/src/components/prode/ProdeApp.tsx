@@ -173,7 +173,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [weeklyPrizes, setWeeklyPrizes] = useState<Array<{ rank: number; description: string }>>([])
   const [positionChange, setPositionChange] = useState<number | null>(null)
   const [editing, setEditing] = useState(false)
-  const [editForm, setEditForm] = useState({ name: participant.name, email: participant.email, phone: participant.phone })
+  const [editForm, setEditForm] = useState({ name: participant.name, email: participant.email, phone: participant.phone, countryCode: '54' })
   const [editSaving, setEditSaving] = useState(false)
   const [showPointsInfo, setShowPointsInfo] = useState(false)
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
@@ -364,9 +364,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const handleEditSave = async () => {
     setEditSaving(true)
     try {
+      const fullPhone = editForm.phone.startsWith('+') ? editForm.phone : `+${editForm.countryCode}${editForm.phone}`
       await publicFetch(`/participants/${participant.id}`, {
         method: 'PATCH',
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({ ...editForm, phone: fullPhone }),
       })
       const stored = localStorage.getItem(`prode:${empresa.slug}`)
       if (stored) {
@@ -1078,9 +1079,22 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <input placeholder="Email" type="email" value={editForm.email}
                   onChange={e => setEditForm(f => ({ ...f, email: e.target.value }))}
                   className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
-                <input placeholder="Teléfono" type="tel" value={editForm.phone}
-                  onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
+                <div className="flex gap-2">
+                  <select 
+                    value={editForm.countryCode}
+                    onChange={e => setEditForm(f => ({ ...f, countryCode: e.target.value }))}
+                    className="flex items-center justify-center px-2 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-500 focus:outline-none focus:border-[#002B72] appearance-none cursor-pointer"
+                  >
+                    {SORTED_COUNTRIES.map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>
+                        {c.flag} +{c.code}
+                      </option>
+                    ))}
+                  </select>
+                  <input placeholder="Teléfono" type="tel" value={editForm.phone}
+                    onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))}
+                    className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-[#002B72] transition-colors" />
+                </div>
                 <div className="flex gap-2">
                   <button onClick={() => setEditing(false)}
                     className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-500 font-bold text-sm">

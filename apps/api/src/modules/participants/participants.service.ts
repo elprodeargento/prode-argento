@@ -117,9 +117,14 @@ export class ParticipantsService {
   }
 
   async update(id: string, data: { name?: string; email?: string; phone?: string }) {
+    const updateData: any = { ...data }
+    if (data.phone) {
+      updateData.phone = normalizeE164AR(data.phone) ?? data.phone
+    }
+
     const { data: updated, error } = await this.supabase.client
       .from('participants')
-      .update(data)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single()
