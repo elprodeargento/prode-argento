@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { RankingPodium } from '@/components/empresa/RankingPodio'
 import { RankingTable } from '@/components/empresa/RankingTable'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface LeaderboardEntry {
   participant_id: string
@@ -130,11 +130,39 @@ function DistributionCard({ items }: { items: RankingItem[] }) {
   )
 }
 
+function getCurrentWCWeekLabel(): string {
+  const wcStart = new Date('2026-06-11')
+  const now = new Date()
+  const diffMs = now.getTime() - wcStart.getTime()
+  if (diffMs < 0) return 'Semana 1 · 11 - 17 jun'
+  const weekIdx = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+  const weeks = [
+    'Semana 1 · 11 - 17 jun',
+    'Semana 2 · 18 - 24 jun',
+    'Semana 3 · 25 jun - 1 jul',
+    'Semana 4 · 2 - 8 jul',
+    'Semana 5 · 9 - 15 jul',
+    'Semana 6 · 16 - 19 jul',
+  ]
+  return weeks[weekIdx] ?? weeks[weeks.length - 1]
+}
+
 export function RankingClient() {
   const [items, setItems] = useState<RankingItem[]>([])
   const [prizes, setPrizes] = useState<Prize[]>([])
   const [loading, setLoading] = useState(true)
   const [igConnected, setIgConnected] = useState(false)
+  const [tab, setTab] = useState<'mundial' | 'semanal'>('mundial')
+  const [weeklyEntries, setWeeklyEntries] = useState<Array<{
+    participant_id: string
+    name: string
+    weekly_points: number
+    exact_results: number
+    rank: number
+  }>>([])
+  const [weeklyLoading, setWeeklyLoading] = useState(false)
+  const [weeklyPrizes, setWeeklyPrizes] = useState<Array<{rank: number, description: string}>>([])
+  const [businessId, setBusinessId] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -149,7 +177,30 @@ export function RankingClient() {
       })
       .catch(console.error)
       .finally(() => setLoading(false))
+
+    apiGet<{ id: string }>('/businesses/me')
+      .then(b => setBusinessId(b.id))
+      .catch(() => {})
+
+    apiGet<Record<string, Array<{rank: number, description: string}>>>('/prizes/weekly/me')
+      .then(data => {
+        const wcStart = new Date('2026-06-11')
+        const now = new Date()
+        const diffMs = now.getTime() - wcStart.getTime()
+        const weekIdx = diffMs < 0 ? 0 : Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+        setWeeklyPrizes(data[String(weekIdx)] ?? [])
+      })
+      .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (tab !== 'semanal' || !businessId) return
+    setWeeklyLoading(true)
+    apiGet<{ entries: Array<any> }>(`/leaderboard/${businessId}/weekly`)
+      .then(data => setWeeklyEntries(data?.entries ?? []))
+      .catch(() => setWeeklyEntries([]))
+      .finally(() => setWeeklyLoading(false))
+  }, [tab, businessId])
 
   if (loading) {
     return (
@@ -171,14 +222,148 @@ export function RankingClient() {
 
   return (
     <div className="space-y-6">
-      <StatsCard items={items} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RankingPodium items={items.slice(0, 3)} prizes={prizes} igConnected={igConnected} />
-        <DistributionCard items={items} />
+      {/* TABS */}
+      <div className="flex gap-2 bg-[#F1F3F9] p-1 rounded-xl w-fit">
+        {([
+          { id: 'mundial', label: '🏆 Mundial' },
+          { id: 'semanal', label: '📅 Semanal' },
+        ] as const).map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`px-5 py-2 rounded-lg text-[13px] font-black transition-all ${
+              tab === t.id
+                ? 'bg-white text-[#002B72] shadow-sm'
+                : 'text-[#5A6480] hover:text-[#002B72]'
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      <RankingTable items={items} prizes={prizes} onExport={() => exportCSV(items)} />
+      {/* TAB MUNDIAL */}
+      {tab === 'mundial' && (
+        <>
+          <StatsCard items={items} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RankingPodium items={items.slice(0, 3)} prizes={prizes} igConnected={igConnected} />
+            <DistributionCard items={items} />
+          </div>
+          <RankingTable items={items} prizes={prizes} onExport={() => exportCSV(items)} />
+        </>
+      )}
+
+      {/* TAB SEMANAL */}
+      {tab === 'semanal' && (
+        <div className="space-y-4">
+
+          {/* Semana actual */}
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[13px] font-black text-[#0D1A3A]">
+              {getCurrentWCWeekLabel()}
+            </span>
+            <span className="text-[11px] font-black text-green-600 bg-green-100 px-2.5 py-1 rounded-full">
+              {new Date() < new Date('2026-06-11') ? 'Próxima' : 'En curso'}
+            </span>
+          </div>
+
+          {/* Banner premio semanal */}
+          {weeklyPrizes.length > 0 ? (
+            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
+              <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de esta semana</div>
+              <div className="flex flex-col gap-1">
+                {weeklyPrizes.map((p, i) => (
+                  <div key={i} className="text-[13px] font-black text-slate-900">
+                    {i===0?'🥇':i===1?'🥈':'🥉'} {p.description}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-[#FFF4E5] border border-[#FF8A00]/20 p-4 flex items-center gap-4">
+              <span className="text-[28px]">🎁</span>
+              <div className="flex-1">
+                <div className="text-[14px] font-black text-[#0D1A3A]">
+                  Sin premio configurado para esta semana
+                </div>
+                <div className="text-[13px] text-[#5A6480] font-medium mt-0.5">
+                  Tus clientes necesitan saber qué pueden ganar.
+                </div>
+              </div>
+              <a href="/empresa/premios"
+                className="shrink-0 px-4 py-2 bg-[#FF8A00] text-white text-[13px] font-black rounded-xl hover:opacity-90 transition-all">
+                Configurar
+              </a>
+            </div>
+          )}
+
+          {/* Ranking semanal */}
+          <div className="card">
+            <div className="px-[18px] py-[14px] bg-[#F1F3F9] border-b-[1.5px] border-[#DDE1EF] flex items-center gap-3">
+              <span className="text-[20px]">📅</span>
+              <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">
+                Ranking de la semana
+              </h3>
+            </div>
+            <div className="divide-y divide-[#DDE1EF]">
+              {weeklyLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-7 w-7 animate-spin text-[#DDE1EF]" />
+                </div>
+              ) : weeklyEntries.length === 0 ? (
+                <div className="py-12 text-center">
+                  <div className="text-3xl mb-3">⚽</div>
+                  <div className="text-[14px] font-black text-[#0D1A3A] mb-1">
+                    Sin datos esta semana todavía
+                  </div>
+                  <div className="text-[13px] text-[#5A6480] font-medium">
+                    El ranking se actualiza a medida que se juegan los partidos.
+                  </div>
+                </div>
+              ) : (
+                weeklyEntries.map(entry => {
+                  const medal = entry.rank === 1 ? '🥇'
+                    : entry.rank === 2 ? '🥈'
+                    : entry.rank === 3 ? '🥉'
+                    : null
+                  return (
+                    <div key={entry.participant_id}
+                      className={`flex items-center gap-3 px-5 py-4 ${
+                        entry.rank <= 3 ? 'bg-amber-50/50' : ''
+                      }`}>
+                      <span className="text-[20px] w-7 text-center shrink-0">
+                        {medal ?? (
+                          <span className="text-[13px] font-black text-[#8E96AE]">
+                            {entry.rank}
+                          </span>
+                        )}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[14px] font-black text-[#0D1A3A] truncate">
+                          {entry.name}
+                        </div>
+                        <div className="text-[11px] text-[#8E96AE] font-medium">
+                          {entry.exact_results} exactos esta semana
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-bebas text-[24px] text-[#002B72] leading-none">
+                          {entry.weekly_points}
+                        </div>
+                        <div className="text-[10px] font-bold text-[#8E96AE]">pts</div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
+        </div>
+      )}
+
     </div>
   )
 }
