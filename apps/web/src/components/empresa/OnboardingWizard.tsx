@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { apiGet, apiPatch, apiPut, apiPost } from '@/lib/api'
 import { Card } from '@/components/ui/Card'
-import { Loader2, QrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check, X } from 'lucide-react'
+import { Loader2, ScanQrCode, Mail, MessageCircle, Copy, Plus, Minus, ArrowRight, Check, X } from 'lucide-react'
 
 import { uploadToR2 } from '@/lib/storage/r2'
 import { generateQRCard } from '@/lib/qr/card'
@@ -205,7 +205,7 @@ export function OnboardingWizard() {
           >
             {qrDownloading
               ? <Loader2 className="h-10 w-10 animate-spin text-[#002B72] mb-2" />
-              : <QrCode className="h-10 w-10 text-slate-400 mb-2" />}
+              : <ScanQrCode className="h-10 w-10 text-slate-400 mb-2" />}
             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
               {qrDownloading ? 'Descargando...' : 'Descargar QR'}
             </span>

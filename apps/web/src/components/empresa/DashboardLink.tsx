@@ -1,10 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { QrCode, Mail, MessageCircle, Copy, CheckCircle2, X } from 'lucide-react'
+import { ScanQrCode, Mail, MessageCircle, Copy, CheckCircle2, X, Printer, Download, Loader2 } from 'lucide-react'
+import { generateQRCard } from '@/lib/qr/card'
 
 export function DashboardLink({ empresa }: { empresa: any }) {
   const [copied, setCopied] = useState(false)
   const [showQR, setShowQR] = useState(false)
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null)
+  const [loadingQR, setLoadingQR] = useState(false)
 
   const url = `${empresa?.slug ?? 'miempresa'}.elprode.ar`
   const fullUrl = `https://${url}`
@@ -24,6 +27,60 @@ export function DashboardLink({ empresa }: { empresa: any }) {
     const subject = encodeURIComponent(`Prode Mundial 2026 - ${empresa.name}`)
     const body = encodeURIComponent(`Hola! Te invitamos a participar de nuestro prode. Podés cargar tus pronósticos acá: ${fullUrl}`)
     window.location.href = `mailto:?subject=${subject}&body=${body}`
+  }
+  
+  const handleShowQR = async () => {
+    setShowQR(true)
+    if (!qrImageUrl) {
+      setLoadingQR(true)
+      try {
+        const blob = await generateQRCard({
+          shareUrl: fullUrl,
+          businessName: empresa.name || 'Mi Prode',
+          primaryColor: empresa.primary_color || '#002B72',
+          logoUrl: empresa.logo_url
+        })
+        const url = URL.createObjectURL(blob)
+        setQrImageUrl(url)
+      } catch (err) {
+        console.error('Error generating QR card:', err)
+      } finally {
+        setLoadingQR(false)
+      }
+    }
+  }
+
+  const downloadQR = () => {
+    if (!qrImageUrl) return
+    const a = document.createElement('a')
+    a.href = qrImageUrl
+    a.download = `qr-${empresa.slug}.png`
+    a.click()
+  }
+
+  const printQR = () => {
+    if (!qrImageUrl) return
+    const win = window.open('', '_blank')
+    if (!win) return
+    win.document.write(`
+      <html>
+        <head>
+          <title>Imprimir QR - ${empresa.name}</title>
+          <style>
+            body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #eee; }
+            img { max-width: 100%; height: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 20px; }
+            @media print {
+              body { background: white; }
+              img { width: 100%; max-width: 100%; border-radius: 0; box-shadow: none; }
+            }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          <img src="${qrImageUrl}" />
+        </body>
+      </html>
+    `)
+    win.document.close()
   }
 
   return (
@@ -60,10 +117,10 @@ export function DashboardLink({ empresa }: { empresa: any }) {
             Email
           </button>
           <button
-            onClick={() => setShowQR(true)}
+            onClick={handleShowQR}
             className="flex-1 flex items-center justify-center gap-2 px-3 py-3 bg-white/10 border border-white/20 rounded-xl text-[10px] font-black text-white hover:bg-white/20 transition-all uppercase tracking-tighter"
           >
-            <QrCode className="h-4 w-4" />
+            <ScanQrCode className="h-4 w-4" />
             Ver QR
           </button>
         </div>
@@ -78,26 +135,61 @@ export function DashboardLink({ empresa }: { empresa: any }) {
               <X className="h-6 w-6" />
             </button>
             <div className="text-center">
-              <div className="text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Compartí tu Prode</div>
-              <h3 className="text-2xl font-black text-slate-900 mb-6">Código QR</h3>
+              <div className="text-xs font-black text-blue-600 uppercase tracking-widest mb-2">Kit de Difusión</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-6">Tu código QR</h3>
 
-              <div className="bg-slate-50 p-6 rounded-3xl mb-6 flex items-center justify-center border-2 border-slate-100">
-                <div className="w-48 h-48 bg-white rounded-2xl flex items-center justify-center shadow-inner relative group">
-                  <QrCode className="h-40 w-40 text-slate-900" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 rounded-2xl">
-                    <button onClick={() => window.print()} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-xs">IMPRIMIR QR</button>
-                  </div>
+              <div className="mb-8 flex items-center justify-center">
+                <div className="relative group w-full aspect-square max-w-[280px] bg-slate-50 rounded-3xl overflow-hidden border-2 border-slate-100 shadow-xl shadow-slate-200/50">
+                  {loadingQR ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white gap-3">
+                      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Generando diseño...</span>
+                    </div>
+                  ) : qrImageUrl ? (
+                    <>
+                      <img
+                        src={qrImageUrl}
+                        alt="QR Card"
+                        className="w-full h-full object-contain"
+                      />
+                      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all bg-white/80 backdrop-blur-sm p-4 gap-3">
+                        <button onClick={printQR} className="w-full bg-[#002B72] text-white px-6 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-lg">
+                          <Printer className="h-4 w-4" />
+                          IMPRIMIR DISEÑO
+                        </button>
+                        <button onClick={downloadQR} className="w-full bg-white border-2 border-[#002B72] text-[#002B72] px-6 py-3 rounded-2xl font-black text-xs flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all">
+                          <Download className="h-4 w-4" />
+                          DESCARGAR PNG
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-red-500 font-bold text-sm p-8 text-center">
+                      No se pudo generar el diseño del QR
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <p className="text-sm text-slate-400 font-bold mb-8 italic">Escaneá este código para entrar directamente al prode de {empresa.name}</p>
+              <p className="text-[13px] text-slate-500 font-bold mb-8 px-4">
+                Este diseño incluye tu logo y colores. Es ideal para imprimir y pegar en tu local.
+              </p>
 
-              <button
-                onClick={() => setShowQR(false)}
-                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-sm shadow-xl shadow-slate-900/20 active:scale-95 transition-all"
-              >
-                CERRAR
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowQR(false)}
+                  className="flex-1 bg-slate-100 text-slate-600 py-4 rounded-2xl font-black text-sm hover:bg-slate-200 transition-all"
+                >
+                  CERRAR
+                </button>
+                <button
+                  onClick={downloadQR}
+                  disabled={!qrImageUrl}
+                  className="flex-1 bg-[#002B72] text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-900/20 active:scale-95 transition-all disabled:opacity-50"
+                >
+                  DESCARGAR →
+                </button>
+              </div>
             </div>
           </div>
         </div>

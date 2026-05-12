@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Image from 'next/image'
-import { Loader2, AlertTriangle, Copy, Check, QrCode } from 'lucide-react'
+import { Loader2, AlertTriangle, Copy, Check, ScanQrCode } from 'lucide-react'
 import { apiGet, apiFetch } from '@/lib/api'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { createClient } from '@/utils/supabase/client'
@@ -305,9 +305,10 @@ export function ConfigForm() {
                 href={shareUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-3 py-1.5 rounded-lg bg-white border-[1.5px] border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#003FA3] hover:text-[#003FA3] transition-all shrink-0"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border-[1.5px] border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#003FA3] hover:text-[#003FA3] transition-all shrink-0"
               >
-                👁️ Ver
+                <ScanQrCode className="w-3.5 h-3.5" />
+                Ver
               </a>
             </div>
 
@@ -335,7 +336,7 @@ export function ConfigForm() {
                 disabled={qrDownloading}
                 className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-[#F1F3F9] border-[1.5px] border-[#DDE1EF] text-[#5A6480] font-black text-[12px] hover:bg-[#003FA3] hover:text-white hover:border-[#003FA3] transition-all disabled:opacity-50"
               >
-                {qrDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
+                {qrDownloading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ScanQrCode className="w-5 h-5" />}
                 Descargar QR
               </button>
             </div>
