@@ -9,7 +9,7 @@ export function IOSInstallBanner() {
   useEffect(() => {
     // Detect iOS
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
-    
+
     // Detect if already in standalone mode (installed)
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone
 
@@ -33,9 +33,9 @@ export function IOSInstallBanner() {
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 flex items-center gap-4 relative overflow-hidden">
         {/* Progress-like accent */}
         <div className="absolute top-0 left-0 w-1 h-full bg-[#002B72]" />
-        
-        <div className="flex-shrink-0 w-12 h-12 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-slate-100">
-          <img src="/EL PRODE ARGENTO-03.png" alt="Prode Logo" className="w-full h-full object-contain" />
+
+        <div className="flex-shrink-0 w-12 h-12 bg-black rounded-xl flex items-center justify-center overflow-hidden border border-slate-100">
+          <img src="/EL PRODE ARGENTO-03.png" alt="Prode Logo" className="w-full h-full object-contain " />
         </div>
 
         <div className="flex-1 pr-6">
@@ -45,7 +45,7 @@ export function IOSInstallBanner() {
           </p>
         </div>
 
-        <button 
+        <button
           onClick={handleDismiss}
           className="absolute top-2 right-2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
         >
