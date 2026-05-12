@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInstallPWA } from '@/hooks/useInstallPWA'
+import { SORTED_COUNTRIES } from '@/shared/utils/countries'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
 
