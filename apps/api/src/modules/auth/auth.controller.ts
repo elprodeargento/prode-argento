@@ -80,11 +80,12 @@ export class AuthController {
 
     // 4. Track player referral code if provided
     if (dto.playerReferralCode) {
-      await this.supabase.client
-        .from('businesses')
-        .update({ player_referral_code: dto.playerReferralCode })
-        .eq('id', newBusiness.id)
-        .catch(() => {});
+      try {
+        await this.supabase.client
+          .from('businesses')
+          .update({ player_referral_code: dto.playerReferralCode })
+          .eq('id', newBusiness.id)
+      } catch { /* non-critical */ }
     }
 
     return { userId: authData.user.id };
