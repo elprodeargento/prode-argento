@@ -89,6 +89,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       const saved: Participant = { id: p.id, name: form.name, email: form.email, phone: form.phone }
       setParticipant(saved)
       if (remember) localStorage.setItem(storageKey(empresa.slug), JSON.stringify(saved))
+      trackEvent('prode_registered', { business_slug: empresa?.slug })
       setStep('app')
     } catch (err: any) {
       console.error('[ProdeLogin] caught error:', err)

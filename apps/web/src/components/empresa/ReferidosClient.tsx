@@ -187,6 +187,7 @@ export function ReferidosClient() {
         onClose={() => { setShowTermsModal(false); setPendingAction(null) }}
         onAccept={() => {
           setShowTermsModal(false)
+          trackEvent('referral_terms_accepted')
           if (pendingAction) { pendingAction(); setPendingAction(null) }
         }}
       />

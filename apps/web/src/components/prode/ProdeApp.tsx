@@ -748,6 +748,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               return (
                 <button
                   onClick={async () => {
+                    track('share_invite_clicked')
                     const url = `https://${empresa.slug}.elprode.ar`
                     const text = `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
                     if (navigator.share) {
@@ -1440,6 +1441,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                                   paymentInfo,
                                 })
                               })
+                              track('player_payout_requested', { amount: referrerData.pending_amount })
                               setPayoutSent(true)
                             }}
                             className="w-full py-3 rounded-xl font-black text-[14px]
@@ -1478,6 +1480,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                           await navigator.clipboard.writeText(url)
                           setCopied(true)
                           setTimeout(() => setCopied(false), 2000)
+                          track('player_referral_link_copied')
                         })}
                         className="flex-1 py-2.5 rounded-xl font-black text-[13px]
                           border-2 transition-all"
@@ -1491,6 +1494,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       <button
                         onClick={() => handleReferidosAction(async () => {
                           const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
+                          track('player_referral_shared')
                           if (navigator.share) {
                             await navigator.share({
                               title: 'Creá tu prode del Mundial',
@@ -1625,6 +1629,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         onClose={() => { setShowTermsModal(false); setPendingAction(null) }}
         onAccept={() => {
           setShowTermsModal(false)
+          track('player_referral_terms_accepted')
           if (pendingAction) { pendingAction(); setPendingAction(null) }
         }}
       />
