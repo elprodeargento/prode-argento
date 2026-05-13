@@ -35,6 +35,64 @@ export function LandingProblem() {
         <p className="text-xs text-slate-400 mt-6 italic">
           * Datos basados en campañas de fidelización durante eventos deportivos.
         </p>
+
+        <div className="mt-10 text-left">
+          <h3 className="font-bebas text-2xl text-[#002B72] tracking-wide text-center mb-1">
+            LLEGÁ AL CELULAR DE TUS CLIENTES EN EL MOMENTO JUSTO
+          </h3>
+          <p className="text-[13px] text-slate-500 text-center mb-6 leading-relaxed">
+            Las notificaciones push llegan directo al celular, aunque no tengan el prode abierto.
+          </p>
+
+          <div className="flex flex-col gap-4">
+            {[
+              {
+                label: '🍕 Pizzeria / Gastronomia',
+                title: '¡Argentina juega hoy!',
+                body: 'Cargá tu pronóstico y hacé tu pedido — de la comida nos encargamos nosotros.',
+              },
+              {
+                label: '👗 Indumentaria / Ropa',
+                title: '¡Hoy juega Argentina!',
+                body: 'Cargá tu pronóstico y aprovechá 10% off en toda la tienda. ¡Solo hoy!',
+              },
+              {
+                label: '☕ Cafeteria / Bar',
+                title: '¡Partido hoy a las 18:00!',
+                body: 'Cargá tu pronóstico y pasá a buscar tu café antes del juego.',
+              },
+              {
+                label: '🏆 Resultado del partido',
+                title: 'Resultado: Argentina 2 - Francia 1',
+                body: 'Acertaste el ganador. +1 punto para vos. Ver ranking.',
+              },
+            ].map((notif, i) => (
+              <div key={i}>
+                <p className="text-[11px] font-bold text-slate-400 mb-1.5 uppercase tracking-wide">
+                  {notif.label}
+                </p>
+                <div className="rounded-2xl p-4 flex gap-3 items-start"
+                  style={{ background: 'rgba(20,20,35,0.90)' }}>
+                  <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-black">
+                    <img
+                      src="/web-app-manifest-192x192.png"
+                      alt="elprode.ar"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[13px] font-bold text-white">elprode.ar</span>
+                      <span className="text-[11px] text-white/50">ahora</span>
+                    </div>
+                    <p className="text-[13px] font-bold text-white mb-0.5">{notif.title}</p>
+                    <p className="text-[12px] text-white/70 leading-snug">{notif.body}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   )

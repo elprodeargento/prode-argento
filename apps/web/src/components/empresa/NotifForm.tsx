@@ -128,6 +128,66 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
       {/* Push tab */}
       {tab === 'push' && (
         <div className="p-[20px] flex flex-col gap-5">
+          <div className="mb-5">
+            <p className="text-[12px] font-black text-[#5A6480] uppercase tracking-widest mb-3">
+              ¿Cómo se ven tus notificaciones?
+            </p>
+            <p className="text-[13px] text-[#5A6480] font-medium mb-4">
+              Llegan directamente al celular de tus clientes, aunque no tengan el prode abierto.
+            </p>
+
+            <div className="flex flex-col gap-3">
+              {[
+                {
+                  label: '🍕 Antes del partido',
+                  title: '¡Argentina juega hoy!',
+                  body: 'Cargá tu pronóstico y hacé tu pedido — de la comida nos encargamos nosotros.',
+                },
+                {
+                  label: '🏆 Resultado',
+                  title: 'Resultado: Argentina 2 - Francia 1',
+                  body: 'Acertaste el ganador. +1 punto para vos. Ver ranking.',
+                },
+              ].map((notif, i) => (
+                <div key={i}>
+                  <p className="text-[11px] font-bold text-[#8E96AE] mb-1.5">
+                    {notif.label}
+                  </p>
+                  <div className="rounded-2xl p-4 flex gap-3 items-start"
+                    style={{ background: 'rgba(30,30,40,0.85)' }}>
+                    <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-black">
+                      <img
+                        src="/web-app-manifest-192x192.png"
+                        alt="elprode.ar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] font-bold text-white">
+                          elprode.ar
+                        </span>
+                        <span className="text-[11px] text-white/50">ahora</span>
+                      </div>
+                      <p className="text-[13px] font-bold text-white mb-0.5">
+                        {notif.title}
+                      </p>
+                      <p className="text-[12px] text-white/70 leading-snug">
+                        {notif.body}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 rounded-xl bg-[#F1F3F9] border border-[#DDE1EF] px-4 py-3">
+              <p className="text-[12px] text-[#5A6480] font-medium leading-relaxed">
+                💡 <strong>Tip:</strong> Usá las notificaciones para generar ventas. Combiná el recordatorio del partido con una promoción de tu comercio.
+              </p>
+            </div>
+          </div>
+
           <div className="field">
             <div className="field-label">¿A quién enviás?</div>
             <select value={pushRecipients} onChange={e => setPushRecipients(e.target.value as Recipient)} className="field-input cursor-pointer">
