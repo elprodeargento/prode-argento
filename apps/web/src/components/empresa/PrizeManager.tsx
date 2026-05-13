@@ -5,7 +5,6 @@ import { apiGet, apiPut } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
 import { Loader2, Save, ChevronLeft, ChevronRight } from 'lucide-react'
 import { IgPublishModal } from './IgPublishModal'
-import { WhatsAppSendModal } from './WhatsAppSendModal'
 import { SOCIAL_ENABLED } from '@/lib/features'
 
 interface Prize {
@@ -188,8 +187,6 @@ export function PrizeManager() {
   const [igConnected, setIgConnected] = useState(false)
   const [igModalOpen, setIgModalOpen] = useState(false)
   const [igFinalModalOpen, setIgFinalModalOpen] = useState(false)
-  const [waModalOpen, setWaModalOpen] = useState(false)
-
   // ── Premios semanales state ──────────────────────────────────────────────
   const currentWCWeekIdx = getCurrentWCWeekIdx(WC_WEEKS)
   const [wpWeekIdx, setWpWeekIdx] = useState(Math.max(0, currentWCWeekIdx))
@@ -470,13 +467,17 @@ export function PrizeManager() {
           {wpCurrentPrizes.length > 0 && (
             <div className="flex gap-2 pt-1 border-t border-[#DDE1EF]">
               {SOCIAL_ENABLED && (
-                <button
-                  onClick={() => setWaModalOpen(true)}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-white text-[13px] font-black hover:opacity-90 transition-all shadow-md"
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(waMessage)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5
+                    rounded-xl text-white text-[13px] font-black hover:opacity-90
+                    transition-all shadow-md"
                   style={{ background: '#25D366' }}
                 >
                   💬 Enviar por WhatsApp
-                </button>
+                </a>
               )}
               <button
                 onClick={() => (!SOCIAL_ENABLED || igConnected) && setIgModalOpen(true)}
@@ -614,14 +615,6 @@ export function PrizeManager() {
           </div>
         </div>
       </div>
-
-      {/* WhatsApp Modal */}
-      <WhatsAppSendModal
-        open={waModalOpen}
-        onClose={() => setWaModalOpen(false)}
-        defaultMessage={waMessage}
-        title="Enviar premio semanal"
-      />
 
       {/* IG Modal — ranking semanal */}
       <IgPublishModal

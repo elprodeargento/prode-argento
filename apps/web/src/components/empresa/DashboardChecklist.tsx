@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
-import { WhatsAppSendModal } from './WhatsAppSendModal'
 import { SOCIAL_ENABLED } from '@/lib/features'
 
 const DEFAULT_PRIZE_DESCS = new Set([
@@ -19,8 +18,6 @@ interface Step {
   href: string
   cta: string
 }
-
-const WA_MESSAGE = '⚽ ¡Sumáte al prode del Mundial 2026!\n\nEntrá y cargá tus pronósticos antes del primer partido.\n\n¡Buena suerte! 🏆'
 
 export function DashboardChecklist({ business }: { business: any }) {
   const [steps, setSteps] = useState<Step[]>([
@@ -72,7 +69,6 @@ export function DashboardChecklist({ business }: { business: any }) {
   ].filter(s => SOCIAL_ENABLED || s.id !== 'notification'))
 
   const [copied, setCopied] = useState(false)
-  const [waModalOpen, setWaModalOpen] = useState(false)
   const [points, setPoints] = useState(0)
 
   useEffect(() => {
@@ -176,12 +172,14 @@ export function DashboardChecklist({ business }: { business: any }) {
                     {copied ? '✓ Copiado' : 'Copiar link'}
                   </button>
                 ) : step.id === 'notification' ? (
-                  <button
-                    onClick={() => setWaModalOpen(true)}
-                    className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px] font-black rounded-lg hover:bg-[#00318A] transition-all"
-                  >
-                    {step.cta}
-                  </button>
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent('⚽ ¡Sumáte al prode del Mundial 2026!\n\nEntrá y cargá tus pronósticos antes del primer partido.\n\n¡Buena suerte! 🏆')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 px-3 py-1.5 bg-[#002B72] text-white text-[12px]
+                      font-black rounded-lg hover:bg-[#00318A] transition-all">
+                    Enviar mensaje
+                  </a>
                 ) : (
                   <a
                     href={step.href}
@@ -195,12 +193,6 @@ export function DashboardChecklist({ business }: { business: any }) {
           ))}
         </div>
       </div>
-      <WhatsAppSendModal
-        open={waModalOpen}
-        onClose={() => setWaModalOpen(false)}
-        defaultMessage={WA_MESSAGE}
-        title="Invitar clientes al prode"
-      />
     </>
   )
 }

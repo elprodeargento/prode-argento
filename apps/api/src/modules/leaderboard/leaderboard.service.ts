@@ -80,7 +80,7 @@ export class LeaderboardService {
     // Participants for this business
     const { data: participants } = await this.supabase.client
       .from('participants')
-      .select('id, name, email')
+      .select('id, name, email, registered_at')
       .eq('business_id', business.id)
 
     const participantIds = (participants ?? []).map((p) => p.id)
@@ -107,12 +107,13 @@ export class LeaderboardService {
         participant_id: id,
         name: participantMap[id]?.name ?? 'Desconocido',
         email: participantMap[id]?.email ?? '',
+        registered_at: participantMap[id]?.registered_at ?? null,
         weekly_points: data.points,
         exact_results: data.exact,
       }))
       .sort((a, b) => {
         if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
-        return a.name.localeCompare(b.name, 'es')
+        return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
       })
       .slice(0, 10)
       .map((entry, i) => ({ ...entry, rank: i + 1 }))
@@ -123,7 +124,7 @@ export class LeaderboardService {
   async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
     const { data: participants, error: pErr } = await this.supabase.client
       .from('participants')
-      .select('id, name')
+      .select('id, name, registered_at')
       .eq('business_id', businessId)
 
     if (pErr) throw new Error(pErr.message)
@@ -139,9 +140,9 @@ export class LeaderboardService {
 
     if (predErr) throw new Error(predErr.message)
 
-    const map: Record<string, { name: string; points: number; exact: number }> = {}
+    const map: Record<string, { name: string; registered_at: string | null; points: number; exact: number }> = {}
     for (const p of participants) {
-      map[p.id] = { name: p.name, points: 0, exact: 0 }
+      map[p.id] = { name: p.name, registered_at: p.registered_at, points: 0, exact: 0 }
     }
     for (const pred of predictions ?? []) {
       if (map[pred.participant_id]) {
@@ -154,12 +155,13 @@ export class LeaderboardService {
       .map(([id, v]) => ({
         participant_id: id,
         name: v.name,
+        registered_at: v.registered_at,
         weekly_points: v.points,
         exact_results: v.exact,
       }))
       .sort((a, b) => {
         if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
-        return a.name.localeCompare(b.name, 'es')
+        return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
       })
       .map((e, i) => ({ ...e, rank: i + 1 }))
 
