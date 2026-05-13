@@ -75,7 +75,7 @@ export default function PrivacidadPage() {
             <ul className="list-disc pl-5 space-y-1">
               <li>Crear y gestionar tu cuenta en el Servicio.</li>
               <li>Calcular puntuaciones, generar rankings y mostrar resultados de partidos.</li>
-              <li>Enviar notificaciones por WhatsApp (recordatorios de fechas, resultados) únicamente a participantes que proporcionaron su número de celular y aceptaron los Términos y Condiciones.</li>
+              <li>Enviar notificaciones push (recordatorios de fechas, resultados) únicamente a participantes que habilitaron las notificaciones en su navegador.</li>
               <li>Publicar imágenes del podio en Instagram cuando el organizador lo solicita explícitamente desde el panel de administración.</li>
               <li>Procesar pagos de planes Premium/Pro a través de MercadoPago.</li>
               <li>Mostrar promociones geolocalizadas de empresas Plan Pro a participantes dentro del radio configurado, solo si el participante otorgó permiso de geolocalización.</li>
@@ -89,16 +89,15 @@ export default function PrivacidadPage() {
 
           {/* 3 */}
           <section>
-            <h2 className="text-lg font-bold text-slate-900 mb-3">3. Notificaciones por WhatsApp</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-3">3. Notificaciones Push</h2>
             <h3 className="font-semibold text-slate-800 mb-1">3.1 Consentimiento (opt-in)</h3>
             <p>
-              Los participantes que ingresan al prode de una empresa deben proporcionar su número de celular
-              y marcar la casilla de aceptación de los Términos y Condiciones. Este acto constituye el
-              consentimiento explícito para recibir mensajes de WhatsApp relacionados con el prode
-              (exclusivamente recordatorios de fechas de partidos y notificaciones de resultados).
+              Los participantes pueden habilitar las notificaciones push desde el navegador al acceder al prode.
+              Este acto constituye el consentimiento explícito para recibir notificaciones push relacionadas
+              con el prode (exclusivamente recordatorios de fechas de partidos y notificaciones de resultados).
             </p>
 
-            <h3 className="font-semibold text-slate-800 mb-1 mt-4">3.2 Tipos de mensajes</h3>
+            <h3 className="font-semibold text-slate-800 mb-1 mt-4">3.2 Tipos de notificaciones</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li>Recordatorio 24 horas antes del inicio de cada fecha del torneo.</li>
               <li>Notificación de resultado al finalizar cada partido de la fecha.</li>
@@ -107,23 +106,21 @@ export default function PrivacidadPage() {
 
             <h3 className="font-semibold text-slate-800 mb-1 mt-4">3.3 Cómo cancelar (opt-out)</h3>
             <p>
-              Podés cancelar las notificaciones de WhatsApp en cualquier momento de dos formas:
+              Podés desactivar las notificaciones push en cualquier momento de dos formas:
             </p>
             <ul className="list-disc pl-5 space-y-1 mt-1">
-              <li>Respondiendo <strong>"STOP"</strong> a cualquier mensaje de WhatsApp que te enviemos.</li>
-              <li>Enviando un correo a <strong>elprodeargento@gmail.com</strong> con el asunto
-                "Baja WhatsApp" indicando tu número de celular.</li>
+              <li>Desde la configuración de notificaciones de tu navegador.</li>
+              <li>Enviando un correo a <strong>elprodeargento@gmail.com</strong> con el asunto "Baja notificaciones".</li>
             </ul>
             <p className="mt-2">
-              Tu número se eliminará de la lista de envíos dentro de las 48 horas hábiles.
-              Esto no afecta tu participación en el prode.
+              Desactivar las notificaciones no afecta tu participación en el prode.
             </p>
 
             <h3 className="font-semibold text-slate-800 mb-1 mt-4">3.4 Proveedor</h3>
             <p>
-              Los mensajes se envían mediante la <strong>Meta WhatsApp Business API (v22)</strong>.
-              Meta actúa como procesador de datos. Su política de privacidad está disponible en
-              www.whatsapp.com/legal/privacy-policy.
+              Las notificaciones se envían mediante <strong>Firebase Cloud Messaging (FCM)</strong> de Google.
+              Google actúa como procesador de datos. Su política de privacidad está disponible en
+              policies.google.com/privacy.
             </p>
           </section>
 
@@ -150,9 +147,9 @@ export default function PrivacidadPage() {
                     <td className="px-3 py-2 text-slate-500">supabase.com/privacy</td>
                   </tr>
                   <tr>
-                    <td className="px-3 py-2 font-medium">Meta (WhatsApp)</td>
-                    <td className="px-3 py-2">Envío de notificaciones por WhatsApp</td>
-                    <td className="px-3 py-2 text-slate-500">whatsapp.com/legal/privacy-policy</td>
+                    <td className="px-3 py-2 font-medium">Google (Firebase)</td>
+                    <td className="px-3 py-2">Envío de notificaciones push (FCM)</td>
+                    <td className="px-3 py-2 text-slate-500">policies.google.com/privacy</td>
                   </tr>
                   <tr>
                     <td className="px-3 py-2 font-medium">Meta (Instagram)</td>

@@ -46,7 +46,7 @@ export default function TerminosPage() {
               <li>Link y código QR únicos para que los Participantes accedan al prode.</li>
               <li>Carga y visualización de pronósticos de partidos.</li>
               <li>Ranking en tiempo real y resultados automáticos.</li>
-              <li>Notificaciones opcionales por WhatsApp (planes Premium y Pro).</li>
+              <li>Notificaciones push opcionales (planes Premium y Pro).</li>
               <li>Publicación del podio en Instagram (plan Pro).</li>
               <li>Carrusel de promociones geolocalizadas (plan Pro).</li>
             </ul>
@@ -104,13 +104,13 @@ export default function TerminosPage() {
                     <td className="px-3 py-2 font-semibold text-[#002B72]">Pro</td>
                     <td className="px-3 py-2 font-semibold">$40.000</td>
                     <td className="px-3 py-2">Ilimitados</td>
-                    <td className="px-3 py-2">Premios semanales, notificaciones WhatsApp, podio en Instagram, QR descargable, exportar participantes</td>
+                    <td className="px-3 py-2">Premios semanales, notificaciones push, podio en Instagram, QR descargable, exportar participantes</td>
                   </tr>
                   <tr>
                     <td className="px-3 py-2 font-semibold text-[#b8960a]">Premium</td>
                     <td className="px-3 py-2 font-semibold">$80.000</td>
                     <td className="px-3 py-2">Ilimitados</td>
-                    <td className="px-3 py-2">Todo lo del plan Pro + publicidad geolocalizada, estadísticas de visualizaciones, soporte por WhatsApp</td>
+                    <td className="px-3 py-2">Todo lo del plan Pro + publicidad geolocalizada, estadísticas de visualizaciones, soporte prioritario</td>
                   </tr>
                 </tbody>
               </table>
@@ -160,14 +160,13 @@ export default function TerminosPage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 mb-3">6. Uso de integraciones de Meta</h2>
 
-            <h3 className="font-semibold text-slate-800 mb-1">6.1 WhatsApp Business API</h3>
+            <h3 className="font-semibold text-slate-800 mb-1">6.1 Notificaciones Push (FCM)</h3>
             <p>
-              El Organizador que contrate un plan con notificaciones WhatsApp autoriza a elprode.ar
-              a enviar mensajes en su nombre a los Participantes que lo consintieron. El Organizador
-              es responsable de que los Participantes hayan otorgado su consentimiento válido.
-              El uso de la API de WhatsApp está sujeto a las{' '}
-              <strong>Políticas de WhatsApp Business</strong> (business.whatsapp.com/policy).
-              elprode.ar no puede garantizar la entrega de mensajes ante fallas del servicio de Meta.
+              El Organizador que contrate un plan con notificaciones push autoriza a elprode.ar
+              a enviar notificaciones push en su nombre a los Participantes que las habilitaron.
+              Las notificaciones se envían mediante <strong>Firebase Cloud Messaging (FCM)</strong> de Google.
+              El Participante puede desactivarlas en cualquier momento desde la configuración de su navegador.
+              elprode.ar no puede garantizar la entrega ante fallas del servicio de Google.
             </p>
 
             <h3 className="font-semibold text-slate-800 mb-1 mt-3">6.2 Instagram Graph API</h3>

@@ -37,7 +37,6 @@ const PLANS = [
       'Todo lo del plan Free',
       'Premios semanales configurables',
       'Notificaciones push a tus clientes',
-      SOCIAL_ENABLED ? 'Notificaciones por WhatsApp' : 'Notificaciones por WhatsApp 🔜',
       SOCIAL_ENABLED ? 'Publicar podio en Instagram' : 'Publicar podio en Instagram 🔜',
       'QR descargable para tu local',
       'Exportar lista de participantes al finalizar',

@@ -717,25 +717,20 @@ export function ConfigForm() {
              { id: 'notify_reminders', title: 'Recordatorio antes de cada partido', desc: 'Se envía 24hs antes del inicio de cada fecha' },
              { id: 'notify_results', title: 'Resultado de cada fecha', desc: 'Notificamos cómo les fue al terminar los partidos' },
              { id: 'notify_ranking', title: 'Actualización del ranking', desc: 'Les avisamos cuando cambia su posición' },
-             { id: 'notify_whatsapp', title: 'WhatsApp', desc: 'Enviar avisos por WhatsApp (requiere integración)' },
+             ...(SOCIAL_ENABLED ? [{ id: 'notify_whatsapp' as const, title: 'WhatsApp', desc: 'Enviar avisos por WhatsApp (requiere integración)' }] : []),
            ] as const).map((row, i, arr) => (
              <div key={i}>
                <div className="toggle-row py-2">
                  <div>
                    <div className="toggle-label flex items-center gap-2">
                      {row.title}
-                     {!SOCIAL_ENABLED && row.id === 'notify_whatsapp' && <span className="text-[9px] bg-[#F1F3F9] text-[#8E96AE] px-1.5 py-0.5 rounded-md font-black uppercase tracking-wider">Próximamente</span>}
                    </div>
                    <p className="toggle-desc">{row.desc}</p>
                  </div>
-                 {(!SOCIAL_ENABLED && row.id === 'notify_whatsapp') ? (
-                   <button type="button" disabled className="toggle" />
-                 ) : (
-                   <Toggle
-                     checked={!!watch(row.id)}
-                     onChange={() => setValue(row.id, !watch(row.id))}
-                   />
-                 )}
+                 <Toggle
+                   checked={!!watch(row.id)}
+                   onChange={() => setValue(row.id, !watch(row.id))}
+                 />
                </div>
                {i < arr.length - 1 && (
                  <div className="h-[1px] bg-[#DDE1EF] my-1" />

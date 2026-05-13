@@ -1,7 +1,7 @@
 const stats = [
   { icon: '📲', number: '+8x', label: 'más interacción\ncon tu marca' },
   { icon: '🔁', number: '5x',  label: 'más visitas\ndurante el torneo' },
-  { icon: '💬', number: '98%', label: 'tasa de apertura\nde WhatsApp' },
+  { icon: '💰', number: '$0', label: 'costo de adquisición\npor cliente' },
 ]
 
 export function LandingProblem() {

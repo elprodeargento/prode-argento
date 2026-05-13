@@ -6,9 +6,6 @@ import { Loader2, ImagePlus, X, Bell } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
 import { apiGet, apiPost } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
-import { SOCIAL_ENABLED } from '@/lib/features'
-
-const DEFAULT_MSG = '⚽ ¡Hola! Recordá cargar tus pronósticos antes del próximo partido. ¡No te quedés afuera del ranking! 🏆'
 
 const RECIPIENTS = [
   { value: 'all',     label: 'Todos los participantes' },
@@ -17,21 +14,8 @@ const RECIPIENTS = [
 ] as const
 
 type Recipient = typeof RECIPIENTS[number]['value']
-type Tab = 'whatsapp' | 'push'
+type Tab = 'push'
 
-function SoonGate() {
-  return (
-    <div className="p-[20px] flex flex-col items-center gap-4 text-center py-12">
-      <div className="w-16 h-16 rounded-full bg-[#F1F3F9] flex items-center justify-center text-3xl">🔜</div>
-      <div>
-        <div className="text-[16px] font-black text-[#0D1A3A] mb-1">Próximamente: Notificaciones por WhatsApp</div>
-        <div className="text-[13px] text-[#5A6480] font-medium leading-relaxed max-w-sm mx-auto">
-          Estamos integrando la API oficial de Meta para que puedas enviar mensajes a todos tus participantes con un solo click.
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function UpgradeGate() {
   return (
@@ -72,46 +56,11 @@ function UpgradeGate() {
   )
 }
 
-function WhatsAppPreview({ message, imageUrl }: { message: string; imageUrl?: string | null }) {
-  const time = new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })
-  return (
-    <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-      <div className="flex items-center gap-3 px-4 py-3" style={{ background: '#075E54' }}>
-        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm">⚽</div>
-        <div>
-          <div className="text-white text-xs font-black leading-none">Prode Mundial 2026</div>
-          <div className="text-white/60 text-[10px] font-bold">en línea</div>
-        </div>
-      </div>
-      <div className="px-4 py-4 min-h-[80px]" style={{ background: '#ECE5DD' }}>
-        <div className="ml-auto max-w-[85%] bg-white rounded-2xl rounded-tr-none shadow-sm overflow-hidden w-fit">
-          {imageUrl && <img src={imageUrl} alt="" className="w-full max-h-[80px] object-cover" />}
-          <div className="px-3 py-2">
-            <p className="text-[13px] text-slate-800 leading-snug whitespace-pre-wrap break-words">{message || '…'}</p>
-            <div className="flex items-center justify-end gap-1 mt-1">
-              <span className="text-[10px] text-slate-400">{time}</span>
-              <span className="text-[10px]" style={{ color: '#53BDEB' }}>✓✓</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function NotifFormInner({ onSent }: { onSent?: () => void }) {
   const searchParams = useSearchParams()
   const [plan, setPlan] = useState<string | null>(null)
   const [tab, setTab] = useState<Tab>('push')
-
-  // WhatsApp
-  const [message, setMessage] = useState(DEFAULT_MSG)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [recipients, setRecipients] = useState<Recipient>('all')
-  const [uploading, setUploading] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ sent: number; skipped: number; failed: number } | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
 
   // Push
   const [pushTitle, setPushTitle] = useState('')
@@ -133,11 +82,9 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
     const recipientsParam = searchParams.get('recipients')
     const channel = searchParams.get('channel')
     if (recipientsParam === 'no_pred') {
-      setRecipients('no_pred')
       setPushRecipients('no_pred')
     }
     if (channel === 'push') setTab('push')
-    if (channel === 'whatsapp') setTab('whatsapp')
   }, [searchParams])
 
   if (plan === null) return (
@@ -147,34 +94,6 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
   )
 
   if (plan === 'free') return <UpgradeGate />
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setUploading(true)
-    try { setImageUrl(await uploadToR2(file)) }
-    catch { alert('Error al subir la imagen') }
-    finally { setUploading(false) }
-  }
-
-  const handleSend = async () => {
-    if (!message.trim()) return
-    setSending(true)
-    setResult(null)
-    try {
-      const res = await apiPost<{ sent: number; skipped: number; failed: number }>('/notifications/whatsapp', {
-        message, imageUrl: imageUrl ?? undefined, recipients,
-      })
-      trackEvent('biz_notification_sent', { channel: 'whatsapp' })
-      setResult(res)
-      onSent?.()
-      setTimeout(() => setResult(null), 5000)
-    } catch (e: any) {
-      alert(e.message ?? 'Error al enviar')
-    } finally {
-      setSending(false)
-    }
-  }
 
   const handlePushImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -206,96 +125,6 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
 
   return (
     <div className="card">
-      {/* Tabs */}
-      <div className="flex border-b border-[#DDE1EF]">
-        <button
-          type="button"
-          onClick={() => setTab('whatsapp')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-[13px] font-black transition-all border-b-2 ${
-            tab === 'whatsapp'
-              ? 'text-[#075E54] border-[#075E54] bg-[#F0FAF5]'
-              : 'text-[#8E96AE] border-transparent hover:text-[#0D1A3A]'
-          }`}
-        >
-          <span className="text-base">💬</span> WhatsApp
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('push')}
-          className={`flex-1 flex items-center justify-center gap-2 py-3.5 text-[13px] font-black transition-all border-b-2 ${
-            tab === 'push'
-              ? 'text-[#002B72] border-[#002B72] bg-[#F0F4FF]'
-              : 'text-[#8E96AE] border-transparent hover:text-[#0D1A3A]'
-          }`}
-        >
-          <Bell className="h-4 w-4" /> Push web
-        </button>
-      </div>
-
-      {/* WhatsApp tab */}
-      {tab === 'whatsapp' && !SOCIAL_ENABLED && (
-        <SoonGate />
-      )}
-      {tab === 'whatsapp' && SOCIAL_ENABLED && (
-        <div className="p-[20px] flex flex-col gap-5">
-          <div className="field">
-            <div className="field-label">¿A quién enviás?</div>
-            <select value={recipients} onChange={e => setRecipients(e.target.value as Recipient)} className="field-input cursor-pointer">
-              {RECIPIENTS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-            </select>
-          </div>
-
-          <div className="field">
-            <div className="field-label">Mensaje</div>
-            <textarea
-              className="field-input min-h-[120px] resize-none leading-relaxed"
-              placeholder="Escribí tu mensaje aquí..."
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-            />
-          </div>
-
-          <div className="field">
-            <div className="field-label">Imagen adjunta (opcional)</div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-            {imageUrl ? (
-              <div className="relative rounded-xl overflow-hidden border border-slate-200 h-24">
-                <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-                <button onClick={() => setImageUrl(null)}
-                  className="absolute top-1.5 right-1.5 w-6 h-6 bg-black/60 rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-colors">
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <button onClick={() => fileRef.current?.click()} disabled={uploading}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm font-bold text-slate-500 hover:border-[#075E54] hover:text-[#075E54] transition-all disabled:opacity-50">
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-                {uploading ? 'Subiendo...' : 'Agregar imagen'}
-              </button>
-            )}
-          </div>
-
-          <div className="field">
-            <div className="field-label uppercase text-[10px] tracking-widest text-[#8E96AE]">Vista previa</div>
-            <WhatsAppPreview message={message} imageUrl={imageUrl} />
-          </div>
-
-          {result && (
-            <div className={`rounded-xl px-4 py-3 text-[13px] font-bold flex flex-col gap-1 ${result.sent > 0 ? 'bg-[#E8F8F1] border border-[#18A06A]/20 text-[#18A06A]' : 'bg-[#FDECEB] border border-[#D93025]/20 text-[#D93025]'}`}>
-              {result.sent > 0 && <span>✅ Enviado a {result.sent} participante{result.sent !== 1 ? 's' : ''}</span>}
-              {result.skipped > 0 && <span className="text-[#8E96AE]">⚠️ {result.skipped} sin teléfono válido</span>}
-              {result.failed > 0 && <span className="text-[#D93025]">❌ {result.failed} fallaron</span>}
-            </div>
-          )}
-
-          <button onClick={handleSend} disabled={sending || !message.trim()}
-            className="w-full text-white text-[14px] font-black p-[14px] rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg disabled:opacity-60"
-            style={{ background: '#25D366', boxShadow: '0 4px 16px rgba(37,211,102,0.3)' }}>
-            {sending ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</> : <>💬 Enviar por WhatsApp</>}
-          </button>
-        </div>
-      )}
-
       {/* Push tab */}
       {tab === 'push' && (
         <div className="p-[20px] flex flex-col gap-5">
