@@ -396,7 +396,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       for (const p of (fresh as RawPrediction[])) predMap[p.match_id] = p
       setApiPreds(predMap)
     } catch (e: any) {
-      setSavedMsg(`Error: ${e.message}`)
+      const errorDetail = e?.response ? await e.response.json?.().catch(() => ({})) : {}
+      setSavedMsg(`Error: ${e.message} ${JSON.stringify(errorDetail)}`)
     } finally {
       setSaving(false)
       setTimeout(() => setSavedMsg(''), 3000)
