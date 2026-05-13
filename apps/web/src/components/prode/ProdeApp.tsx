@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Loader2 } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInstallPWA } from '@/hooks/useInstallPWA'
 import { SORTED_COUNTRIES } from '@/shared/utils/countries'
@@ -201,7 +200,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     total_referrals: number
     pending_amount: number
   } | null>(null)
-  const [referrerLoading, setReferrerLoading] = useState(false)
   const [showPayoutForm, setShowPayoutForm] = useState(false)
   const [paymentInfo, setPaymentInfo] = useState('')
   const [payoutSent, setPayoutSent] = useState(false)
@@ -356,16 +354,14 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   }, [participant.id, empresa.id])
 
   useEffect(() => {
-    if (tab !== 'referidos' || !participant) return
-    setReferrerLoading(true)
+    if (!participant) return
     publicFetch('/player-referrals/register', {
       method: 'POST',
       body: JSON.stringify({ email: participant.email, name: participant.name })
     })
       .then((data: any) => setReferrerData(data))
       .catch(() => {})
-      .finally(() => setReferrerLoading(false))
-  }, [tab, participant])
+  }, [participant])
 
   const myEntry = leaderboard.find(e => e.participant_id === participant.id)
   const scheduledMatches = matches.filter(m => m.status === 'scheduled')
@@ -1252,11 +1248,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           <div className="flex-1 overflow-y-auto pb-24">
             <div className="px-4 pt-5 pb-6 flex flex-col gap-5">
 
-              {referrerLoading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="h-7 w-7 animate-spin" style={{ color }} />
-                </div>
-              ) : referrerData && (
+              {referrerData && (
                 <>
                   {/* Header */}
                   <div className="text-center">
