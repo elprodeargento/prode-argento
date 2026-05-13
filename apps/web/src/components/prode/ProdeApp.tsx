@@ -401,7 +401,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       for (const p of (fresh as RawPrediction[])) predMap[p.match_id] = p
       setApiPreds(predMap)
     } catch (e: any) {
-      setSavedMsg(`Error: ${e.message} ${JSON.stringify(e.body ?? {})}`)
+      const msg = e.body?.message ?? e.message ?? ''
+      if (msg.includes('Participant not found') || msg.includes('not found')) {
+        localStorage.removeItem(`prode:${empresa.slug}`)
+        window.location.reload()
+        return
+      }
+      setSavedMsg(`Error: ${msg}`)
     } finally {
       setSaving(false)
       setTimeout(() => setSavedMsg(''), 3000)
