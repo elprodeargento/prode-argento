@@ -17,7 +17,7 @@ async function publicFetch(path: string, options?: RequestInit) {
   return res.json()
 }
 
-type Tab = 'home' | 'pronosticar' | 'ranking' | 'resultados' | 'referidos'
+type Tab = 'home' | 'pronosticar' | 'ranking' | 'resultados' | 'perfil' | 'referidos'
 
 interface Match {
   id: number
