@@ -12,27 +12,37 @@ export class PlayerReferralsService {
       .eq('email', email)
       .single()
 
-    if (existing) return existing
+    let record = existing
 
-    const slug = name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .slice(0, 15)
-    const code = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`
+    if (!record) {
+      const slug = name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[^a-z0-9]/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 15)
+      const code = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`
 
-    const { data: created } = await this.supabase.client
-      .from('player_referrers')
-      .insert({ email, name, referral_code: code })
-      .select()
-      .single()
+      const { data: created } = await this.supabase.client
+        .from('player_referrers')
+        .insert({ email, name, referral_code: code })
+        .select()
+        .single()
 
-    return created
+      record = created
+    }
+
+    const { data: history } = await this.supabase.client
+      .from('player_referral_history')
+      .select('*')
+      .eq('referral_code', record?.referral_code)
+      .order('created_at', { ascending: false })
+
+    return { ...record, history: history ?? [] }
   }
 
-  async confirmConversion(playerReferralCode: string) {
+  async confirmConversion(playerReferralCode: string, businessName: string, businessSlug: string) {
     const { data: referrer } = await this.supabase.client
       .from('player_referrers')
       .select('*')
@@ -50,6 +60,15 @@ export class PlayerReferralsService {
         pending_amount: newPending,
       })
       .eq('referral_code', playerReferralCode)
+
+    await this.supabase.client
+      .from('player_referral_history')
+      .insert({
+        referral_code: referrer.referral_code,
+        business_name: businessName,
+        business_slug: businessSlug,
+        status: 'paid',
+      })
 
     if (newTotal % 3 === 0) {
       await this.sendPayoutNotification(referrer.name, referrer.email, newTotal, newPending)

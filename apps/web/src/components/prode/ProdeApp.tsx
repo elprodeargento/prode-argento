@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { Loader2 } from 'lucide-react'
+import { ReferidosTermsModal } from '@/components/shared/ReferidosTermsModal'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInstallPWA } from '@/hooks/useInstallPWA'
 import { SORTED_COUNTRIES } from '@/shared/utils/countries'
@@ -204,8 +206,18 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     referral_code: string
     total_referrals: number
     pending_amount: number
+    history: Array<{
+      id: string
+      business_name: string
+      business_slug: string
+      status: 'pending' | 'paid'
+      created_at: string
+    }>
   } | null>(null)
+  const [referrerLoading, setReferrerLoading] = useState(false)
   const [showPayoutForm, setShowPayoutForm] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [paymentInfo, setPaymentInfo] = useState('')
   const [payoutSent, setPayoutSent] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -360,13 +372,25 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
   useEffect(() => {
     if (!participant) return
+    setReferrerLoading(true)
     publicFetch('/player-referrals/register', {
       method: 'POST',
       body: JSON.stringify({ email: participant.email, name: participant.name })
     })
       .then((data: any) => setReferrerData(data))
       .catch(() => {})
+      .finally(() => setReferrerLoading(false))
   }, [participant])
+
+  const handleReferidosAction = (action: () => void) => {
+    const accepted = localStorage.getItem('referidos-terms-accepted') === 'true'
+    if (accepted) {
+      action()
+    } else {
+      setPendingAction(() => action)
+      setShowTermsModal(true)
+    }
+  }
 
   const myEntry = leaderboard.find(e => e.participant_id === participant.id)
   const scheduledMatches = matches.filter(m => m.status === 'scheduled')
@@ -672,7 +696,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 const enGrupo = referrerData.total_referrals % 3
                 const falta = 3 - enGrupo
                 const mensaje = enGrupo === 0
-                  ? { icon: '💰', text: '¿Tenés amigos con comercios? Ganá $12.000 invitándolos' }
+                  ? { icon: '💰', text: '¿Tenés amigos con comercios? Cada 3 comercios ganá $12.000' }
                   : falta === 1
                     ? { icon: '⚡', text: `¡Casi! Te falta 1 solo para ganar $12.000` }
                     : { icon: '🔥', text: `¡Ya tenés ${enGrupo}! Te faltan ${falta} para ganar $12.000` }
@@ -1259,67 +1283,109 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           <div className="flex-1 overflow-y-auto pb-24">
             <div className="px-4 pt-5 pb-6 flex flex-col gap-5">
 
-              {referrerData && (
+              {referrerLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-7 w-7 animate-spin" style={{ color }} />
+                </div>
+              ) : referrerData && (
                 <>
                   {/* Header */}
                   <div className="text-center">
-                    <div className="text-2xl mb-1">🤝</div>
-                    <h2 className="text-[18px] font-black text-slate-900">
+                    <div className="text-3xl mb-2">🤝</div>
+                    <h2 className="text-[20px] font-black text-slate-900">
                       Invitá comercios y ganá plata
                     </h2>
                     <p className="text-[13px] text-slate-500 font-medium mt-1">
-                      Cada 3 comercios que paguen un plan, recibís $12.000
+                      Cada 3 comercios que paguen un plan recibís $12.000. Sin límite.
                     </p>
                   </div>
 
-                  {/* Barra de progreso en tercios */}
+                  {/* Card de progreso rediseñada */}
                   <div className="rounded-2xl p-5 text-white"
                     style={{ background: `linear-gradient(135deg, ${color}, #0D1A3A)` }}>
 
-                    <div className="text-[11px] font-black text-white/60 uppercase tracking-widest mb-3 text-center">
-                      Tu progreso
+                    <div className="text-[11px] font-black text-white/60
+                      uppercase tracking-widest mb-5 text-center">
+                      Tu progreso actual
                     </div>
 
-                    {/* Barra dividida en 3 */}
-                    <div className="relative mb-4">
-                      <div className="h-4 bg-white/20 rounded-full overflow-hidden flex gap-[2px]">
-                        {[0, 1, 2].map(i => {
-                          const refInGroup = referrerData.total_referrals % 3
-                          const groupsDone = Math.floor(referrerData.total_referrals / 3)
-                          const filled = (groupsDone > 0 && i < 3) || i < refInGroup
-                          return (
-                            <div key={i} className="flex-1 h-full rounded-sm transition-all"
-                              style={{ background: filled ? '#F5C518' : 'transparent' }} />
-                          )
-                        })}
-                      </div>
-                      {/* Labels */}
-                      <div className="flex justify-between mt-1">
-                        <span className="text-[10px] text-white/50 font-bold">0</span>
-                        <span className="text-[10px] text-white/50 font-bold">1</span>
-                        <span className="text-[10px] text-white/50 font-bold">2</span>
-                        <span className="text-[10px] font-black text-[#F5C518]">3 = $12.000 🎉</span>
-                      </div>
-                    </div>
-
-                    {/* Contador */}
-                    <div className="text-center">
-                      <div className="font-bebas text-5xl text-[#F5C518] leading-none">
-                        {referrerData.total_referrals % 3}
-                      </div>
-                      <div className="text-white/60 text-[12px] font-bold mt-0.5">
-                        de 3 en el grupo actual
-                      </div>
-                      {referrerData.total_referrals > 0 && (
-                        <div className="text-white/40 text-[11px] font-medium mt-1">
-                          {referrerData.total_referrals} referido{referrerData.total_referrals !== 1 ? 's' : ''} en total
+                    {/* 3 círculos */}
+                    {(() => {
+                      const enGrupo = referrerData.total_referrals % 3
+                      return (
+                        <div className="flex items-center justify-center gap-4 mb-5">
+                          {[0, 1, 2].map(i => {
+                            const filled = i < enGrupo
+                            return (
+                              <div key={i} className="flex flex-col items-center gap-2">
+                                <div
+                                  className="w-16 h-16 rounded-full flex items-center
+                                    justify-center text-2xl font-black border-4 transition-all"
+                                  style={{
+                                    background: filled ? '#F5C518' : 'rgba(255,255,255,0.1)',
+                                    borderColor: filled ? '#F5C518' : 'rgba(255,255,255,0.2)',
+                                    color: filled ? '#002B72' : 'rgba(255,255,255,0.3)',
+                                  }}>
+                                  {filled ? '✓' : i + 1}
+                                </div>
+                                <div className="text-[10px] font-bold text-white/40 uppercase">
+                                  {filled ? 'Listo' : 'Pendiente'}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
+                      )
+                    })()}
+
+                    {/* Flecha y premio */}
+                    <div className="flex items-center justify-center gap-2 mb-4">
+                      <div className="h-px flex-1 bg-white/20" />
+                      <div className="bg-[#F5C518] text-[#002B72] font-black text-[13px]
+                        px-4 py-1.5 rounded-full">
+                        = $12.000 🎉
+                      </div>
+                      <div className="h-px flex-1 bg-white/20" />
+                    </div>
+
+                    {/* Texto motivador */}
+                    <div className="text-center">
+                      {referrerData.total_referrals % 3 === 0 && referrerData.total_referrals === 0 ? (
+                        <p className="text-white/60 text-[13px] font-medium">
+                          Compartí tu link y empezá a ganar
+                        </p>
+                      ) : referrerData.total_referrals % 3 === 0 ? (
+                        <p className="text-[#F5C518] text-[13px] font-black">
+                          🎉 ¡Completaste un grupo! Ya ganaste ${(Math.floor(referrerData.total_referrals / 3) * 12000).toLocaleString('es-AR')}
+                        </p>
+                      ) : (
+                        <p className="text-white/70 text-[13px] font-medium">
+                          Te {3 - referrerData.total_referrals % 3 === 1 ? 'falta 1 referido' : `faltan ${3 - referrerData.total_referrals % 3} referidos`} para ganar $12.000
+                        </p>
                       )}
-                      <div className="text-white/50 text-[12px] font-bold mt-2">
-                        {3 - (referrerData.total_referrals % 3) === 1
-                          ? '⚡ ¡Te falta 1 solo para ganar $12.000!'
-                          : `Necesitás ${3 - (referrerData.total_referrals % 3)} referidos más para ganar $12.000`
-                        }
+                    </div>
+
+                    {/* Proyección de ganancias */}
+                    <div className="mt-4 pt-4 border-t border-white/10">
+                      <div className="text-[10px] font-black text-white/40
+                        uppercase tracking-widest text-center mb-2">
+                        Potencial de ganancias
+                      </div>
+                      <div className="flex justify-between">
+                        {[
+                          { refs: 3, amount: '$12.000' },
+                          { refs: 6, amount: '$24.000' },
+                          { refs: 9, amount: '$36.000' },
+                        ].map(item => (
+                          <div key={item.refs} className="text-center flex-1">
+                            <div className="text-[#F5C518] font-black text-[14px]">
+                              {item.amount}
+                            </div>
+                            <div className="text-white/40 text-[10px] font-bold">
+                              {item.refs} referidos
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -1328,7 +1394,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   {referrerData.pending_amount > 0 && (
                     <div className="rounded-2xl bg-green-50 border border-green-200 p-5">
                       <div className="text-center mb-4">
-                        <div className="text-[11px] font-black text-green-600 uppercase tracking-widest mb-1">
+                        <div className="text-[11px] font-black text-green-600
+                          uppercase tracking-widest mb-1">
                           💰 Dinero disponible para cobrar
                         </div>
                         <div className="font-bebas text-5xl text-green-700">
@@ -1339,7 +1406,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       {!showPayoutForm ? (
                         <button
                           onClick={() => setShowPayoutForm(true)}
-                          className="w-full py-3 rounded-xl font-black text-[14px] text-white bg-green-600 hover:bg-green-700 transition-all">
+                          className="w-full py-3 rounded-xl font-black text-[14px]
+                            text-white bg-green-600 hover:bg-green-700 transition-all">
                           💸 Quiero cobrar
                         </button>
                       ) : payoutSent ? (
@@ -1356,7 +1424,9 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                             onChange={e => setPaymentInfo(e.target.value)}
                             placeholder="Ej: mi.alias o CBU 0000003100..."
                             rows={3}
-                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-[13px] font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-green-500 resize-none"
+                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-200
+                              text-[13px] font-medium text-slate-900 bg-slate-50
+                              focus:outline-none focus:border-green-500 resize-none"
                           />
                           <button
                             disabled={!paymentInfo.trim()}
@@ -1372,7 +1442,9 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                               })
                               setPayoutSent(true)
                             }}
-                            className="w-full py-3 rounded-xl font-black text-[14px] text-white bg-green-600 hover:bg-green-700 transition-all disabled:opacity-40">
+                            className="w-full py-3 rounded-xl font-black text-[14px]
+                              text-white bg-green-600 hover:bg-green-700 transition-all
+                              disabled:opacity-40">
                             Enviar solicitud de cobro
                           </button>
                           <button
@@ -1387,26 +1459,37 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
                   {/* Link de referido */}
                   <div className="rounded-2xl bg-white border border-slate-200 p-4">
-                    <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                    <div className="text-[11px] font-black text-slate-400
+                      uppercase tracking-widest mb-3">
                       🔗 Tu link de referido
                     </div>
-                    <div className="flex gap-2">
-                      <div className="flex-1 bg-slate-50 rounded-xl px-3 py-2.5 text-[12px] font-bold text-slate-600 truncate">
-                        elprode.ar/ref/jugador/{referrerData.referral_code}
+                    <div className="bg-slate-50 rounded-xl px-4 py-3 mb-3 text-center">
+                      <div className="text-[11px] text-slate-400 font-medium mb-1">
+                        elprode.ar/ref/jugador/
                       </div>
+                      <div className="font-black text-[16px] text-slate-900">
+                        {referrerData.referral_code}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
                       <button
-                        onClick={async () => {
+                        onClick={() => handleReferidosAction(async () => {
                           const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
                           await navigator.clipboard.writeText(url)
                           setCopied(true)
                           setTimeout(() => setCopied(false), 2000)
-                        }}
-                        className="px-4 py-2.5 rounded-xl font-black text-[13px] border-2 shrink-0 transition-all"
-                        style={{ borderColor: color, color: copied ? 'white' : color, background: copied ? color : 'transparent' }}>
-                        {copied ? '✓' : 'Copiar'}
+                        })}
+                        className="flex-1 py-2.5 rounded-xl font-black text-[13px]
+                          border-2 transition-all"
+                        style={{
+                          borderColor: color,
+                          color: copied ? 'white' : color,
+                          background: copied ? color : 'transparent'
+                        }}>
+                        {copied ? '✓ Copiado' : 'Copiar'}
                       </button>
                       <button
-                        onClick={async () => {
+                        onClick={() => handleReferidosAction(async () => {
                           const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
                           if (navigator.share) {
                             await navigator.share({
@@ -1418,35 +1501,98 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                             await navigator.clipboard.writeText(url)
                             alert('¡Link copiado!')
                           }
-                        }}
-                        className="px-4 py-2.5 rounded-xl font-black text-[13px] text-white shrink-0"
+                        })}
+                        className="flex-1 py-2.5 rounded-xl font-black text-[13px]
+                          text-white shrink-0 transition-all"
                         style={{ background: color }}>
                         Compartir
                       </button>
                     </div>
                   </div>
 
+                  {/* Historial */}
+                  <div className="rounded-2xl bg-white border border-slate-200 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-100">
+                      <div className="text-[12px] font-black text-slate-400 uppercase tracking-widest">
+                        Historial de referidos
+                      </div>
+                    </div>
+                    {!referrerData.history?.length ? (
+                      <div className="p-6 text-center">
+                        <div className="text-2xl mb-2">🤝</div>
+                        <div className="text-[13px] font-bold text-slate-900 mb-1">
+                          Todavía no referiste a nadie
+                        </div>
+                        <div className="text-[12px] text-slate-400 font-medium">
+                          Compartí tu link y empezá a ganar
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {referrerData.history.map(h => (
+                          <div key={h.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                            <div>
+                              <div className="text-[13px] font-bold text-slate-900">
+                                {h.business_name}
+                              </div>
+                              <div className="text-[11px] text-slate-400 font-medium mt-0.5">
+                                {new Date(h.created_at).toLocaleDateString('es-AR', {
+                                  day: '2-digit', month: 'short', year: 'numeric'
+                                })}
+                              </div>
+                            </div>
+                            {h.status === 'paid' ? (
+                              <span className="text-[11px] font-black text-green-700
+                                bg-green-100 px-2.5 py-1 rounded-full shrink-0">
+                                ✅ Pagó
+                              </span>
+                            ) : (
+                              <span className="text-[11px] font-bold text-slate-400
+                                bg-slate-100 px-2.5 py-1 rounded-full shrink-0">
+                                Pendiente
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Cómo funciona */}
                   <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
-                    <div className="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                    <div className="text-[12px] font-black text-slate-400
+                      uppercase tracking-widest mb-3">
                       ¿Cómo funciona?
                     </div>
                     <div className="flex flex-col gap-3">
                       {[
                         { n: '1', text: 'Compartí tu link con dueños de comercios' },
                         { n: '2', text: 'Cuando crean su prode y pagan un plan, sumás 1 referido' },
-                        { n: '3', text: 'Cada 3 referidos que pagan, recibís $12.000' },
+                        { n: '3', text: 'Cada 3 referidos que pagan recibís $12.000. Sin límite de canje.' },
                       ].map(step => (
                         <div key={step.n} className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bebas text-base shrink-0"
+                          <div className="w-7 h-7 rounded-full flex items-center
+                            justify-center text-white font-bebas text-base shrink-0"
                             style={{ background: color }}>
                             {step.n}
                           </div>
-                          <p className="text-[13px] text-slate-600 font-medium">{step.text}</p>
+                          <p className="text-[13px] text-slate-600 font-medium">
+                            {step.text}
+                          </p>
                         </div>
                       ))}
                     </div>
                   </div>
+
+                  <p className="text-[12px] text-slate-400 text-center font-medium">
+                    Al usar el programa de referidos aceptás nuestros{' '}
+                    <a href="/terminos-referidos" target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold underline underline-offset-2"
+                      style={{ color }}>
+                      términos y condiciones
+                    </a>
+                  </p>
 
                 </>
               )}
@@ -1474,6 +1620,15 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       )}
 
       {/* Bottom Nav */}
+      <ReferidosTermsModal
+        open={showTermsModal}
+        onClose={() => { setShowTermsModal(false); setPendingAction(null) }}
+        onAccept={() => {
+          setShowTermsModal(false)
+          if (pendingAction) { pendingAction(); setPendingAction(null) }
+        }}
+      />
+
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-slate-100 flex shadow-lg z-50">
         {navItems.map(item => (
           <button key={item.id} onClick={() => { setTab(item.id); track('tab_view', { tab_name: item.id }) }}

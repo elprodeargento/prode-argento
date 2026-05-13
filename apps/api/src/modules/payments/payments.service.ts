@@ -136,11 +136,15 @@ export class PaymentsService {
     // Si el comercio fue referido por un jugador, confirmar conversión
     const { data: business } = await this.supabase.client
       .from('businesses')
-      .select('player_referral_code')
+      .select('player_referral_code, name, slug')
       .eq('id', ref.businessId)
       .single()
     if (business?.player_referral_code) {
-      await this.playerReferralsService.confirmConversion(business.player_referral_code).catch(() => {})
+      await this.playerReferralsService.confirmConversion(
+        business.player_referral_code,
+        business.name,
+        business.slug,
+      ).catch(() => {})
     }
 
     console.log(JSON.stringify({ event: 'plan_purchased', plan: ref.plan, businessId: ref.businessId }))

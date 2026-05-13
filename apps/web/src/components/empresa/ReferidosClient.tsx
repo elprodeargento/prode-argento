@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
 import { Loader2 } from 'lucide-react'
+import { ReferidosTermsModal } from '@/components/shared/ReferidosTermsModal'
 
 interface Referral {
   id: string
@@ -28,6 +29,18 @@ export function ReferidosClient() {
   const [data, setData] = useState<ReferralsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+
+  const handleReferidosAction = (action: () => void) => {
+    const accepted = localStorage.getItem('referidos-terms-accepted') === 'true'
+    if (accepted) {
+      action()
+    } else {
+      setPendingAction(() => action)
+      setShowTermsModal(true)
+    }
+  }
 
   useEffect(() => {
     apiGet<ReferralsData>('/referrals/me')
@@ -78,21 +91,21 @@ export function ReferidosClient() {
             className="flex-1 rounded-xl border border-[#DDE1EF] bg-[#F1F3F9] px-3 py-2.5 text-[13px] text-[#0D1A3A] font-medium outline-none"
           />
           <button
-            onClick={handleCopy}
+            onClick={() => handleReferidosAction(handleCopy)}
             className="shrink-0 px-4 py-2.5 bg-[#002B72] text-white text-[13px] font-black rounded-xl hover:bg-[#00318A] transition-all"
           >
             {copied ? '✓ Copiado' : 'Copiar'}
           </button>
         </div>
-        <a
-          href={`https://wa.me/?text=${waText}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => trackEvent('referral_shared_whatsapp')}
+        <button
+          onClick={() => handleReferidosAction(() => {
+            trackEvent('referral_shared_whatsapp')
+            window.open(`https://wa.me/?text=${waText}`, '_blank')
+          })}
           className="flex items-center justify-center gap-2 w-full py-3 bg-[#25D366] text-white text-[13px] font-black rounded-xl hover:opacity-90 transition-all"
         >
           💬 Compartir por WhatsApp
-        </a>
+        </button>
       </div>
 
       {/* Cómo funciona */}
@@ -127,7 +140,7 @@ export function ReferidosClient() {
               Compartí tu link y empezá a ganar puntos
             </div>
             <button
-              onClick={handleCopy}
+              onClick={() => handleReferidosAction(handleCopy)}
               className="px-4 py-2 bg-[#002B72] text-white text-[13px] font-black rounded-xl hover:bg-[#00318A] transition-all"
             >
               {copied ? '✓ Copiado' : 'Copiar link'}
@@ -161,6 +174,22 @@ export function ReferidosClient() {
         )}
       </div>
 
+      <p className="text-[12px] text-[#8E96AE] text-center font-medium">
+        Al usar el programa de referidos aceptás nuestros{' '}
+        <a href="/terminos-referidos" target="_blank"
+          className="text-[#003FA3] underline underline-offset-2 font-bold">
+          términos y condiciones
+        </a>
+      </p>
+
+      <ReferidosTermsModal
+        open={showTermsModal}
+        onClose={() => { setShowTermsModal(false); setPendingAction(null) }}
+        onAccept={() => {
+          setShowTermsModal(false)
+          if (pendingAction) { pendingAction(); setPendingAction(null) }
+        }}
+      />
     </div>
   )
 }
