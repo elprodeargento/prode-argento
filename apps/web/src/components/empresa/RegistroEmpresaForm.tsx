@@ -38,12 +38,18 @@ export function RegistroEmpresaForm() {
       .find(r => r.startsWith('referrer_slug='))
       ?.split('=')?.[1]
 
+    const playerReferralCode = document.cookie
+      .split('; ')
+      .find(r => r.startsWith('player_referral_code='))
+      ?.split('=')?.[1]
+
     try {
       await apiPost('/auth/register', {
         name: form.name,
         email: form.email,
         password: form.password,
         ...(referrerSlug ? { referrerSlug } : {}),
+        ...(playerReferralCode ? { playerReferralCode } : {}),
       })
     } catch (err: any) {
       if (err?.status === 409) {

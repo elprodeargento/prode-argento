@@ -78,6 +78,15 @@ export class AuthController {
       await this.referralsService.registerReferral(newBusiness.id, dto.referrerSlug).catch(() => {});
     }
 
+    // 4. Track player referral code if provided
+    if (dto.playerReferralCode) {
+      await this.supabase.client
+        .from('businesses')
+        .update({ player_referral_code: dto.playerReferralCode })
+        .eq('id', newBusiness.id)
+        .catch(() => {});
+    }
+
     return { userId: authData.user.id };
   }
 }

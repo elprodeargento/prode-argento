@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { Loader2 } from 'lucide-react'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { useInstallPWA } from '@/hooks/useInstallPWA'
 import { SORTED_COUNTRIES } from '@/shared/utils/countries'
@@ -16,7 +17,7 @@ async function publicFetch(path: string, options?: RequestInit) {
   return res.json()
 }
 
-type Tab = 'home' | 'pronosticar' | 'ranking' | 'resultados' | 'perfil'
+type Tab = 'home' | 'pronosticar' | 'ranking' | 'resultados' | 'referidos'
 
 interface Match {
   id: number
@@ -195,6 +196,15 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [showPointsInfo, setShowPointsInfo] = useState(false)
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
   const [exactAlert, setExactAlert] = useState(false)
+  const [referrerData, setReferrerData] = useState<{
+    referral_code: string
+    total_referrals: number
+    pending_amount: number
+  } | null>(null)
+  const [referrerLoading, setReferrerLoading] = useState(false)
+  const [showPayoutForm, setShowPayoutForm] = useState(false)
+  const [paymentInfo, setPaymentInfo] = useState('')
+  const [payoutSent, setPayoutSent] = useState(false)
   usePushNotifications(participant.id)
   const { canInstall, install } = useInstallPWA()
 
@@ -343,6 +353,18 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     }
     load()
   }, [participant.id, empresa.id])
+
+  useEffect(() => {
+    if (tab !== 'referidos' || !participant) return
+    setReferrerLoading(true)
+    publicFetch('/player-referrals/register', {
+      method: 'POST',
+      body: JSON.stringify({ email: participant.email, name: participant.name })
+    })
+      .then((data: any) => setReferrerData(data))
+      .catch(() => {})
+      .finally(() => setReferrerLoading(false))
+  }, [tab, participant])
 
   const myEntry = leaderboard.find(e => e.participant_id === participant.id)
   const scheduledMatches = matches.filter(m => m.status === 'scheduled')
@@ -553,7 +575,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     { id: 'pronosticar', icon: '⚽', label: 'Pronosticar' },
     { id: 'ranking', icon: '🏆', label: 'Ranking' },
     { id: 'resultados', icon: '📊', label: 'Resultados' },
-    { id: 'perfil', icon: '👤', label: 'Perfil' },
+    { id: 'referidos', icon: '🤝', label: 'Referidos' },
   ]
 
   if (loading) {
@@ -588,7 +610,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               <div className="text-white/50 text-xs font-semibold">Prode Mundial 2026</div>
             </div>
           </div>
-          <button onClick={() => setTab('perfil')} className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-base">👤</button>
+          <button onClick={() => setTab('perfil' as any)} className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center text-base">👤</button>
         </div>
       </div>
 
@@ -1181,6 +1203,193 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               <a href="https://elprode.ar/terminos" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Términos y Condiciones</a>
               <span>·</span>
               <a href="https://elprode.ar/privacidad" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 transition-colors">Política de Privacidad</a>
+            </div>
+          </div>
+        )}
+
+        {/* REFERIDOS */}
+        {tab === 'referidos' && (
+          <div className="flex-1 overflow-y-auto pb-24">
+            <div className="px-4 pt-5 pb-6 flex flex-col gap-5">
+
+              {referrerLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-7 w-7 animate-spin" style={{ color }} />
+                </div>
+              ) : referrerData && (
+                <>
+                  {/* Header */}
+                  <div className="text-center">
+                    <div className="text-2xl mb-1">🤝</div>
+                    <h2 className="text-[18px] font-black text-slate-900">
+                      Invitá comercios y ganá plata
+                    </h2>
+                    <p className="text-[13px] text-slate-500 font-medium mt-1">
+                      Cada 3 comercios que paguen un plan, recibís $12.000
+                    </p>
+                  </div>
+
+                  {/* Barra de progreso en tercios */}
+                  <div className="rounded-2xl p-5 text-white"
+                    style={{ background: `linear-gradient(135deg, ${color}, #0D1A3A)` }}>
+
+                    <div className="text-[11px] font-black text-white/60 uppercase tracking-widest mb-3 text-center">
+                      Tu progreso
+                    </div>
+
+                    {/* Barra dividida en 3 */}
+                    <div className="relative mb-4">
+                      <div className="h-4 bg-white/20 rounded-full overflow-hidden flex gap-[2px]">
+                        {[0, 1, 2].map(i => {
+                          const refInGroup = referrerData.total_referrals % 3
+                          const groupsDone = Math.floor(referrerData.total_referrals / 3)
+                          const filled = (groupsDone > 0 && i < 3) || i < refInGroup
+                          return (
+                            <div key={i} className="flex-1 h-full rounded-sm transition-all"
+                              style={{ background: filled ? '#F5C518' : 'transparent' }} />
+                          )
+                        })}
+                      </div>
+                      {/* Labels */}
+                      <div className="flex justify-between mt-1">
+                        <span className="text-[10px] text-white/50 font-bold">0</span>
+                        <span className="text-[10px] text-white/50 font-bold">1</span>
+                        <span className="text-[10px] text-white/50 font-bold">2</span>
+                        <span className="text-[10px] font-black text-[#F5C518]">3 = $12.000 🎉</span>
+                      </div>
+                    </div>
+
+                    {/* Contador */}
+                    <div className="text-center">
+                      <div className="font-bebas text-5xl text-[#F5C518] leading-none">
+                        {referrerData.total_referrals % 3}
+                      </div>
+                      <div className="text-white/60 text-[12px] font-bold mt-0.5">
+                        de 3 en el grupo actual
+                      </div>
+                      {referrerData.total_referrals > 0 && (
+                        <div className="text-white/40 text-[11px] font-medium mt-1">
+                          {referrerData.total_referrals} referido{referrerData.total_referrals !== 1 ? 's' : ''} en total
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dinero acumulado */}
+                  {referrerData.pending_amount > 0 && (
+                    <div className="rounded-2xl bg-green-50 border border-green-200 p-5">
+                      <div className="text-center mb-4">
+                        <div className="text-[11px] font-black text-green-600 uppercase tracking-widest mb-1">
+                          💰 Dinero disponible para cobrar
+                        </div>
+                        <div className="font-bebas text-5xl text-green-700">
+                          ${referrerData.pending_amount.toLocaleString('es-AR')}
+                        </div>
+                      </div>
+
+                      {!showPayoutForm ? (
+                        <button
+                          onClick={() => setShowPayoutForm(true)}
+                          className="w-full py-3 rounded-xl font-black text-[14px] text-white bg-green-600 hover:bg-green-700 transition-all">
+                          💸 Quiero cobrar
+                        </button>
+                      ) : payoutSent ? (
+                        <div className="text-center text-[13px] font-black text-green-700 py-2">
+                          ✅ ¡Solicitud enviada! Te contactamos en 24-48hs.
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <p className="text-[13px] text-slate-600 font-medium text-center">
+                            Ingresá tu alias de MercadoPago, CBU o datos de pago
+                          </p>
+                          <textarea
+                            value={paymentInfo}
+                            onChange={e => setPaymentInfo(e.target.value)}
+                            placeholder="Ej: mi.alias o CBU 0000003100..."
+                            rows={3}
+                            className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 text-[13px] font-medium text-slate-900 bg-slate-50 focus:outline-none focus:border-green-500 resize-none"
+                          />
+                          <button
+                            disabled={!paymentInfo.trim()}
+                            onClick={async () => {
+                              await publicFetch('/player-referrals/request-payout', {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                  email: participant.email,
+                                  name: participant.name,
+                                  amount: referrerData.pending_amount,
+                                  paymentInfo,
+                                })
+                              })
+                              setPayoutSent(true)
+                            }}
+                            className="w-full py-3 rounded-xl font-black text-[14px] text-white bg-green-600 hover:bg-green-700 transition-all disabled:opacity-40">
+                            Enviar solicitud de cobro
+                          </button>
+                          <button
+                            onClick={() => setShowPayoutForm(false)}
+                            className="text-[13px] text-slate-400 font-medium text-center">
+                            Cancelar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Link de referido */}
+                  <div className="rounded-2xl bg-white border border-slate-200 p-4">
+                    <div className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">
+                      🔗 Tu link de referido
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1 bg-slate-50 rounded-xl px-3 py-2.5 text-[12px] font-bold text-slate-600 truncate">
+                        elprode.ar/ref/jugador/{referrerData.referral_code}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
+                          if (navigator.share) {
+                            await navigator.share({
+                              title: 'Creá tu prode del Mundial',
+                              text: '¡Creá el prode de tu comercio para el Mundial 2026!',
+                              url
+                            })
+                          } else {
+                            await navigator.clipboard.writeText(url)
+                            alert('¡Link copiado!')
+                          }
+                        }}
+                        className="px-4 py-2.5 rounded-xl font-black text-[13px] text-white shrink-0"
+                        style={{ background: color }}>
+                        Compartir
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Cómo funciona */}
+                  <div className="rounded-2xl bg-slate-50 border border-slate-100 p-4">
+                    <div className="text-[12px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                      ¿Cómo funciona?
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {[
+                        { n: '1', text: 'Compartí tu link con dueños de comercios' },
+                        { n: '2', text: 'Cuando crean su prode y pagan un plan, sumás 1 referido' },
+                        { n: '3', text: 'Cada 3 referidos que pagan, recibís $12.000' },
+                      ].map(step => (
+                        <div key={step.n} className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bebas text-base shrink-0"
+                            style={{ background: color }}>
+                            {step.n}
+                          </div>
+                          <p className="text-[13px] text-slate-600 font-medium">{step.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                </>
+              )}
             </div>
           </div>
         )}

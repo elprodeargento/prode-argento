@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { MercadoPagoConfig, Preference } from 'mercadopago'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 import { ReferralsService } from '../referrals/referrals.service'
+import { PlayerReferralsService } from '../player-referrals/player-referrals.service'
 
 export const PLANS = {
   pro: { label: 'Plan Pro', price: 48400, max_participants: null },
@@ -20,6 +21,7 @@ export class PaymentsService {
     private readonly config: ConfigService,
     private readonly supabase: SupabaseService,
     private readonly referralsService: ReferralsService,
+    private readonly playerReferralsService: PlayerReferralsService,
   ) {
     this.mp = new MercadoPagoConfig({ accessToken: this.config.get<string>('app.mercadopagoToken')! })
     this.preference = new Preference(this.mp)
@@ -129,6 +131,16 @@ export class PaymentsService {
       console.log('🤝 Referral confirmed')
     } catch (e) {
       console.warn('⚠️ Could not confirm referral, but plan was updated')
+    }
+
+    // Si el comercio fue referido por un jugador, confirmar conversión
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('player_referral_code')
+      .eq('id', ref.businessId)
+      .single()
+    if (business?.player_referral_code) {
+      await this.playerReferralsService.confirmConversion(business.player_referral_code).catch(() => {})
     }
 
     console.log(JSON.stringify({ event: 'plan_purchased', plan: ref.plan, businessId: ref.businessId }))
