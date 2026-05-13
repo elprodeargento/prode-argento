@@ -110,7 +110,10 @@ export class LeaderboardService {
         weekly_points: data.points,
         exact_results: data.exact,
       }))
-      .sort((a, b) => b.weekly_points - a.weekly_points)
+      .sort((a, b) => {
+        if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
+        return a.name.localeCompare(b.name, 'es')
+      })
       .slice(0, 10)
       .map((entry, i) => ({ ...entry, rank: i + 1 }))
 
@@ -154,7 +157,10 @@ export class LeaderboardService {
         weekly_points: v.points,
         exact_results: v.exact,
       }))
-      .sort((a, b) => b.weekly_points - a.weekly_points)
+      .sort((a, b) => {
+        if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
+        return a.name.localeCompare(b.name, 'es')
+      })
       .map((e, i) => ({ ...e, rank: i + 1 }))
 
     return {
@@ -189,7 +195,7 @@ export class LeaderboardService {
       .from('participants')
       .select('id, name, email, phone')
       .eq('business_id', businessId)
-      .order('name', { ascending: true })
+      .order('registered_at', { ascending: true })
       .limit(limit)
 
     return (parts ?? []).map((p, i) => ({

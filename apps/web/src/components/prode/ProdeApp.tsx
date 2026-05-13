@@ -1282,7 +1282,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* REFERIDOS */}
         {tab === 'referidos' && (
           <div className="flex-1 overflow-y-auto pb-24">
-            <div className="px-4 pt-5 pb-6 flex flex-col gap-5">
+            <div className="px-4 pt-5 pb-2 flex flex-col gap-5">
 
               {referrerLoading ? (
                 <div className="flex justify-center py-12">
