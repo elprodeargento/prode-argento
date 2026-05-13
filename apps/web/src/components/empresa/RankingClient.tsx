@@ -162,7 +162,7 @@ export function RankingClient() {
   }>>([])
   const [weeklyLoading, setWeeklyLoading] = useState(false)
   const [weeklyPrizes, setWeeklyPrizes] = useState<Array<{rank: number, description: string}>>([])
-  const [businessId, setBusinessId] = useState<string | null>(null)
+  const [business, setBusiness] = useState<{ id: string, name: string, primary_color: string, logo_url?: string } | null>(null)
 
   useEffect(() => {
     Promise.all([
@@ -178,8 +178,8 @@ export function RankingClient() {
       .catch(console.error)
       .finally(() => setLoading(false))
 
-    apiGet<{ id: string }>('/businesses/me')
-      .then(b => setBusinessId(b.id))
+    apiGet<{ id: string, name: string, primary_color: string, logo_url?: string }>('/businesses/me')
+      .then(b => setBusiness(b))
       .catch(() => {})
 
     apiGet<Record<string, Array<{rank: number, description: string}>>>('/prizes/weekly/me')
@@ -194,13 +194,13 @@ export function RankingClient() {
   }, [])
 
   useEffect(() => {
-    if (tab !== 'semanal' || !businessId) return
+    if (tab !== 'semanal' || !business?.id) return
     setWeeklyLoading(true)
-    apiGet<{ entries: Array<any> }>(`/leaderboard/${businessId}/weekly`)
+    apiGet<{ entries: Array<any> }>(`/leaderboard/${business.id}/weekly`)
       .then(data => setWeeklyEntries(data?.entries ?? []))
       .catch(() => setWeeklyEntries([]))
       .finally(() => setWeeklyLoading(false))
-  }, [tab, businessId])
+  }, [tab, business?.id])
 
   if (loading) {
     return (
@@ -248,7 +248,14 @@ export function RankingClient() {
         <>
           <StatsCard items={items} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RankingPodium items={items.slice(0, 3)} prizes={prizes} igConnected={igConnected} />
+            <RankingPodium
+              items={items.slice(0, 3)}
+              prizes={prizes}
+              igConnected={igConnected}
+              empresa={business?.name}
+              primaryColor={business?.primary_color}
+              logoUrl={business?.logo_url}
+            />
             <DistributionCard items={items} />
           </div>
           <RankingTable items={items} prizes={prizes} onExport={() => exportCSV(items)} />

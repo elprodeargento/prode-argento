@@ -51,3 +51,9 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
   if (!res.ok) throw new Error(`PATCH ${path} failed: ${res.status}`)
   return res.json()
 }
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  const res = await apiFetch(path, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
+  return res.json()
+}

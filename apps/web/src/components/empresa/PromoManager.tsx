@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { X, Loader2, ImagePlus, Link } from 'lucide-react'
+import { X, Loader2, ImagePlus, Link, Pencil, Trash2 } from 'lucide-react'
 import { uploadToR2 } from '@/lib/storage/r2'
-import { apiGet, apiPost } from '@/lib/api'
+import { apiGet, apiPost, apiPatch, apiDelete } from '@/lib/api'
 
 interface Promo {
   id: string
@@ -187,6 +187,7 @@ export function PromoManager() {
   const [saving, setSaving] = useState(false)
   const [geoStatus, setGeoStatus] = useState<'idle' | 'ok' | 'denied'>('idle')
   const [form, setForm] = useState(INITIAL_FORM)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -209,21 +210,58 @@ export function PromoManager() {
     e.preventDefault()
     setSaving(true)
     try {
-      const { apiPost } = await import('@/lib/api')
-      const created = await apiPost<Promo>('/promos/me', {
+      const payload = {
         ...form,
         image_url: imageUrl,
         link_url: form.link_url || undefined,
-      })
-      setPromos(p => [created, ...p])
+      }
+
+      if (editingId) {
+        const updated = await apiPatch<Promo>(`/promos/me/${editingId}`, payload)
+        setPromos(p => p.map(x => x.id === editingId ? updated : x))
+      } else {
+        const created = await apiPost<Promo>('/promos/me', payload)
+        setPromos(p => [created, ...p])
+      }
+      
       setShowForm(false)
       setForm(INITIAL_FORM)
+      setEditingId(null)
       setImageUrl(null)
     } catch (err) {
-      console.error('Error creating promo:', err)
-      alert('Error al crear la promo')
+      console.error('Error saving promo:', err)
+      alert('Error al guardar la promo')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleEdit = (promo: Promo) => {
+    setEditingId(promo.id)
+    setForm({
+      name: promo.name,
+      category: promo.category,
+      description: promo.description,
+      radius_km: promo.radius_km,
+      valid_from: promo.valid_from ? new Date(promo.valid_from).toISOString().split('T')[0] : '',
+      valid_until: promo.valid_until ? new Date(promo.valid_until).toISOString().split('T')[0] : '',
+      lat: (promo as any).lat || 0,
+      lon: (promo as any).lon || 0,
+      link_url: (promo as any).link_url || '',
+    })
+    setImageUrl(promo.image_url ?? null)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta promo?')) return
+    try {
+      await apiDelete(`/promos/me/${id}`)
+      setPromos(p => p.filter(x => x.id !== id))
+    } catch (err) {
+      console.error('Error deleting promo:', err)
+      alert('No se pudo eliminar la promo')
     }
   }
 
@@ -245,6 +283,7 @@ export function PromoManager() {
   const handleCancel = () => {
     setShowForm(false)
     setForm(INITIAL_FORM)
+    setEditingId(null)
     setImageUrl(null)
     setGeoStatus('idle')
   }
@@ -320,8 +359,8 @@ export function PromoManager() {
         <div className="card">
           <div className="px-[18px] py-[14px] bg-[#F1F3F9] border-b-[1.5px] border-[#DDE1EF] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-[20px]">✏️</span>
-              <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">Nueva promoción</h3>
+              <span className="text-[20px]">{editingId ? '✏️' : '✨'}</span>
+              <h3 className="text-[14px] font-extrabold text-[#0D1A3A]">{editingId ? 'Editar promoción' : 'Nueva promoción'}</h3>
             </div>
             <button onClick={handleCancel} className="text-[12px] font-bold text-[#5A6480] hover:text-[#D93025] transition-colors">
               Cancelar
@@ -489,7 +528,7 @@ export function PromoManager() {
               disabled={saving}
               className="w-full bg-[#002B72] text-white text-[14px] font-black py-[14px] rounded-xl hover:bg-[#00318A] transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-60"
             >
-              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Publicando...</> : '✅ Publicar promo'}
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Guardando...</> : editingId ? '✅ Guardar cambios' : '✅ Publicar promo'}
             </button>
           </form>
         </div>
@@ -543,14 +582,30 @@ export function PromoManager() {
                     <span className="text-[11px] font-bold text-[#8E96AE] bg-[#F1F3F9] px-2 py-0.5 rounded-full">⏰ Hasta {until}</span>
                     <span className="text-[11px] font-bold text-[#8E96AE] bg-[#F1F3F9] px-2 py-0.5 rounded-full">👁️ {promo.views} vistas</span>
                   </div>
-                  {!promo.active && (
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setShowForm(true)}
-                      className="text-[12px] font-black text-[#003FA3] border-[1.5px] border-[#DDE1EF] px-3 py-1 rounded-lg hover:bg-[#EBF4FC] transition-all whitespace-nowrap"
+                      onClick={() => handleEdit(promo)}
+                      className="p-2 text-[#5A6480] hover:text-[#002B72] hover:bg-[#F1F3F9] rounded-lg transition-all"
+                      title="Editar promo"
                     >
-                      🔄 Renovar
+                      <Pencil className="h-4 w-4" />
                     </button>
-                  )}
+                    <button
+                      onClick={() => handleDelete(promo.id)}
+                      className="p-2 text-[#5A6480] hover:text-[#D93025] hover:bg-[#FDECEB] rounded-lg transition-all"
+                      title="Eliminar promo"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    {!promo.active && (
+                      <button
+                        onClick={() => handleEdit(promo)}
+                        className="text-[12px] font-black text-[#003FA3] border-[1.5px] border-[#DDE1EF] px-3 py-1 rounded-lg hover:bg-[#EBF4FC] transition-all whitespace-nowrap"
+                      >
+                        🔄 Renovar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )

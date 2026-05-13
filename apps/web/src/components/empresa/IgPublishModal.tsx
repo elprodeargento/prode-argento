@@ -18,6 +18,7 @@ interface PodiumItem {
   name: string
   points: number
   position: number
+  prize?: string
 }
 
 interface IgPublishModalProps {
@@ -25,6 +26,8 @@ interface IgPublishModalProps {
   onClose: () => void
   podium: PodiumItem[]
   empresa?: string
+  primaryColor?: string
+  logoUrl?: string
   igConnected?: boolean
   defaultHashtags?: string
   imageUrl?: string
@@ -53,6 +56,8 @@ export function IgPublishModal({
   onClose,
   podium,
   empresa = 'MI COMERCIO',
+  primaryColor = '#002B72',
+  logoUrl,
   igConnected = false,
   defaultHashtags = '#ProdeMundial2026 #Mundial2026',
   imageUrl,
@@ -92,28 +97,36 @@ export function IgPublishModal({
   const fullCaption = `${caption}\n\n${activeHashtags.join(' ')}`
 
   const handlePost = async () => {
+    // Si no está habilitado social, o simplemente el usuario quiere descargar el PNG
     if (!SOCIAL_ENABLED) {
       if (!podiumRef.current) return
       setPosting(true)
+      setPostError('')
+      
       try {
-        const pixelRatio = 1080 / podiumRef.current.offsetWidth
+        await new Promise(r => setTimeout(r, 150))
+        const width = podiumRef.current.offsetWidth
+        if (!width) throw new Error('Cargando...')
+        
+        const pixelRatio = 1080 / width
+        
         const image = await toPng(podiumRef.current, {
           backgroundColor: '#0a0a0a',
-          pixelRatio,
-          style: {
-            margin: '0',
-            transform: 'none'
-          }
+          pixelRatio: Math.min(pixelRatio, 3.5), // Limitamos resolución para evitar crashes
+          cacheBust: true,
+          style: { margin: '0', transform: 'none' }
         })
+
         const link = document.createElement('a')
         link.href = image
-        link.download = `podio-${empresa.toLowerCase().replace(/\\s+/g, '')}.png`
+        link.download = `podio-${empresa.toLowerCase().replace(/\s+/g, '')}.png`
         link.click()
+        
         setPosted(true)
         setTimeout(() => onClose(), 2000)
       } catch (e: any) {
-        console.error('html-to-image error:', e)
-        setPostError(`Error al exportar la imagen. ${e?.message || ''}`)
+        console.error('Export error:', e)
+        setPostError(`Error al exportar: ${e?.message || 'CORS'}`)
       } finally {
         setPosting(false)
       }
@@ -121,7 +134,7 @@ export function IgPublishModal({
     }
 
     if (!imageUrl) {
-      setPostError('No hay imagen del podio para publicar. Generá la imagen primero.')
+      setPostError('No hay imagen del podio para publicar.')
       return
     }
     setPosting(true)
@@ -130,7 +143,7 @@ export function IgPublishModal({
       await apiPost('/instagram/publish', { image_url: imageUrl, caption: fullCaption })
       setPosted(true)
     } catch (e: any) {
-      setPostError(e.message ?? 'Error al publicar en Instagram. Intentá de nuevo.')
+      setPostError(e.message ?? 'Error al publicar en Instagram.')
     } finally {
       setPosting(false)
     }
@@ -193,8 +206,9 @@ export function IgPublishModal({
                 <div className="w-9 h-9 rounded-full flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', padding: '2px' }}
                 >
-                  <div className="w-full h-full rounded-full bg-[#002B72] flex items-center justify-center text-xs font-black text-white border-2 border-white">
-                    {getInitials(empresa)}
+                  <div className="w-full h-full rounded-full flex items-center justify-center text-xs font-black text-white border-2 border-white overflow-hidden bg-white"
+                    style={{ borderColor: primaryColor }}>
+                    {logoUrl ? <img src={logoUrl} alt="" className="w-full h-full object-contain" /> : getInitials(empresa)}
                   </div>
                 </div>
                 <div className="flex-1">
@@ -209,7 +223,7 @@ export function IgPublishModal({
               {/* Post image — podio CSS art */}
               <div ref={podiumRef} className="w-full aspect-[4/5] relative overflow-hidden flex items-end" style={{ background: '#0a0a0a' }}>
                 {/* Gradient background */}
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #001040 0%, #002B72 35%, #0a0a1a 70%, #000 100%)' }} />
+                <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, ${primaryColor} 0%, #000 100%)` }} />
                 {/* Dot texture */}
                 <div className="absolute inset-0"
                   style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)', backgroundSize: '18px 18px' }}
@@ -222,8 +236,10 @@ export function IgPublishModal({
                 {/* Content */}
                 <div className="relative z-20 w-full flex flex-col items-center justify-between px-3 py-3.5 h-full">
                   {/* Company mini header */}
-                  <div className="flex items-center gap-1.5 self-start">
-                    <div className="w-5 h-5 rounded-[5px] bg-white/10 border border-white/20 flex items-center justify-center text-[9px]">⚽</div>
+                   <div className="flex items-center gap-1.5 self-start">
+                    <div className="w-5 h-5 rounded-[5px] bg-white/10 border border-white/20 flex items-center justify-center text-[9px] overflow-hidden">
+                      {logoUrl ? <img src={logoUrl} alt="" className="w-full h-full object-contain" /> : '⚽'}
+                    </div>
                     <span className="text-[8px] font-black text-white/60 uppercase tracking-widest">{empresa}</span>
                   </div>
 
@@ -242,8 +258,9 @@ export function IgPublishModal({
                         style={{ borderColor: '#A0A8C0' }}>
                         {p2 ? getInitials(p2.name) : '2°'}
                       </div>
-                      <div className="text-[7px] font-black text-white/90 max-w-[52px] text-center truncate">{p2?.name || 'TBD'}</div>
-                      <div className="text-[9px] font-black" style={{ color: '#A0A8C0' }}>{p2?.points ?? 0}pts</div>
+                      <div className="text-[7px] font-black text-white/90 max-w-[52px] text-center truncate">{p2?.name || '—'}</div>
+                      <div className="text-[8px] font-black" style={{ color: '#A0A8C0' }}>{p2?.points ?? 0} pts</div>
+                      {p2?.prize && <div className="text-[6px] font-bold text-white/60 text-center leading-tight line-clamp-1 w-full px-0.5">🎁 {p2.prize}</div>}
                       <div className="w-full h-8 rounded-t-[4px] flex items-center justify-center font-bebas text-[12px] text-white/70"
                         style={{ background: 'rgba(100,115,150,0.7)' }}>2°</div>
                     </div>
@@ -254,10 +271,11 @@ export function IgPublishModal({
                         style={{ borderColor: '#F5C518' }}>
                         {p1 ? getInitials(p1.name) : '1°'}
                       </div>
-                      <div className="text-[7px] font-black text-white/90 max-w-[56px] text-center truncate">{p1?.name || 'TBD'}</div>
-                      <div className="text-[10px] font-black" style={{ color: '#F5C518' }}>{p1?.points ?? 0}pts</div>
+                      <div className="text-[7px] font-black text-white/90 max-w-[56px] text-center truncate">{p1?.name || '—'}</div>
+                      <div className="text-[9px] font-black" style={{ color: '#F5C518' }}>{p1?.points ?? 0} pts</div>
+                      {p1?.prize && <div className="text-[6px] font-bold text-white/90 text-center leading-tight line-clamp-1 w-full px-0.5">🎁 {p1.prize}</div>}
                       <div className="w-full h-11 rounded-t-[4px] flex items-center justify-center font-bebas text-[14px]"
-                        style={{ background: 'rgba(245,197,24,0.85)', color: '#002B72' }}>1°</div>
+                        style={{ background: 'rgba(245,197,24,0.85)', color: primaryColor }}>1°</div>
                     </div>
                     {/* 3rd */}
                     <div className="flex flex-col items-center gap-0.5 flex-1">
@@ -265,8 +283,9 @@ export function IgPublishModal({
                         style={{ borderColor: '#B07850' }}>
                         {p3 ? getInitials(p3.name) : '3°'}
                       </div>
-                      <div className="text-[7px] font-black text-white/90 max-w-[52px] text-center truncate">{p3?.name || 'TBD'}</div>
-                      <div className="text-[9px] font-black" style={{ color: '#B07850' }}>{p3?.points ?? 0}pts</div>
+                      <div className="text-[7px] font-black text-white/90 max-w-[52px] text-center truncate">{p3?.name || '—'}</div>
+                      <div className="text-[8px] font-black" style={{ color: '#B07850' }}>{p3?.points ?? 0} pts</div>
+                      {p3?.prize && <div className="text-[6px] font-bold text-white/60 text-center leading-tight line-clamp-1 w-full px-0.5">🎁 {p3.prize}</div>}
                       <div className="w-full h-6 rounded-t-[4px] flex items-center justify-center font-bebas text-[11px] text-white/70"
                         style={{ background: 'rgba(120,80,50,0.7)' }}>3°</div>
                     </div>
@@ -294,7 +313,7 @@ export function IgPublishModal({
               {/* IG bottom nav */}
               <div className="flex justify-around items-center py-2 bg-white border-t border-[#efefef] text-[18px]">
                 <span>🏠</span><span>🔍</span><span>➕</span><span>🎬</span>
-                <div className="w-5 h-5 rounded-full bg-[#002B72] border-2 border-black" />
+                <div className="w-5 h-5 rounded-full border-2 border-black" style={{ background: primaryColor }} />
               </div>
             </div>
           </div>
@@ -373,8 +392,8 @@ export function IgPublishModal({
                 ? '#18A06A'
                 : SOCIAL_ENABLED
                   ? 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366)'
-                  : '#002B72',
-              boxShadow: posted ? '0 4px 16px rgba(24,160,106,0.3)' : SOCIAL_ENABLED ? '0 4px 16px rgba(220,39,67,0.3)' : '0 4px 16px rgba(0,43,114,0.3)',
+                  : primaryColor,
+              boxShadow: posted ? '0 4px 16px rgba(24,160,106,0.3)' : SOCIAL_ENABLED ? '0 4px 16px rgba(220,39,67,0.3)' : `${primaryColor}33`,
             }}
           >
             {posting ? (

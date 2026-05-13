@@ -30,7 +30,7 @@ const navGroups = [
   {
     label: 'Cuenta',
     items: [
-      { href: '/empresa/ayuda', icon: '❓', label: 'Ayuda', iconColor: '#5A6480', badgeKey: null },
+      { href: '/ayuda', icon: '❓', label: 'Ayuda', iconColor: '#5A6480', badgeKey: null },
     ]
   }
 ]

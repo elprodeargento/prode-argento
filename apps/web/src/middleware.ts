@@ -22,12 +22,18 @@ function getSlug(host: string): string | null {
   return null
 }
 
+const GLOBAL_PATHS = ['/terminos', '/privacidad', '/terminos-referidos', '/ayuda']
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const host = request.headers.get('host') ?? ''
   const slug = getSlug(host)
 
-  console.log(`[MW] host=${host} pathname=${pathname} slug=${slug ?? 'null'}`)
+  // — Skip subdomain rewrite for global marketing/legal paths
+  if (slug && GLOBAL_PATHS.some(p => pathname.startsWith(p))) {
+    console.log(`[MW] GLOBAL PATH on subdomain → skip rewrite`)
+    return NextResponse.next()
+  }
 
   // — Subdomain rewrite: pizza.elprode.ar → /p/pizza
   if (slug) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Query, ParseFloatPipe, DefaultValuePipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Query, ParseFloatPipe, DefaultValuePipe, Patch, Delete, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PromosService } from './promos.service';
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
@@ -34,5 +34,21 @@ export class PromosController {
   @ApiOperation({ summary: 'Create a promo for the current business' })
   create(@Req() req: any, @Body() dto: CreatePromoDto) {
     return this.promosService.create(req.user.id, dto);
+  }
+
+  @Patch('me/:id')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update a promo' })
+  update(@Req() req: any, @Param('id') id: string, @Body() dto: Partial<CreatePromoDto>) {
+    return this.promosService.update(req.user.id, id, dto);
+  }
+
+  @Delete('me/:id')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete a promo' })
+  remove(@Req() req: any, @Param('id') id: string) {
+    return this.promosService.remove(req.user.id, id);
   }
 }

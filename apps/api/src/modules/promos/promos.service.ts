@@ -80,4 +80,44 @@ export class PromosService {
     if (error) throw new Error(error.message);
     return data;
   }
+
+  async update(adminUserId: string, id: string, dto: Partial<CreatePromoDto>) {
+    const { data: promo, error: findErr } = await this.supabase.client
+      .from('promos')
+      .select('*, businesses!inner(admin_user_id)')
+      .eq('id', id)
+      .single();
+
+    if (findErr || !promo) throw new NotFoundException('Promo not found');
+    if ((promo.businesses as any).admin_user_id !== adminUserId) throw new ForbiddenException();
+
+    const { data, error } = await this.supabase.client
+      .from('promos')
+      .update(dto)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  async remove(adminUserId: string, id: string) {
+    const { data: promo, error: findErr } = await this.supabase.client
+      .from('promos')
+      .select('*, businesses!inner(admin_user_id)')
+      .eq('id', id)
+      .single();
+
+    if (findErr || !promo) throw new NotFoundException('Promo not found');
+    if ((promo.businesses as any).admin_user_id !== adminUserId) throw new ForbiddenException();
+
+    const { error } = await this.supabase.client
+      .from('promos')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  }
 }

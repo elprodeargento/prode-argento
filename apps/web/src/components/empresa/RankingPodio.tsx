@@ -32,6 +32,8 @@ interface RankingPodiumProps {
   items: PodiumItem[]
   prizes?: Prize[]
   empresa?: string
+  primaryColor?: string
+  logoUrl?: string
   igConnected?: boolean
 }
 
@@ -41,7 +43,7 @@ const PODIUM = [
   { pos: 3, ringColor: 'border-[#CD9B6A]', bg: 'bg-[#FBF0E8]', barColor: 'bg-[#CD9B6A]', barH: 'h-[44px]', barText: 'text-white/60', ptsColor: 'text-[#9B6B3A]' },
 ]
 
-export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igConnected = false }: RankingPodiumProps) {
+export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', primaryColor = '#002B72', logoUrl, igConnected = false }: RankingPodiumProps) {
   const [igOpen, setIgOpen] = useState(false)
 
   const byPos = (pos: number) => items.find(i => i.position === pos)
@@ -58,17 +60,21 @@ export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igC
         <div className={`h-[52px] w-[52px] ${pos === 1 ? 'h-[60px] w-[60px]' : ''} rounded-full ${style.bg} border-[3px] ${style.ringColor} flex items-center justify-center text-xl font-black mb-2 text-[#002B72]`}>
           {p?.name?.charAt(0) ?? '?'}
         </div>
-        <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-0.5 truncate w-full px-1">
-          {p?.name ?? '—'}
-        </div>
-        <div className={`font-bebas text-[18px] ${style.ptsColor} leading-none mb-1`}>
-          {p?.points ?? 0} pts
-        </div>
-        {pr && (
-          <div className="text-[10px] font-black text-[#5A6480] text-center mb-1 px-1 truncate w-full" title={pr.description}>
-            🎁 {pr.description}
+        <div className="flex flex-col items-center justify-end h-[100px] w-full mb-2">
+          <div className="text-[12px] font-extrabold text-[#0D1A3A] text-center mb-0.5 line-clamp-1 w-full px-1">
+            {p?.name ?? '—'}
           </div>
-        )}
+          <div className={`font-bebas text-[18px] ${style.ptsColor} leading-none mb-1`}>
+            {p?.points ?? 0} pts
+          </div>
+          <div className="min-h-[24px] flex items-center justify-center w-full">
+            {pr && (
+              <div className="text-[9px] font-black text-[#5A6480] text-center leading-tight px-1 line-clamp-2 w-full" title={pr.description}>
+                🎁 {pr.description}
+              </div>
+            )}
+          </div>
+        </div>
         {p?.phone && (
           SOCIAL_ENABLED ? (
             <a
@@ -124,8 +130,15 @@ export function RankingPodium({ items, prizes = [], empresa = 'Mi Comercio', igC
       <IgPublishModal
         open={igOpen}
         onClose={() => setIgOpen(false)}
-        podium={items.map(i => ({ name: i.name, points: i.points, position: i.position }))}
+        podium={items.map(i => ({
+          name: i.name,
+          points: i.points,
+          position: i.position,
+          prize: prizes.find(p => p.rank === i.position)?.description
+        }))}
         empresa={empresa}
+        primaryColor={primaryColor}
+        logoUrl={logoUrl}
         igConnected={igConnected}
       />
     </>
