@@ -12,7 +12,12 @@ async function publicFetch(path: string, options?: RequestInit) {
     headers: { 'Content-Type': 'application/json' },
     ...options,
   })
-  if (!res.ok) throw new Error(`${path} → ${res.status}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    const err: any = new Error(`${path} → ${res.status}`)
+    err.body = body
+    throw err
+  }
   return res.json()
 }
 
@@ -396,8 +401,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       for (const p of (fresh as RawPrediction[])) predMap[p.match_id] = p
       setApiPreds(predMap)
     } catch (e: any) {
-      const errorDetail = e?.response ? await e.response.json?.().catch(() => ({})) : {}
-      setSavedMsg(`Error: ${e.message} ${JSON.stringify(errorDetail)}`)
+      setSavedMsg(`Error: ${e.message} ${JSON.stringify(e.body ?? {})}`)
     } finally {
       setSaving(false)
       setTimeout(() => setSavedMsg(''), 3000)
