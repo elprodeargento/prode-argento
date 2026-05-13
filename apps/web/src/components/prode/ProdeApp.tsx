@@ -205,6 +205,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [showPayoutForm, setShowPayoutForm] = useState(false)
   const [paymentInfo, setPaymentInfo] = useState('')
   const [payoutSent, setPayoutSent] = useState(false)
+  const [copied, setCopied] = useState(false)
   usePushNotifications(participant.id)
   const { canInstall, install } = useInstallPWA()
 
@@ -628,6 +629,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-3xl mb-1">🎯</div>
                 <div className="font-black text-[#002B72] text-base">¡Resultado exacto!</div>
                 <div className="text-[#002B72]/70 text-xs mt-0.5 font-bold">Acertaste el marcador exacto · +3 puntos</div>
+                {referrerData !== null && referrerData.total_referrals % 3 !== 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setTab('referidos') }}
+                    className="mt-2 text-[11px] font-black text-[#002B72]/60 underline underline-offset-2">
+                    ¿Sabías que podés ganar $12.000 invitando comercios? →
+                  </button>
+                )}
               </div>
             )}
 
@@ -642,8 +650,40 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-white/70 text-xs mt-0.5">
                   Ahora estás {myEntry ? `${myEntry.rank}°` : ''} en el ranking
                 </div>
+                {referrerData !== null && referrerData.total_referrals % 3 !== 0 && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setTab('referidos') }}
+                    className="mt-2 text-[11px] font-black text-[#002B72]/60 underline underline-offset-2">
+                    ¿Sabías que podés ganar $12.000 invitando comercios? →
+                  </button>
+                )}
               </div>
             )}
+
+            {referrerData !== null && referrerData.total_referrals % 3 !== 0 && (
+              (() => {
+                const enGrupo = referrerData.total_referrals % 3
+                const falta = 3 - enGrupo
+                const mensaje = enGrupo === 0
+                  ? { icon: '💰', text: '¿Tenés amigos con comercios? Ganá $12.000 invitándolos' }
+                  : falta === 1
+                    ? { icon: '⚡', text: `¡Casi! Te falta 1 solo para ganar $12.000` }
+                    : { icon: '🔥', text: `¡Ya tenés ${enGrupo}! Te faltan ${falta} para ganar $12.000` }
+                return (
+                  <button
+                    onClick={() => setTab('referidos')}
+                    className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all text-left"
+                    style={{ borderColor: color, background: `${color}10` }}>
+                    <span className="text-xl shrink-0">{mensaje.icon}</span>
+                    <span className="flex-1 font-black text-[13px]" style={{ color }}>
+                      {mensaje.text}
+                    </span>
+                    <span className="text-[12px] font-black shrink-0" style={{ color }}>→</span>
+                  </button>
+                )
+              })()
+            )}
+
             <div className="grid grid-cols-2 gap-3 px-4 pt-4">
               <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm text-center">
                 <div className="font-bebas text-4xl" style={{ color }}>{myEntry?.total_points ?? 0}</div>
@@ -1272,6 +1312,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                           {referrerData.total_referrals} referido{referrerData.total_referrals !== 1 ? 's' : ''} en total
                         </div>
                       )}
+                      <div className="text-white/50 text-[12px] font-bold mt-2">
+                        {3 - (referrerData.total_referrals % 3) === 1
+                          ? '⚡ ¡Te falta 1 solo para ganar $12.000!'
+                          : `Necesitás ${3 - (referrerData.total_referrals % 3)} referidos más para ganar $12.000`
+                        }
+                      </div>
                     </div>
                   </div>
 
@@ -1348,10 +1394,21 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       <button
                         onClick={async () => {
                           const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
+                          await navigator.clipboard.writeText(url)
+                          setCopied(true)
+                          setTimeout(() => setCopied(false), 2000)
+                        }}
+                        className="px-4 py-2.5 rounded-xl font-black text-[13px] border-2 shrink-0 transition-all"
+                        style={{ borderColor: color, color: copied ? 'white' : color, background: copied ? color : 'transparent' }}>
+                        {copied ? '✓' : 'Copiar'}
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const url = `https://elprode.ar/ref/jugador/${referrerData.referral_code}`
                           if (navigator.share) {
                             await navigator.share({
                               title: 'Creá tu prode del Mundial',
-                              text: '¡Creá el prode de tu comercio para el Mundial 2026!',
+                              text: `Che, ¿tenés un comercio? Armé mi prode del Mundial en elprode.ar y está buenísimo para fidelizar clientes. Entrá por mi link:`,
                               url
                             })
                           } else {
