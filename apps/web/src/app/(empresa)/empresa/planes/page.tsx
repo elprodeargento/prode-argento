@@ -17,7 +17,7 @@ export default function PlanesPage() {
           </p>
         </div>
       </div>
-      <PageTracker event="plan_view" />
+      <PageTracker event="biz_plan_view" />
       <Suspense>
         <PlanesClient />
       </Suspense>

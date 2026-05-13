@@ -90,7 +90,7 @@ export function PlanesClient() {
 
   const handleCheckout = async (plan: Plan) => {
     if (plan === 'free') return
-    trackEvent('plan_checkout_started', { plan })
+    trackEvent('biz_plan_checkout_started', { plan })
     setLoading(plan)
     try {
       const { initPoint } = await apiPost<{ initPoint: string }>('/payments/checkout', { plan })

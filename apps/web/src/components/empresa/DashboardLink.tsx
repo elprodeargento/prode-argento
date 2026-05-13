@@ -53,7 +53,7 @@ export function DashboardLink({ empresa }: { empresa: any }) {
 
   const downloadQR = () => {
     if (!qrImageUrl) return
-    trackEvent('qr_downloaded')
+    trackEvent('biz_qr_downloaded')
     const a = document.createElement('a')
     a.href = qrImageUrl
     a.download = `qr-${empresa.slug}.png`

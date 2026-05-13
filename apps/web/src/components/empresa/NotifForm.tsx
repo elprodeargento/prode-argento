@@ -165,7 +165,7 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
       const res = await apiPost<{ sent: number; skipped: number; failed: number }>('/notifications/whatsapp', {
         message, imageUrl: imageUrl ?? undefined, recipients,
       })
-      trackEvent('notification_sent', { channel: 'whatsapp' })
+      trackEvent('biz_notification_sent', { channel: 'whatsapp' })
       setResult(res)
       onSent?.()
       setTimeout(() => setResult(null), 5000)
@@ -193,7 +193,7 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
       const res = await apiPost<{ sent: number; failed: number }>('/notifications/push', {
         title: pushTitle, body: pushBody, recipients: pushRecipients, imageUrl: pushImageUrl ?? undefined,
       })
-      trackEvent('notification_sent', { channel: 'push' })
+      trackEvent('biz_notification_sent', { channel: 'push' })
       setPushResult(res)
       onSent?.()
       setTimeout(() => setPushResult(null), 5000)

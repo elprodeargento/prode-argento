@@ -51,7 +51,7 @@ export function ReferidosClient() {
 
   const handleCopy = async () => {
     if (!data?.referralUrl) return
-    trackEvent('referral_link_copied')
+    trackEvent('biz_referral_link_copied')
     await navigator.clipboard?.writeText(data.referralUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -99,7 +99,7 @@ export function ReferidosClient() {
         </div>
         <button
           onClick={() => handleReferidosAction(() => {
-            trackEvent('referral_shared_whatsapp')
+            trackEvent('biz_referral_shared_whatsapp')
             window.open(`https://wa.me/?text=${waText}`, '_blank')
           })}
           className="flex items-center justify-center gap-2 w-full py-3 bg-[#25D366] text-white text-[13px] font-black rounded-xl hover:opacity-90 transition-all"
@@ -187,7 +187,7 @@ export function ReferidosClient() {
         onClose={() => { setShowTermsModal(false); setPendingAction(null) }}
         onAccept={() => {
           setShowTermsModal(false)
-          trackEvent('referral_terms_accepted')
+          trackEvent('biz_referral_terms_accepted')
           if (pendingAction) { pendingAction(); setPendingAction(null) }
         }}
       />

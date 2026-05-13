@@ -70,7 +70,7 @@ export function CanjesClient() {
   const handleRedeem = async (prize: string, points: number) => {
     try {
       await apiPost('/referrals/redeem', { prize, points })
-      trackEvent('referral_redeemed', { prize, points })
+      trackEvent('biz_referral_redeemed', { prize, points })
       alert(SOCIAL_ENABLED ? '¡Solicitud enviada! Nos contactaremos por WhatsApp en las próximas 24hs.' : '¡Solicitud enviada! Nos contactaremos por email en las próximas 24hs.')
     } catch {
       alert('Error al procesar el canje. Intentá de nuevo.')

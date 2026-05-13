@@ -105,7 +105,7 @@ export function OnboardingWizard() {
         .filter(p => p.description)
       await apiPut('/prizes/me', { prizes: prizesToSave })
 
-      trackEvent('onboarding_completed')
+      trackEvent('biz_onboarding_completed')
       setStep('success')
       window.scrollTo(0, 0)
     } catch (error) {

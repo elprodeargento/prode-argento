@@ -267,7 +267,7 @@ export function PrizeManager() {
       await apiPut('/prizes/weekly/me', { weekIndex: wpWeekIdx, prizes: filtered })
       const updated = { ...wpPrizesMap, [String(wpWeekIdx)]: filtered }
       setWpPrizesMap(updated)
-      trackEvent('weekly_prize_configured')
+      trackEvent('biz_weekly_prize_configured')
       setWpSaved(true)
       setTimeout(() => setWpSaved(false), 2500)
     } catch {
@@ -301,7 +301,7 @@ export function PrizeManager() {
       await apiPut('/prizes/me', {
         prizes: prizes.map(p => ({ rank: p.rank, description: p.description })),
       })
-      trackEvent('prize_configured')
+      trackEvent('biz_prize_configured')
       alert('Premios guardados correctamente')
     } catch {
       alert('Error al guardar premios')

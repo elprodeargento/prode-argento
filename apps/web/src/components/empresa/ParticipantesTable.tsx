@@ -284,7 +284,7 @@ export function ParticipantesTable() {
       const params = new URLSearchParams({ page: '1', limit: '10000', sortBy: sortCol, sortDir })
       if (search) params.set('search', search)
       const res = await apiGet<{ data: Participant[] }>(`/participants/me?${params}`)
-      trackEvent('participants_exported')
+      trackEvent('biz_participants_exported')
       exportCSV(res.data || [])
     } catch (e) {
       console.error('Export error:', e)

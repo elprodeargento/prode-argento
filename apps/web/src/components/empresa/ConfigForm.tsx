@@ -255,7 +255,7 @@ export function ConfigForm() {
         body: JSON.stringify({ ...data, logo_url: logoUrl, background_url: backgroundUrl }),
       })
       if (res.ok) {
-        trackEvent('config_saved')
+        trackEvent('biz_config_saved')
         setSuccess(true)
         router.refresh()
         setTimeout(() => setSuccess(false), 3000)

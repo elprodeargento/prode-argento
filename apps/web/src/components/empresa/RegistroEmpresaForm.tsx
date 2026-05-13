@@ -11,7 +11,7 @@ import { trackEvent } from '@/lib/analytics'
 export function RegistroEmpresaForm() {
   const router = useRouter()
 
-  useEffect(() => { trackEvent('registro_started') }, [])
+  useEffect(() => { trackEvent('biz_registro_started') }, [])
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -72,7 +72,7 @@ export function RegistroEmpresaForm() {
       return
     }
 
-    trackEvent('registro_completed')
+    trackEvent('biz_registro_completed')
     router.push('/empresa/onboarding')
   }
 
