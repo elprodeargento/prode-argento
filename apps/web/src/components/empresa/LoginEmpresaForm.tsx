@@ -6,6 +6,15 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
 
+function authError(msg: string): string {
+  if (/invalid.*(login|credentials)/i.test(msg)) return 'Email o contraseña incorrectos'
+  if (/email.*not.*confirmed/i.test(msg)) return 'Confirmá tu email antes de iniciar sesión'
+  if (/too many requests/i.test(msg)) return 'Demasiados intentos. Esperá unos minutos e intentá de nuevo'
+  if (/user.*not.*found/i.test(msg)) return 'No existe una cuenta con ese email'
+  if (/network|fetch/i.test(msg)) return 'Error de conexión. Verificá tu internet e intentá de nuevo'
+  return 'Ocurrió un error. Intentá de nuevo'
+}
+
 export function LoginEmpresaForm() {
   const router = useRouter()
   const supabase = createClient()
@@ -35,7 +44,7 @@ export function LoginEmpresaForm() {
     }
 
     const { error } = await supabase.auth.signInWithPassword(form)
-    if (error) { setError(error.message); setLoading(false); return }
+    if (error) { setError(authError(error.message)); setLoading(false); return }
     router.push('/empresa/dashboard')
   }
 
@@ -64,7 +73,11 @@ export function LoginEmpresaForm() {
             value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required autoComplete="off" />
           <Input label="Contraseña" type="password" placeholder="Tu contraseña"
             value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required autoComplete="new-password" />
-          {error && <p className="text-xs text-red-500 font-semibold">{error}</p>}
+          {error && (
+            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-semibold">
+              {error}
+            </div>
+          )}
           <Button type="submit" size="lg" disabled={loading} className="w-full rounded-full font-black mt-2">
             {loading ? 'Entrando...' : 'Entrar al panel →'}
           </Button>

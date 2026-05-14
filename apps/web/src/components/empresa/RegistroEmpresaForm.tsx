@@ -54,8 +54,12 @@ export function RegistroEmpresaForm() {
     } catch (err: any) {
       if (err?.status === 409) {
         setEmailExists(true)
+      } else if (/password.*characters|weak password/i.test(err?.message ?? '')) {
+        setError('La contraseña debe tener al menos 6 caracteres')
+      } else if (/network|fetch/i.test(err?.message ?? '')) {
+        setError('Error de conexión. Verificá tu internet e intentá de nuevo')
       } else {
-        setError(err?.message ?? 'Error al registrar el comercio')
+        setError(err?.message ?? 'Error al registrar el comercio. Intentá de nuevo')
       }
       setLoading(false)
       return
@@ -67,7 +71,7 @@ export function RegistroEmpresaForm() {
       password: form.password,
     })
     if (signInError) {
-      setError(signInError.message)
+      setError('Cuenta creada, pero no pudimos iniciar sesión automáticamente. Iniciá sesión manualmente.')
       setLoading(false)
       return
     }
