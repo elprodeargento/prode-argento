@@ -7,3 +7,5 @@ dist
 .turbo
 .vercel
 coverage
+.claude/
+apps/web/tsconfig.tsbuildinfo
