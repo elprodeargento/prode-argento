@@ -442,9 +442,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     setEditSaving(true)
     try {
       const fullPhone = editForm.phone.startsWith('+') ? editForm.phone : `+${editForm.countryCode}${editForm.phone}`
+      const { countryCode: _, ...editFields } = editForm
       await publicFetch(`/participants/${participant.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ ...editForm, phone: fullPhone }),
+        body: JSON.stringify({ ...editFields, phone: fullPhone }),
       })
       const stored = localStorage.getItem(`prode:${empresa.slug}`)
       if (stored) {

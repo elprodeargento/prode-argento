@@ -41,7 +41,7 @@ export class ParticipantsService {
 
     const { data, error } = await this.supabase.client
       .from('participants')
-      .insert(createParticipantDto)
+      .insert({ ...createParticipantDto, email: createParticipantDto.email.toLowerCase() })
       .select()
       .single();
 
@@ -56,6 +56,7 @@ export class ParticipantsService {
   }
 
   async joinBySlug(slug: string, name: string, email: string, phone?: string) {
+    email = email.toLowerCase()
     this.logger.log(`joinBySlug called — slug="${slug}" email="${email}" name="${name}" phone="${phone}"`);
 
     const { data: business, error: bizError } = await this.supabase.client
@@ -118,6 +119,9 @@ export class ParticipantsService {
 
   async update(id: string, data: { name?: string; email?: string; phone?: string }) {
     const updateData: any = { ...data }
+    if (data.email) {
+      updateData.email = data.email.toLowerCase()
+    }
     if (data.phone) {
       updateData.phone = normalizeE164AR(data.phone) ?? data.phone
     }
