@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation'
 const FAQ_PLAYER = [
   {
     q: '¿Cómo sumo puntos?',
-    a: 'Sumás 6 puntos por acertar el resultado exacto. Si solo acertás el ganador o empate pero no los goles, sumás 3 puntos.'
+    a: 'Sumás 3 puntos por acertar el resultado exacto. Si solo acertás el ganador o empate pero no los goles, sumás 1 punto.'
   },
   {
     q: '¿Hasta cuándo puedo cargar mi pálpito?',
@@ -38,7 +38,7 @@ const FAQ_BUSINESS = [
   },
   {
     q: '¿Es gratis para los comercios?',
-    a: 'Tenemos un Plan Free para hasta 20 personas. Para más participantes y funciones de marketing, podés contratar los planes Pro o Premium.'
+    a: 'Tenemos un Plan Free para hasta 5 participantes. Para más participantes y funciones de marketing, podés contratar los planes Pro o Premium.'
   },
   {
     q: '¿Cómo entrego los premios?',
