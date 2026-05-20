@@ -55,64 +55,112 @@ export class ParticipantsService {
     return data;
   }
 
-  async joinBySlug(slug: string, name: string, email: string, phone?: string) {
-    email = email.toLowerCase()
-    this.logger.log(`joinBySlug called — slug="${slug}" email="${email}" name="${name}" phone="${phone}"`);
+  async lookup(slug: string, email?: string, phone?: string) {
+    const { data: business, error: bizError } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('slug', slug)
+      .single();
+
+    if (bizError || !business) throw new BadRequestException('Prode no encontrado');
+
+    let query = this.supabase.client
+      .from('participants')
+      .select('*')
+      .eq('business_id', business.id);
+
+    if (email) {
+      const { data: participant } = await query.eq('email', email.toLowerCase()).maybeSingle();
+      return { found: !!participant, participant: participant ?? undefined };
+    } else if (phone) {
+      const normalizedPhone = normalizeE164AR(phone) ?? phone;
+      const { data } = await query.eq('phone', normalizedPhone).limit(1);
+      const participant = data?.[0] ?? null;
+      return { found: !!participant, participant: participant ?? undefined };
+    } else {
+      throw new BadRequestException('Se requiere email o celular');
+    }
+  }
+
+  async joinBySlug(slug: string, name: string, email?: string, phone?: string) {
+    const normalizedEmail = email ? email.toLowerCase() : undefined;
+    this.logger.log(`joinBySlug — slug="${slug}" email="${normalizedEmail}" name="${name}" phone="${phone}"`);
 
     const { data: business, error: bizError } = await this.supabase.client
       .from('businesses')
-      .select('id, name, primary_color, logo_url, plan')
+      .select('id, name, primary_color, logo_url, plan, require_email, require_phone')
       .eq('slug', slug)
       .single();
 
     if (bizError || !business) {
-      this.logger.warn(`Business not found for slug="${slug}" — supabase error: ${bizError?.message}`);
+      this.logger.warn(`Business not found for slug="${slug}" — ${bizError?.message}`);
       throw new BadRequestException('Prode no encontrado');
     }
-    this.logger.log(`Business found: id="${business.id}" name="${business.name}" plan="${business.plan}"`);
+
+    const requireEmail = business.require_email !== false;
+    const requirePhone = business.require_phone !== false;
+
+    if (requireEmail && !normalizedEmail) throw new BadRequestException('Email requerido');
+    if (requirePhone && !phone) throw new BadRequestException('Celular requerido');
 
     if (business.plan === 'free') {
       const { count } = await this.supabase.client
         .from('participants')
         .select('*', { count: 'exact', head: true })
         .eq('business_id', business.id);
-      this.logger.log(`Free plan check: current count=${count}`);
+      this.logger.log(`Free plan check: count=${count}`);
       if (count && count >= 5) throw new BadRequestException('Límite del plan gratuito alcanzado');
     }
 
-    // Upsert: if email already registered, return existing participant
-    const { data: existing } = await this.supabase.client
-      .from('participants')
-      .select('*')
-      .eq('business_id', business.id)
-      .eq('email', email)
-      .single();
+    const normalizedPhone = normalizeE164AR(phone) ?? phone ?? null;
+
+    // Determine identifier for upsert: email if required, otherwise phone
+    let existing: any = null;
+    if (requireEmail && normalizedEmail) {
+      const { data } = await this.supabase.client
+        .from('participants')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('email', normalizedEmail)
+        .maybeSingle();
+      existing = data;
+    } else if (normalizedPhone) {
+      const { data } = await this.supabase.client
+        .from('participants')
+        .select('*')
+        .eq('business_id', business.id)
+        .eq('phone', normalizedPhone)
+        .limit(1);
+      existing = data?.[0] ?? null;
+    }
 
     if (existing) {
-      this.logger.log(`Participant already exists for email="${email}", returning existing id="${existing.id}"`);
+      this.logger.log(`Participant already exists id="${existing.id}"`);
       return { participant: existing, business };
     }
 
-    const normalizedPhone = normalizeE164AR(phone) ?? phone ?? ''
-    this.logger.log(`Inserting new participant — normalizedPhone="${normalizedPhone}"`);
-
+    this.logger.log(`Inserting new participant`);
     const { data, error } = await this.supabase.client
       .from('participants')
-      .insert({ business_id: business.id, name, email, phone: normalizedPhone, accepted_terms: true })
+      .insert({
+        business_id: business.id,
+        name,
+        email: normalizedEmail ?? null,
+        phone: normalizedPhone ?? '',
+        accepted_terms: true,
+      })
       .select()
       .single();
 
     if (error) {
-      this.logger.error(`Insert participant failed — code="${error.code}" message="${error.message}"`);
+      this.logger.error(`Insert failed — code="${error.code}" message="${error.message}"`);
       throw new Error(error.message);
     }
 
-    this.logger.log(`Participant inserted successfully id="${data.id}"`);
-
-    // Fire-and-forget: notify admin of new participant
+    this.logger.log(`Participant inserted id="${data.id}"`);
     this.notifications
       .sendPushToAdmin(business.id, '🎉 Nuevo participante', `${name} se unió a tu prode`)
-      .catch(() => {})
+      .catch(() => {});
 
     return { participant: data, business };
   }

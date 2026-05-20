@@ -148,6 +148,8 @@ interface Empresa {
   background_url?: string | null
   welcome_msg?: string
   plan?: 'free' | 'pro' | 'premium'
+  require_email?: boolean
+  require_phone?: boolean
   match_visibility?: 'all' | 'daily'
   close_minutes?: number
   prizes?: Array<{ rank: number; medal: string; pos: string; description: string }>

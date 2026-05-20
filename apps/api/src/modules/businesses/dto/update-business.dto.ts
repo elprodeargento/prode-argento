@@ -67,4 +67,14 @@ export class UpdateBusinessDto extends PartialType(CreateBusinessDto) {
   @IsOptional()
   @IsBoolean()
   notify_whatsapp?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  require_email?: boolean;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsBoolean()
+  require_phone?: boolean;
 }

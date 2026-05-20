@@ -8,7 +8,13 @@ import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
 class JoinDto {
   @IsString() slug: string;
   @IsString() name: string;
-  @IsEmail() email: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() phone?: string;
+}
+
+class LookupDto {
+  @IsString() slug: string;
+  @IsOptional() @IsEmail() email?: string;
   @IsOptional() @IsString() phone?: string;
 }
 
@@ -27,6 +33,12 @@ export class ParticipantsController {
   @ApiOperation({ summary: 'Join a prode by slug (participant registration)' })
   join(@Body() dto: JoinDto) {
     return this.participantsService.joinBySlug(dto.slug, dto.name, dto.email, dto.phone);
+  }
+
+  @Post('lookup')
+  @ApiOperation({ summary: 'Check if a participant exists by email or phone' })
+  lookup(@Body() dto: LookupDto) {
+    return this.participantsService.lookup(dto.slug, dto.email, dto.phone);
   }
 
   @Get('me/stats')

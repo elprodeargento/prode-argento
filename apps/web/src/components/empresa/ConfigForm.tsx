@@ -55,6 +55,8 @@ const configSchema = z.object({
   notify_results: z.boolean().default(true),
   notify_ranking: z.boolean().default(false),
   notify_whatsapp: z.boolean().default(false),
+  require_email: z.boolean().default(true),
+  require_phone: z.boolean().default(true),
 })
 
 type ConfigFormValues = z.infer<typeof configSchema>
@@ -78,6 +80,7 @@ export function ConfigForm() {
   const [igError, setIgError] = useState('')
   const [businessId, setBusinessId] = useState<string | undefined>()
   const [slug, setSlug] = useState<string | null>(null)
+  const [plan, setPlan] = useState<'free' | 'pro' | 'premium'>('free')
   const [copied, setCopied] = useState(false)
   const [qrDownloading, setQrDownloading] = useState(false)
 
@@ -100,6 +103,7 @@ export function ConfigForm() {
   })
 
   const primaryColor = watch('primary_color')
+  const registrationInvalid = plan === 'premium' && !watch('require_email') && !watch('require_phone')
   const showSaveBar = isDirty || saving || success || !!saveError
   const shareUrl = slug ? `https://${slug}.elprode.ar` : null
   const qrColor = (primaryColor ?? '#002B72').replace('#', '')
@@ -173,11 +177,14 @@ export function ConfigForm() {
             notify_results: data.notify_results ?? true,
             notify_ranking: data.notify_ranking ?? false,
             notify_whatsapp: data.notify_whatsapp ?? false,
+            require_email: data.require_email ?? true,
+            require_phone: data.require_phone ?? true,
           })
           setLogoUrl(data.logo_url)
           setBackgroundUrl(data.background_url ?? null)
           setBusinessId(data.id)
           setSlug(data.slug ?? null)
+          setPlan(data.plan ?? 'free')
         }
 
         // Load IG connection status
@@ -241,6 +248,10 @@ export function ConfigForm() {
   }
 
   const onSubmit = async (data: ConfigFormValues) => {
+    if (plan === 'premium' && !data.require_email && !data.require_phone) {
+      setSaveError('Al menos un campo debe quedar obligatorio para identificar a tus participantes')
+      return
+    }
     try {
       setSaving(true)
       setSaveError(null)
@@ -740,6 +751,44 @@ export function ConfigForm() {
         </div>
       </div>
 
+      {/* REGISTRO DE PARTICIPANTES — solo plan Premium */}
+      {plan === 'premium' && (
+        <div className="config-section">
+          <div className="config-section-head">
+            <span className="config-section-icon">📋</span>
+            <div>
+              <div className="config-section-title">Registro de participantes</div>
+              <div className="config-section-sub">Configurá qué datos son obligatorios al registrarse</div>
+            </div>
+          </div>
+          <div className="config-section-body">
+            {([
+              { id: 'require_email' as const, title: 'Email obligatorio', desc: 'El participante debe ingresar su correo electrónico' },
+              { id: 'require_phone' as const, title: 'Celular obligatorio', desc: 'El participante debe ingresar su número de teléfono' },
+            ]).map((row, i, arr) => (
+              <div key={i}>
+                <div className="toggle-row py-2">
+                  <div>
+                    <div className="toggle-label">{row.title}</div>
+                    <p className="toggle-desc">{row.desc}</p>
+                  </div>
+                  <Toggle
+                    checked={!!watch(row.id)}
+                    onChange={() => setValue(row.id, !watch(row.id), { shouldDirty: true })}
+                  />
+                </div>
+                {i < arr.length - 1 && <div className="h-[1px] bg-[#DDE1EF] my-1" />}
+              </div>
+            ))}
+            {!watch('require_email') && !watch('require_phone') && (
+              <div className="mt-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl text-[12px] font-semibold text-amber-700">
+                Al menos un campo debe quedar obligatorio para identificar a tus participantes.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ZONA DE PELIGRO */}
       <div className="config-section border-red-200">
         <div className="config-section-head">
@@ -798,8 +847,8 @@ export function ConfigForm() {
           </button>
           <button
             type="submit"
-            disabled={saving}
-            className="px-5 py-2.5 bg-[#F5C518] text-[#002B72] hover:bg-[#FFD740] rounded-xl text-[14px] font-black transition-all disabled:opacity-50"
+            disabled={saving || registrationInvalid}
+            className="px-5 py-2.5 bg-[#F5C518] text-[#002B72] hover:bg-[#FFD740] rounded-xl text-[14px] font-black transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? 'Guardando...' : 'Guardar cambios'}
           </button>
