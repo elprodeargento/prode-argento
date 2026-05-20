@@ -15,7 +15,7 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
   return fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(options.body && !isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
@@ -42,7 +42,13 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
 
 export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
   const res = await apiFetch(path, { method: 'PUT', body: JSON.stringify(body) })
-  if (!res.ok) throw new Error(`PUT ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}))
+    const msg = json?.message ?? `Error ${res.status}`
+    const err = new Error(Array.isArray(msg) ? msg[0] : msg) as Error & { status: number }
+    err.status = res.status
+    throw err
+  }
   return res.json()
 }
 
@@ -54,6 +60,12 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
 
 export async function apiDelete<T>(path: string): Promise<T> {
   const res = await apiFetch(path, { method: 'DELETE' })
-  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`)
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}))
+    const msg = json?.message ?? `Error ${res.status}`
+    const err = new Error(Array.isArray(msg) ? msg[0] : msg) as Error & { status: number }
+    err.status = res.status
+    throw err
+  }
   return res.json()
 }

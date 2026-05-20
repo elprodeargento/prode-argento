@@ -17,6 +17,7 @@ import { PaymentsModule } from './modules/payments/payments.module'
 import { StorageModule } from './modules/storage/storage.module'
 import { ReferralsModule } from './modules/referrals/referrals.module'
 import { PlayerReferralsModule } from './modules/player-referrals/player-referrals.module'
+import { ReferralCampaignsModule } from './modules/referral-campaigns/referral-campaigns.module'
 import appConfig from './config/app.config'
 
 @Module({
@@ -44,6 +45,7 @@ import appConfig from './config/app.config'
     StorageModule,
     ReferralsModule,
     PlayerReferralsModule,
+    ReferralCampaignsModule,
   ],
 })
 export class AppModule {}

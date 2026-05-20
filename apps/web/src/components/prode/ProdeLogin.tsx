@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { ProdeApp } from './ProdeApp'
@@ -31,9 +32,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1
 const storageKey = (slug: string) => `prode:${slug}`
 
 export function ProdeLogin({ empresa }: { empresa: Empresa }) {
+  const searchParams = useSearchParams()
+  const referrerParticipantId = searchParams.get('ref') ?? undefined
+
   const requireEmail = empresa.require_email !== false
   const requirePhone = empresa.require_phone !== false
-  // Identificador primario: el primer campo requerido; default email
   const primaryField: 'email' | 'phone' = requireEmail ? 'email' : 'phone'
 
   const [step, setStep] = useState<'identifier' | 'register' | 'confirm' | 'app'>('identifier')
@@ -53,7 +56,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       try {
         const data = JSON.parse(stored) as Participant
         setParticipant(data)
-        setStep('confirm')
+        setStep('app')
       } catch {}
     }
   }, [empresa.slug])
@@ -137,6 +140,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       const payload: Record<string, string> = { slug: empresa.slug, name: form.name }
       if (email) payload.email = email
       if (phone) payload.phone = phone
+      if (referrerParticipantId) payload.referrer_participant_id = referrerParticipantId
 
       const res = await fetch(`${API_URL}/participants/join`, {
         method: 'POST',
