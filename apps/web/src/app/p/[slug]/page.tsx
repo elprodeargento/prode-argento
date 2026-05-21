@@ -1,6 +1,7 @@
 import { ProdeLogin } from '@/components/prode/ProdeLogin'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -76,5 +77,9 @@ export default async function PublicProdePage({ params }: Props) {
     })),
   }
 
-  return <ProdeLogin empresa={empresa} />
+  return (
+    <Suspense>
+      <ProdeLogin empresa={empresa} />
+    </Suspense>
+  )
 }

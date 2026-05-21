@@ -82,7 +82,7 @@ export class ParticipantsService {
     }
   }
 
-  async joinBySlug(slug: string, name: string, email?: string, phone?: string) {
+  async joinBySlug(slug: string, name: string, email?: string, phone?: string, referrerParticipantId?: string) {
     const normalizedEmail = email ? email.toLowerCase() : undefined;
     this.logger.log(`joinBySlug — slug="${slug}" email="${normalizedEmail}" name="${name}" phone="${phone}"`);
 
@@ -148,6 +148,7 @@ export class ParticipantsService {
         email: normalizedEmail ?? null,
         phone: normalizedPhone ?? '',
         accepted_terms: true,
+        referred_by_participant_id: referrerParticipantId ?? null,
       })
       .select()
       .single();

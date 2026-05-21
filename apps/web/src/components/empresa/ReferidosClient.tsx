@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronRight } from 'lucide-react'
 import { ReferidosTermsModal } from '@/components/shared/ReferidosTermsModal'
 
 interface Referral {
@@ -31,6 +31,7 @@ export function ReferidosClient() {
   const [copied, setCopied] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
+  const [plan, setPlan] = useState<string>('free')
 
   const handleReferidosAction = (action: () => void) => {
     const accepted = localStorage.getItem('referidos-terms-accepted') === 'true'
@@ -43,10 +44,13 @@ export function ReferidosClient() {
   }
 
   useEffect(() => {
-    apiGet<ReferralsData>('/referrals/me')
-      .then(setData)
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    Promise.all([
+      apiGet<ReferralsData>('/referrals/me').catch(() => null),
+      apiGet<{ plan: string }>('/businesses/me').catch(() => null),
+    ]).then(([referrals, biz]) => {
+      if (referrals) setData(referrals)
+      setPlan((biz as any)?.plan ?? 'free')
+    }).finally(() => setLoading(false))
   }, [])
 
   const handleCopy = async () => {
@@ -71,6 +75,34 @@ export function ReferidosClient() {
 
   return (
     <div className="space-y-6">
+
+      {/* Acceso rápido a campaña (solo Premium) */}
+      {plan === 'premium' && (
+        <a
+          href="/empresa/referidos/campana"
+          className="card p-5 flex items-center justify-between gap-4 hover:shadow-md transition-all cursor-pointer group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E6EEF9] flex items-center justify-center text-xl shrink-0">
+              🎁
+            </div>
+            <div>
+              <div className="text-[15px] font-extrabold text-[#0D1A3A]">Tu Campaña de Referidos</div>
+              <div className="text-[12px] text-[#5A6480] font-medium mt-0.5">
+                Premiá a los participantes que inviten amigos
+              </div>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-[#8E96AE] shrink-0 group-hover:text-[#002B72] transition-colors" />
+        </a>
+      )}
+
+      {/* Separador si hay campaña */}
+      {plan === 'premium' && (
+        <div className="text-[12px] font-black text-[#8E96AE] uppercase tracking-widest px-1">
+          También · Referidos de prode.ar
+        </div>
+      )}
 
       {/* Card de puntos */}
       <div className="card p-6 text-center">
