@@ -237,7 +237,7 @@ export function CampanaReferidosClient() {
         </p>
         <button
           onClick={() => {
-            setForm({ name: '', description: '', invite_message: '', prizes: [] })
+            setForm({ name: '', description: '', invite_message: '', prizes: [], milestone_every: 3, milestone_prize: '' })
             setError('')
             setShowForm(true)
           }}

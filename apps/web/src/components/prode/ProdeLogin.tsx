@@ -184,25 +184,36 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
 
   const color = empresa.primary_color ?? '#002B72'
 
-  const HeroBanner = () => (
-    <div className="p-8 text-center relative overflow-hidden" style={{
-      background: color,
-      ...(empresa.background_url ? {
-        backgroundImage: `url(${empresa.background_url})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      } : {}),
-    }}>
-      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
-      <div className="relative z-10">
-        <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
-          {empresa.logo_url ? <img src={empresa.logo_url} alt={empresa.name} className="w-12 h-12 object-contain rounded-xl p-0.5" /> : '⚽'}
+  const HeroBanner = () => {
+    if (empresa.background_url) {
+      return (
+        <div className="relative overflow-hidden" style={{ background: color }}>
+          <img src={empresa.background_url} alt="" className="w-full h-auto block" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(0,0,0,0.65) 100%)' }} />
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-center z-10">
+            <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
+              {empresa.logo_url ? <img src={empresa.logo_url} alt={empresa.name} className="w-12 h-12 object-contain rounded-xl p-0.5" /> : '⚽'}
+            </div>
+            <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
+            <div className="text-white/60 text-sm mt-1">Prode Mundial 2026 🏆</div>
+          </div>
         </div>
-        <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
-        <div className="text-white/60 text-sm mt-1">Prode Mundial 2026 🏆</div>
+      )
+    }
+
+    return (
+      <div className="p-8 text-center relative overflow-hidden" style={{ background: color }}>
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+        <div className="relative z-10">
+          <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
+            {empresa.logo_url ? <img src={empresa.logo_url} alt={empresa.name} className="w-12 h-12 object-contain rounded-xl p-0.5" /> : '⚽'}
+          </div>
+          <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
+          <div className="text-white/60 text-sm mt-1">Prode Mundial 2026 🏆</div>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const RememberToggle = () => (
     <label className="flex items-center gap-3 cursor-pointer select-none py-1">
