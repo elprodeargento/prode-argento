@@ -45,29 +45,29 @@ const CATEGORIES = [
 ]
 
 const GRADIENT_BY_CAT: Record<string, string> = {
-  '🍕 Gastronomía':   'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
-  '☕ Cafetería':      'linear-gradient(135deg, #3d1a00, #8B4513)',
-  '🛒 Supermercado':  'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
-  '🥖 Panadería':     'linear-gradient(135deg, #5c3a1a, #8b5e34)',
-  '🥩 Carnicería':    'linear-gradient(135deg, #4a0000, #8b0000)',
-  '🥦 Verdulería':    'linear-gradient(135deg, #0d2e0d, #1a5e1a)',
-  '🍭 Kiosco':        'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
-  '🧊 Congelados':    'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
-  '💊 Farmacia':      'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
-  '👗 Indumentaria':  'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
-  '💆 Bienestar':     'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
-  '📚 Librería':      'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
-  '🎬 Entretenimiento':'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
-  '🔧 Servicios':     'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
-  '🏠 Hogar':         'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
-  '🐶 Mascotas':      'linear-gradient(135deg, #3d2400, #5c3a1a)',
-  '⚽ Deportes':      'linear-gradient(135deg, #0d3b0d, #1a7a1a)',
-  '💻 Tecnología':    'linear-gradient(135deg, #0f172a, #334155)',
-  '🚗 Automotor':     'linear-gradient(135deg, #3b0d0d, #7a1a1a)',
-  '🧸 Juguetería':    'linear-gradient(135deg, #3b2e00, #8f6a00)',
-  '🧴 Estética':      'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
-  '🎨 Arte y Deco':   'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
-  '✨ Otros':         'linear-gradient(135deg, #334155, #475569)',
+  '🍕 Gastronomía': 'linear-gradient(135deg, #1a3a5c, #2d6a8f)',
+  '☕ Cafetería': 'linear-gradient(135deg, #3d1a00, #8B4513)',
+  '🛒 Supermercado': 'linear-gradient(135deg, #0d3b2e, #1a7a5e)',
+  '🥖 Panadería': 'linear-gradient(135deg, #5c3a1a, #8b5e34)',
+  '🥩 Carnicería': 'linear-gradient(135deg, #4a0000, #8b0000)',
+  '🥦 Verdulería': 'linear-gradient(135deg, #0d2e0d, #1a5e1a)',
+  '🍭 Kiosco': 'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🧊 Congelados': 'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
+  '💊 Farmacia': 'linear-gradient(135deg, #0d2e3b, #1a5e7a)',
+  '👗 Indumentaria': 'linear-gradient(135deg, #2e0d3b, #7a1a5e)',
+  '💆 Bienestar': 'linear-gradient(135deg, #1a3b2e, #2d8f6a)',
+  '📚 Librería': 'linear-gradient(135deg, #3b2e0d, #8f6a2d)',
+  '🎬 Entretenimiento': 'linear-gradient(135deg, #1a0d3b, #5e1a8f)',
+  '🔧 Servicios': 'linear-gradient(135deg, #2e2e2e, #5a5a5a)',
+  '🏠 Hogar': 'linear-gradient(135deg, #1a2e3b, #2d5e8f)',
+  '🐶 Mascotas': 'linear-gradient(135deg, #3d2400, #5c3a1a)',
+  '⚽ Deportes': 'linear-gradient(135deg, #0d3b0d, #1a7a1a)',
+  '💻 Tecnología': 'linear-gradient(135deg, #0f172a, #334155)',
+  '🚗 Automotor': 'linear-gradient(135deg, #3b0d0d, #7a1a1a)',
+  '🧸 Juguetería': 'linear-gradient(135deg, #3b2e00, #8f6a00)',
+  '🧴 Estética': 'linear-gradient(135deg, #3b0d2e, #7a1a5e)',
+  '🎨 Arte y Deco': 'linear-gradient(135deg, #0d3b3b, #1a7a7a)',
+  '✨ Otros': 'linear-gradient(135deg, #334155, #475569)',
 }
 
 function PromoPreview({ name, description, category, radiusKm, imageUrl }: {
@@ -76,17 +76,17 @@ function PromoPreview({ name, description, category, radiusKm, imageUrl }: {
   const bg = GRADIENT_BY_CAT[category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)'
   return (
     <div
-      className="h-[88px] rounded-[14px] overflow-hidden relative flex items-center"
-      style={{ background: imageUrl ? undefined : bg }}
+      className={`rounded-[14px] overflow-hidden relative${!imageUrl ? ' aspect-[3/1]' : ''}`}
+      style={{ background: bg }}
     >
       {imageUrl && (
-        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={imageUrl} alt="" className="w-full h-auto block" />
       )}
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)' }}
+        style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)' }}
       />
-      <div className="relative z-10 px-4 flex flex-col gap-1">
+      <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 flex flex-col gap-1">
         <span
           className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full w-fit uppercase tracking-wider"
           style={{ background: '#F5C518', color: '#002B72' }}
@@ -229,7 +229,7 @@ export function PromoManager() {
         const created = await apiPost<Promo>('/promos/me', payload)
         setPromos(p => [created, ...p])
       }
-      
+
       setShowForm(false)
       setForm(INITIAL_FORM)
       setEditingId(null)
@@ -458,7 +458,7 @@ export function PromoManager() {
             {/* Ubicación detectada */}
             <div className="flex items-center gap-2 text-[12px] font-medium">
               {geoStatus === 'idle' && <span className="text-[#8E96AE]">📍 Detectando ubicación del local...</span>}
-              {geoStatus === 'ok'   && <span className="text-[#18A06A]">📍 Ubicación capturada — la promo aparecerá a {form.radius_km} km a la redonda</span>}
+              {geoStatus === 'ok' && <span className="text-[#18A06A]">📍 Ubicación capturada — la promo aparecerá a {form.radius_km} km a la redonda</span>}
               {geoStatus === 'denied' && <span className="text-amber-500">⚠️ Sin ubicación — la promo se mostrará a todos los participantes</span>}
             </div>
 
@@ -494,7 +494,7 @@ export function PromoManager() {
                   <div className="text-[13px] font-bold text-[#003FA3] group-hover:underline">
                     {uploading ? 'Subiendo...' : 'Subir imagen'}
                   </div>
-                  <div className="text-[11px] text-[#8E96AE] mt-1">JPG o PNG · 1200×400px recomendado</div>
+                  <div className="text-[11px] text-[#8E96AE] mt-1">Foto horizontal · JPG o PNG · Ej: 1200×400px</div>
                 </button>
               )}
             </div>
@@ -565,14 +565,14 @@ export function PromoManager() {
                 className={`border-[1.5px] border-[#DDE1EF] rounded-xl overflow-hidden ${!promo.active ? 'opacity-70' : ''}`}
               >
                 <div
-                  className="h-[72px] relative flex items-center px-4"
-                  style={{ background: promo.image_url ? undefined : (GRADIENT_BY_CAT[promo.category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)') }}
+                  className={`relative${!promo.image_url ? ' aspect-[3/1]' : ''}`}
+                  style={{ background: GRADIENT_BY_CAT[promo.category] ?? 'linear-gradient(135deg, #1a3a5c, #2d6a8f)' }}
                 >
                   {promo.image_url && (
-                    <img src={promo.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    <img src={promo.image_url} alt="" className="w-full h-auto block" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
-                  <div className="relative z-10">
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%)' }} />
+                  <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
                     <div className="text-[13px] font-[900] text-white leading-tight">{promo.name || promo.category}</div>
                     <div className="text-[11px] text-white/80 font-medium leading-tight mt-0.5">{promo.description}</div>
                   </div>

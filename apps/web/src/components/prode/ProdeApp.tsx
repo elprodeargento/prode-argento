@@ -112,15 +112,15 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
     <div className="px-4 pt-4">
       <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Promociones locales</div>
       <div
-        className="h-[88px] rounded-[16px] overflow-hidden relative flex items-center cursor-pointer select-none"
-        style={{ background: promo.image_url ? undefined : bg }}
+        className={`rounded-[16px] overflow-hidden relative cursor-pointer select-none${!promo.image_url ? ' aspect-[3/1]' : ''}`}
+        style={{ background: bg }}
         onClick={() => setCurrent(c => (c + 1) % promos.length)}
       >
         {promo.image_url && (
-          <img src={promo.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={promo.image_url} alt="" className="w-full h-auto block" />
         )}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg,rgba(0,0,0,0.55) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)' }} />
-        <div className="relative z-10 px-4 flex flex-col gap-1 flex-1 min-w-0">
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.75) 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 flex flex-col gap-1 min-w-0">
           {hasLocation && (
             <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full w-fit uppercase tracking-wider"
               style={{ background: '#F5C518', color: '#002B72' }}>
@@ -226,6 +226,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [participantCampaign, setParticipantCampaign] = useState<{
     id: string; name: string; description?: string; invite_message?: string
     prizes: Array<{ rank: number; description: string }>
+    milestone_every: number
+    milestone_prize?: string
   } | null>(null)
   const [participantReferralCount, setParticipantReferralCount] = useState(0)
   const [participantReferralHistory, setParticipantReferralHistory] = useState<Array<{ name: string; registered_at: string }>>([])
@@ -789,9 +791,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   onClick={async () => {
                     track('player_share_invite')
                     const hasRefCampaign = !!participantCampaign
-                    const url = hasRefCampaign
-                      ? `${window.location.origin}/p/${empresa.slug}?ref=${participant.id}`
-                      : `https://${empresa.slug}.elprode.ar`
+                    const url = `https://${empresa.slug}.elprode.ar${hasRefCampaign ? `?ref=${participant.id}` : ''}`
                     const text = participantCampaign?.invite_message
                       ?? `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate acá:`
                     if (navigator.share) {
@@ -1350,14 +1350,15 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       Tu progreso actual
                     </div>
                     {(() => {
-                      const slots = Math.max(participantCampaign.prizes.length, 3)
-                      const filled = Math.min(participantReferralCount, slots)
-                      const topPrize = participantCampaign.prizes[0]
+                      const milestoneEvery = participantCampaign.milestone_every ?? 3
+                      const milestonePrize = participantCampaign.milestone_prize
+                      const enGrupo = participantReferralCount % milestoneEvery
+                      const milestonesDone = Math.floor(participantReferralCount / milestoneEvery)
                       return (
                         <>
                           <div className="flex items-center justify-center gap-4 mb-5">
-                            {Array.from({ length: slots }).map((_, i) => {
-                              const isDone = i < filled
+                            {Array.from({ length: milestoneEvery }).map((_, i) => {
+                              const isDone = i < enGrupo
                               return (
                                 <div key={i} className="flex flex-col items-center gap-2">
                                   <div
@@ -1376,11 +1377,11 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                               )
                             })}
                           </div>
-                          {topPrize && (
+                          {milestonePrize && (
                             <div className="flex items-center justify-center gap-2 mb-4">
                               <div className="h-px flex-1 bg-white/20" />
-                              <div className="bg-[#F5C518] text-[#002B72] font-black text-[12px] px-4 py-1.5 rounded-full text-center max-w-[180px] leading-tight">
-                                🥇 {topPrize.description}
+                              <div className="bg-[#F5C518] text-[#002B72] font-black text-[12px] px-4 py-1.5 rounded-full text-center max-w-[200px] leading-tight">
+                                🎁 {milestonePrize}
                               </div>
                               <div className="h-px flex-1 bg-white/20" />
                             </div>
@@ -1388,30 +1389,26 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                           <div className="text-center">
                             {participantReferralCount === 0 ? (
                               <p className="text-white/60 text-[13px] font-medium">Compartí tu link y empezá a ganar</p>
-                            ) : filled >= slots ? (
+                            ) : enGrupo === 0 && milestonesDone > 0 ? (
                               <p className="text-[#F5C518] text-[13px] font-black">
-                                🎉 ¡Llegaste al máximo! Tenés {participantReferralCount} referidos
+                                🎉 ¡Completaste un grupo! Ya ganaste {milestonesDone} {milestonesDone === 1 ? 'vez' : 'veces'}
                               </p>
                             ) : (
                               <p className="text-white/70 text-[13px] font-medium">
-                                Te {slots - filled === 1 ? 'falta 1 referido' : `faltan ${slots - filled} referidos`} para completar
+                                Te {milestoneEvery - enGrupo === 1 ? 'falta 1 referido' : `faltan ${milestoneEvery - enGrupo} referidos`}{milestonePrize ? ` para ganar ${milestonePrize}` : ' para completar'}
                               </p>
                             )}
                           </div>
-                          {participantCampaign.prizes.length > 1 && (
+                          {milestonePrize && (
                             <div className="mt-4 pt-4 border-t border-white/10">
-                              <div className="text-[10px] font-black text-white/40 uppercase tracking-widest text-center mb-3">
-                                Premios
+                              <div className="text-[10px] font-black text-white/40 uppercase tracking-widest text-center mb-2">
+                                Potencial de ganancias
                               </div>
-                              <div className="flex justify-around">
-                                {participantCampaign.prizes.map((p, i) => (
-                                  <div key={p.rank} className="text-center flex-1">
-                                    <div className="text-[#F5C518] font-black text-[13px] leading-tight">
-                                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${p.rank}°`}
-                                    </div>
-                                    <div className="text-white/60 text-[10px] font-bold leading-tight mt-0.5 px-1">
-                                      {p.description}
-                                    </div>
+                              <div className="flex justify-between">
+                                {[1, 2, 3].map(n => (
+                                  <div key={n} className="text-center flex-1">
+                                    <div className="text-[#F5C518] font-black text-[13px]">{n === 1 ? milestonePrize : `${n} veces`}</div>
+                                    <div className="text-white/40 text-[10px] font-bold">{milestoneEvery * n} referidos</div>
                                   </div>
                                 ))}
                               </div>
@@ -1428,13 +1425,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       🔗 Tu link de invitación
                     </div>
                     <div className="bg-slate-50 rounded-xl px-4 py-3 mb-3 text-center">
-                      <div className="text-[11px] text-slate-400 font-medium mb-1">elprode.ar/p/{empresa.slug}</div>
+                      <div className="text-[11px] text-slate-400 font-medium mb-1">{empresa.slug}.elprode.ar</div>
                       <div className="font-black text-[13px] text-slate-900 break-all">?ref={participant.id.slice(0, 8)}...</div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
-                          const url = `${window.location.origin}/p/${empresa.slug}?ref=${participant.id}`
+                          const url = `https://${empresa.slug}.elprode.ar?ref=${participant.id}`
                           await navigator.clipboard.writeText(url)
                           setCampaignLinkCopied(true)
                           setTimeout(() => setCampaignLinkCopied(false), 2000)
@@ -1450,7 +1447,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       </button>
                       <button
                         onClick={async () => {
-                          const url = `${window.location.origin}/p/${empresa.slug}?ref=${participant.id}`
+                          const url = `https://${empresa.slug}.elprode.ar?ref=${participant.id}`
                           track('player_campaign_link_shared')
                           const text = participantCampaign.invite_message
                             ?? `¡Estoy jugando el prode del Mundial 2026 en ${empresa.name}! Sumate con mi link:`

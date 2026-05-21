@@ -4,17 +4,14 @@ import { useEffect, useState } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api'
 import { Loader2, Plus, Trash2, Pencil, ArrowLeft } from 'lucide-react'
 
-interface Prize {
-  rank: number
-  description: string
-}
-
 interface Campaign {
   id: string
   name: string
   description?: string
   invite_message?: string
-  prizes: Prize[]
+  prizes: Array<{ rank: number; description: string }>
+  milestone_every: number
+  milestone_prize?: string
   is_active: boolean
 }
 
@@ -22,43 +19,6 @@ interface LeaderboardEntry {
   id: string
   name: string
   referral_count: number
-}
-
-function PrizeEditor({ prizes, onChange }: { prizes: Prize[]; onChange: (p: Prize[]) => void }) {
-  const add = () => onChange([...prizes, { rank: prizes.length + 1, description: '' }])
-  const remove = (i: number) => {
-    const next = prizes.filter((_, idx) => idx !== i).map((p, idx) => ({ ...p, rank: idx + 1 }))
-    onChange(next)
-  }
-  const update = (i: number, description: string) => {
-    onChange(prizes.map((p, idx) => (idx === i ? { ...p, description } : p)))
-  }
-
-  return (
-    <div className="flex flex-col gap-2">
-      {prizes.map((p, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="text-[13px] font-black text-slate-400 w-6 text-right">{i + 1}°</span>
-          <input
-            value={p.description}
-            onChange={e => update(i, e.target.value)}
-            placeholder={`Premio ${i + 1}`}
-            className="flex-1 px-3 py-2 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-medium text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72] transition-colors"
-          />
-          <button type="button" onClick={() => remove(i)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
-            <Trash2 size={14} />
-          </button>
-        </div>
-      ))}
-      <button
-        type="button"
-        onClick={add}
-        className="flex items-center gap-1.5 text-[13px] font-black text-[#003FA3] hover:text-[#002B72] transition-colors mt-1"
-      >
-        <Plus size={14} /> Agregar premio
-      </button>
-    </div>
-  )
 }
 
 export function CampanaReferidosClient() {
@@ -70,7 +30,7 @@ export function CampanaReferidosClient() {
   const [linkCopied, setLinkCopied] = useState(false)
 
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', description: '', invite_message: '', prizes: [] as Prize[] })
+  const [form, setForm] = useState({ name: '', description: '', invite_message: '', prizes: [] as Array<{ rank: number; description: string }>, milestone_every: 3, milestone_prize: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -103,6 +63,8 @@ export function CampanaReferidosClient() {
       description: form.description.trim() || undefined,
       invite_message: form.invite_message.trim() || undefined,
       prizes: form.prizes.filter(p => p.description.trim()),
+      milestone_every: form.milestone_every,
+      milestone_prize: form.milestone_prize.trim() || undefined,
     }
     try {
       if (isEditing && campaign) {
@@ -225,8 +187,23 @@ export function CampanaReferidosClient() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">Premios</label>
-            <PrizeEditor prizes={form.prizes} onChange={prizes => setForm(f => ({ ...f, prizes }))} />
+            <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">Premio por referidos</label>
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] font-bold text-[#5A6480] shrink-0">Cada</span>
+              <input
+                type="number" min={1} max={50}
+                value={form.milestone_every}
+                onChange={e => setForm(f => ({ ...f, milestone_every: Math.max(1, Number(e.target.value)) }))}
+                className="w-16 px-3 py-2 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-bold text-center text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72]"
+              />
+              <span className="text-[13px] font-bold text-[#5A6480] shrink-0">referidos =</span>
+            </div>
+            <input
+              value={form.milestone_prize}
+              onChange={e => setForm(f => ({ ...f, milestone_prize: e.target.value }))}
+              placeholder="Ej: Pizza gratis, Descuento 20%, Vale $5000"
+              className="px-4 py-3 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-medium text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72] transition-colors"
+            />
           </div>
 
           <div className="flex gap-2 pt-2">
@@ -292,15 +269,15 @@ export function CampanaReferidosClient() {
           <span className="text-[11px] font-black text-[#18A06A] bg-[#E8F8F1] px-2.5 py-1 rounded-full shrink-0">✅ Activa</span>
         </div>
 
-        {campaign.prizes.length > 0 && (
+        {(campaign.milestone_prize || campaign.milestone_every) && (
           <div className="bg-[#F1F3F9] rounded-xl p-4 mb-4">
-            <div className="text-[11px] font-black text-[#8E96AE] uppercase tracking-widest mb-2">Premios</div>
-            <div className="flex flex-col gap-1.5">
-              {campaign.prizes.map((p, i) => (
-                <div key={p.rank} className="text-[13px] font-medium text-[#0D1A3A]">
-                  {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${p.rank}°`} {p.description}
-                </div>
-              ))}
+            <div className="text-[11px] font-black text-[#8E96AE] uppercase tracking-widest mb-2">Premio por milestone</div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[13px] font-bold text-[#5A6480]">Cada</span>
+              <span className="text-[14px] font-black text-[#002B72]">{campaign.milestone_every ?? 3}</span>
+              <span className="text-[13px] font-bold text-[#5A6480]">referidos</span>
+              <span className="text-[13px] font-bold text-[#5A6480]">=</span>
+              <span className="text-[14px] font-black text-[#0D1A3A]">🎁 {campaign.milestone_prize ?? '—'}</span>
             </div>
           </div>
         )}
@@ -339,8 +316,10 @@ export function CampanaReferidosClient() {
                 setForm({
                   name: campaign.name,
                   description: campaign.description ?? '',
-                  invite_message: (campaign as any).invite_message ?? '',
+                  invite_message: campaign.invite_message ?? '',
                   prizes: campaign.prizes,
+                  milestone_every: campaign.milestone_every ?? 3,
+                  milestone_prize: campaign.milestone_prize ?? '',
                 })
                 setError('')
                 setShowForm(true)
@@ -430,9 +409,9 @@ export function CampanaReferidosClient() {
         <div className="text-[14px] font-extrabold text-[#0D1A3A] mb-4">¿Cómo funciona?</div>
         <div className="space-y-3">
           {[
-            { icon: '🔗', text: 'Cada participante tiene un link único con su ID' },
+            { icon: '🔗', text: 'Cada participante recibe un link único con su ID' },
             { icon: '👥', text: 'Cuando alguien se registra con ese link, se cuenta como su referido' },
-            { icon: '🏆', text: 'El ranking se actualiza en tiempo real — los que más inviten ganan los premios que definiste' },
+            { icon: '🎁', text: campaign.milestone_prize ? `Cada ${campaign.milestone_every ?? 3} referidos ganan: ${campaign.milestone_prize}` : 'Los que más inviten ganan los premios que definiste' },
           ].map((step, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#E6EEF9] flex items-center justify-center text-[16px] shrink-0">
