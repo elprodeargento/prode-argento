@@ -4,14 +4,18 @@ import { useEffect, useState } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api'
 import { Loader2, Plus, Trash2, Pencil, ArrowLeft } from 'lucide-react'
 
+interface Milestone {
+  at: number
+  prize: string
+}
+
 interface Campaign {
   id: string
   name: string
   description?: string
   invite_message?: string
   prizes: Array<{ rank: number; description: string }>
-  milestone_every: number
-  milestone_prize?: string
+  milestones: Milestone[]
   is_active: boolean
 }
 
@@ -30,7 +34,7 @@ export function CampanaReferidosClient() {
   const [linkCopied, setLinkCopied] = useState(false)
 
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', description: '', invite_message: '', prizes: [] as Array<{ rank: number; description: string }>, milestone_every: 3, milestone_prize: '' })
+  const [form, setForm] = useState({ name: '', description: '', invite_message: '', prizes: [] as Array<{ rank: number; description: string }>, milestones: [] as Milestone[] })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -63,8 +67,7 @@ export function CampanaReferidosClient() {
       description: form.description.trim() || undefined,
       invite_message: form.invite_message.trim() || undefined,
       prizes: form.prizes.filter(p => p.description.trim()),
-      milestone_every: form.milestone_every,
-      milestone_prize: form.milestone_prize.trim() || undefined,
+      milestones: form.milestones.filter(m => m.prize.trim()).map(m => ({ at: m.at, prize: m.prize.trim() })),
     }
     try {
       if (isEditing && campaign) {
@@ -187,23 +190,54 @@ export function CampanaReferidosClient() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">Premio por referidos</label>
-            <div className="flex items-center gap-3">
-              <span className="text-[13px] font-bold text-[#5A6480] shrink-0">Cada</span>
-              <input
-                type="number" min={1} max={50}
-                value={form.milestone_every}
-                onChange={e => setForm(f => ({ ...f, milestone_every: Math.max(1, Number(e.target.value)) }))}
-                className="w-16 px-3 py-2 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-bold text-center text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72]"
-              />
-              <span className="text-[13px] font-bold text-[#5A6480] shrink-0">referidos =</span>
+            <div className="flex items-center justify-between">
+              <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">Hitos de referidos</label>
+              {form.milestones.length < 10 && (
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({
+                    ...f,
+                    milestones: [...f.milestones, { at: (f.milestones[f.milestones.length - 1]?.at ?? 0) + 5, prize: '' }]
+                  }))}
+                  className="flex items-center gap-1 text-[12px] font-black text-[#002B72] hover:text-[#00318A] transition-colors"
+                >
+                  <Plus size={13} /> Agregar hito
+                </button>
+              )}
             </div>
-            <input
-              value={form.milestone_prize}
-              onChange={e => setForm(f => ({ ...f, milestone_prize: e.target.value }))}
-              placeholder="Ej: Pizza gratis, Descuento 20%, Vale $5000"
-              className="px-4 py-3 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-medium text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72] transition-colors"
-            />
+            {form.milestones.length === 0 ? (
+              <p className="text-[12px] text-[#8E96AE] font-medium py-1">
+                Sin hitos. Agregá uno para configurar premios por cantidad de referidos.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {form.milestones.map((m, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-[#5A6480] shrink-0">A los</span>
+                    <input
+                      type="number" min={1} max={999}
+                      value={m.at}
+                      onChange={e => setForm(f => ({ ...f, milestones: f.milestones.map((x, j) => j === i ? { ...x, at: Math.max(1, Number(e.target.value)) } : x) }))}
+                      className="w-16 px-2 py-2 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-bold text-center text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72]"
+                    />
+                    <span className="text-[12px] font-bold text-[#5A6480] shrink-0">ref. →</span>
+                    <input
+                      value={m.prize}
+                      onChange={e => setForm(f => ({ ...f, milestones: f.milestones.map((x, j) => j === i ? { ...x, prize: e.target.value } : x) }))}
+                      placeholder="Ej: Pizza gratis"
+                      className="flex-1 px-3 py-2 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-medium text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72] transition-colors"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, milestones: f.milestones.filter((_, j) => j !== i) }))}
+                      className="p-1.5 rounded-lg hover:bg-red-50 text-[#8E96AE] hover:text-red-500 transition-colors shrink-0"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">
@@ -237,7 +271,7 @@ export function CampanaReferidosClient() {
         </p>
         <button
           onClick={() => {
-            setForm({ name: '', description: '', invite_message: '', prizes: [], milestone_every: 3, milestone_prize: '' })
+            setForm({ name: '', description: '', invite_message: '', prizes: [], milestones: [] })
             setError('')
             setShowForm(true)
           }}
@@ -269,18 +303,22 @@ export function CampanaReferidosClient() {
           <span className="text-[11px] font-black text-[#18A06A] bg-[#E8F8F1] px-2.5 py-1 rounded-full shrink-0">✅ Activa</span>
         </div>
 
-        {(campaign.milestone_prize || campaign.milestone_every) && (
-          <div className="bg-[#F1F3F9] rounded-xl p-4 mb-4">
-            <div className="text-[11px] font-black text-[#8E96AE] uppercase tracking-widest mb-2">Premio por milestone</div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[13px] font-bold text-[#5A6480]">Cada</span>
-              <span className="text-[14px] font-black text-[#002B72]">{campaign.milestone_every ?? 3}</span>
-              <span className="text-[13px] font-bold text-[#5A6480]">referidos</span>
-              <span className="text-[13px] font-bold text-[#5A6480]">=</span>
-              <span className="text-[14px] font-black text-[#0D1A3A]">🎁 {campaign.milestone_prize ?? '—'}</span>
+        <div className="bg-[#F1F3F9] rounded-xl p-4 mb-4">
+          <div className="text-[11px] font-black text-[#8E96AE] uppercase tracking-widest mb-2">Hitos de referidos</div>
+          {(campaign.milestones ?? []).length === 0 ? (
+            <div className="text-[13px] text-[#8E96AE] font-medium">Sin hitos configurados</div>
+          ) : (
+            <div className="flex flex-col gap-1.5">
+              {(campaign.milestones ?? []).map((m, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-[13px] font-bold text-[#002B72]">{m.at}</span>
+                  <span className="text-[12px] text-[#5A6480] font-medium">referidos →</span>
+                  <span className="text-[13px] font-black text-[#0D1A3A]">🎁 {m.prize}</span>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-[13px] text-red-700 font-semibold">
@@ -318,8 +356,7 @@ export function CampanaReferidosClient() {
                   description: campaign.description ?? '',
                   invite_message: campaign.invite_message ?? '',
                   prizes: campaign.prizes,
-                  milestone_every: campaign.milestone_every ?? 3,
-                  milestone_prize: campaign.milestone_prize ?? '',
+                  milestones: campaign.milestones ?? [],
                 })
                 setError('')
                 setShowForm(true)
@@ -411,7 +448,7 @@ export function CampanaReferidosClient() {
           {[
             { icon: '🔗', text: 'Cada participante recibe un link único con su ID' },
             { icon: '👥', text: 'Cuando alguien se registra con ese link, se cuenta como su referido' },
-            { icon: '🎁', text: campaign.milestone_prize ? `Cada ${campaign.milestone_every ?? 3} referidos ganan: ${campaign.milestone_prize}` : 'Los que más inviten ganan los premios que definiste' },
+            { icon: '🎁', text: (campaign.milestones ?? []).length > 0 ? `Premios al llegar a ${(campaign.milestones ?? []).map(m => m.at).join(', ')} referidos` : 'Los que más inviten ganan los premios que definiste' },
           ].map((step, i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#E6EEF9] flex items-center justify-center text-[16px] shrink-0">

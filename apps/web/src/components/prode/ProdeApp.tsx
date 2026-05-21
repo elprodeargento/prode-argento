@@ -240,8 +240,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [participantCampaign, setParticipantCampaign] = useState<{
     id: string; name: string; description?: string; invite_message?: string
     prizes: Array<{ rank: number; description: string }>
-    milestone_every: number
-    milestone_prize?: string
+    milestones: Array<{ at: number; prize: string }>
   } | null>(null)
   const [participantReferralCount, setParticipantReferralCount] = useState(0)
   const [participantReferralHistory, setParticipantReferralHistory] = useState<Array<{ name: string; registered_at: string }>>([])
@@ -1364,70 +1363,75 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                       Tu progreso actual
                     </div>
                     {(() => {
-                      const milestoneEvery = participantCampaign.milestone_every ?? 3
-                      const milestonePrize = participantCampaign.milestone_prize
-                      const enGrupo = participantReferralCount % milestoneEvery
-                      const milestonesDone = Math.floor(participantReferralCount / milestoneEvery)
+                      const milestones = participantCampaign.milestones ?? []
+                      const count = participantReferralCount
+                      if (milestones.length === 0) {
+                        return <p className="text-center text-white/60 text-[13px] font-medium">Compartí tu link y empezá a ganar</p>
+                      }
+                      const currentIdx = milestones.findIndex(m => count < m.at)
+                      const current = currentIdx === -1 ? milestones[milestones.length - 1] : milestones[currentIdx]
+                      const prevAt = currentIdx <= 0 ? 0 : milestones[currentIdx - 1].at
+                      const groupSize = current.at - prevAt
+                      const groupCount = Math.min(count - prevAt, groupSize)
+                      const justCompleted = count >= current.at
                       return (
                         <>
-                          <div className="flex items-center justify-center gap-4 mb-5">
-                            {Array.from({ length: milestoneEvery }).map((_, i) => {
-                              const isDone = i < enGrupo
+                          <div className="flex items-center justify-center gap-4 mb-5 flex-wrap">
+                            {Array.from({ length: groupSize }).map((_, i) => {
+                              const filled = justCompleted || i < groupCount
                               return (
                                 <div key={i} className="flex flex-col items-center gap-2">
                                   <div
                                     className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-black border-4 transition-all"
                                     style={{
-                                      background: isDone ? '#F5C518' : 'rgba(255,255,255,0.1)',
-                                      borderColor: isDone ? '#F5C518' : 'rgba(255,255,255,0.2)',
-                                      color: isDone ? '#002B72' : 'rgba(255,255,255,0.3)',
+                                      background: filled ? '#F5C518' : 'rgba(255,255,255,0.1)',
+                                      borderColor: filled ? '#F5C518' : 'rgba(255,255,255,0.2)',
+                                      color: filled ? '#002B72' : 'rgba(255,255,255,0.3)',
                                     }}>
-                                    {isDone ? '✓' : i + 1}
+                                    {filled ? '✓' : i + 1}
                                   </div>
                                   <div className="text-[10px] font-bold text-white/40 uppercase">
-                                    {isDone ? 'Listo' : 'Pendiente'}
+                                    {filled ? 'Listo' : 'Pendiente'}
                                   </div>
                                 </div>
                               )
                             })}
                           </div>
-                          {milestonePrize && (
-                            <div className="flex items-center justify-center gap-2 mb-4">
-                              <div className="h-px flex-1 bg-white/20" />
-                              <div className="bg-[#F5C518] text-[#002B72] font-black text-[12px] px-4 py-1.5 rounded-full text-center max-w-[200px] leading-tight">
-                                🎁 {milestonePrize}
-                              </div>
-                              <div className="h-px flex-1 bg-white/20" />
+                          <div className="flex items-center justify-center gap-2 mb-4">
+                            <div className="h-px flex-1 bg-white/20" />
+                            <div className="bg-[#F5C518] text-[#002B72] font-black text-[12px] px-4 py-1.5 rounded-full text-center max-w-[200px] leading-tight">
+                              🎁 {current.prize}
                             </div>
-                          )}
+                            <div className="h-px flex-1 bg-white/20" />
+                          </div>
                           <div className="text-center">
-                            {participantReferralCount === 0 ? (
+                            {count === 0 ? (
                               <p className="text-white/60 text-[13px] font-medium">Compartí tu link y empezá a ganar</p>
-                            ) : enGrupo === 0 && milestonesDone > 0 ? (
-                              <p className="text-[#F5C518] text-[13px] font-black">
-                                🎉 ¡Completaste un grupo! Ya ganaste {milestonesDone} {milestonesDone === 1 ? 'vez' : 'veces'}
-                              </p>
+                            ) : justCompleted && currentIdx === -1 ? (
+                              <p className="text-[#F5C518] text-[13px] font-black">🎉 ¡Completaste todos los hitos!</p>
+                            ) : justCompleted ? (
+                              <p className="text-[#F5C518] text-[13px] font-black">🎉 ¡Completaste este hito!</p>
                             ) : (
                               <p className="text-white/70 text-[13px] font-medium">
-                                Te {milestoneEvery - enGrupo === 1 ? 'falta 1 referido' : `faltan ${milestoneEvery - enGrupo} referidos`}{milestonePrize ? ` para ganar ${milestonePrize}` : ' para completar'}
+                                Te {current.at - count === 1 ? 'falta 1 referido' : `faltan ${current.at - count} referidos`} para ganar {current.prize}
                               </p>
                             )}
                           </div>
-                          {milestonePrize && (
-                            <div className="mt-4 pt-4 border-t border-white/10">
-                              <div className="text-[10px] font-black text-white/40 uppercase tracking-widest text-center mb-2">
-                                Potencial de ganancias
-                              </div>
-                              <div className="flex justify-between">
-                                {[1, 2, 3].map(n => (
-                                  <div key={n} className="text-center flex-1">
-                                    <div className="text-[#F5C518] font-black text-[13px]">{n === 1 ? milestonePrize : `${n} veces`}</div>
-                                    <div className="text-white/40 text-[10px] font-bold">{milestoneEvery * n} referidos</div>
-                                  </div>
-                                ))}
-                              </div>
+                          <div className="mt-4 pt-4 border-t border-white/10">
+                            <div className="text-[10px] font-black text-white/40 uppercase tracking-widest text-center mb-2">
+                              Premios disponibles
                             </div>
-                          )}
+                            <div className="flex justify-between">
+                              {milestones.map((m, i) => (
+                                <div key={i} className="text-center flex-1">
+                                  <div className="text-[#F5C518] font-black text-[14px] leading-tight">
+                                    {count >= m.at ? '✓ ' : ''}{m.prize}
+                                  </div>
+                                  <div className="text-white/40 text-[10px] font-bold">{m.at} referidos</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </>
                       )
                     })()}

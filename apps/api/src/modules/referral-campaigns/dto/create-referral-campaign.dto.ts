@@ -6,11 +6,15 @@ class PrizeDto {
   @IsString() description: string
 }
 
+class MilestoneDto {
+  @IsInt() @Min(1) at: number
+  @IsString() @MinLength(1) prize: string
+}
+
 export class CreateReferralCampaignDto {
   @IsString() @MinLength(3) name: string
   @IsOptional() @IsString() description?: string
   @IsOptional() @IsString() invite_message?: string
-  @IsArray() @ValidateNested({ each: true }) @Type(() => PrizeDto) prizes: PrizeDto[]
-  @IsOptional() @IsInt() @Min(1) milestone_every?: number
-  @IsOptional() @IsString() milestone_prize?: string
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => PrizeDto) prizes?: PrizeDto[]
+  @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => MilestoneDto) milestones?: MilestoneDto[]
 }
