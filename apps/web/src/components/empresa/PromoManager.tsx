@@ -195,12 +195,17 @@ export function PromoManager() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+      alert('La imagen no puede superar los 10 MB.')
+      e.target.value = ''
+      return
+    }
     setUploading(true)
     try {
       const url = await uploadToR2(file)
       setImageUrl(url)
     } catch {
-      alert('Error al subir la imagen')
+      alert('Error al subir la imagen.')
     } finally {
       setUploading(false)
     }
@@ -214,6 +219,7 @@ export function PromoManager() {
         ...form,
         image_url: imageUrl,
         link_url: form.link_url || undefined,
+        valid_from: form.valid_from || undefined,
       }
 
       if (editingId) {
