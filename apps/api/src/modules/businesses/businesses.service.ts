@@ -142,12 +142,9 @@ export class BusinessesService {
   }
 
   async removeByAdminId(adminId: string) {
-    const { error } = await this.supabase.client
-      .from('businesses')
-      .delete()
-      .eq('admin_user_id', adminId);
-
-    if (error) throw new Error(error.message);
-    return { success: true };
+    // Deleting the auth user cascades: auth.users → businesses → participants → predictions
+    const { error } = await this.supabase.client.auth.admin.deleteUser(adminId)
+    if (error) throw new Error(error.message)
+    return { success: true }
   }
 }

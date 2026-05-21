@@ -44,7 +44,20 @@ export function LoginEmpresaForm() {
     }
 
     const { error } = await supabase.auth.signInWithPassword(form)
-    if (error) { setError(authError(error.message)); setLoading(false); return }
+    if (error) {
+      if (/invalid.*(login|credentials)/i.test(error.message)) {
+        const { data: biz } = await supabase
+          .from('businesses')
+          .select('id')
+          .eq('admin_email', form.email.toLowerCase())
+          .maybeSingle()
+        setError(biz ? 'Contraseña incorrecta' : 'No existe una cuenta con ese email')
+      } else {
+        setError(authError(error.message))
+      }
+      setLoading(false)
+      return
+    }
     router.push('/empresa/dashboard')
   }
 

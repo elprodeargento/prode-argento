@@ -1,34 +1,15 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
 
 const WA_URL = 'https://wa.me/5492236994563?text=' + encodeURIComponent('Hola! Tengo una consulta sobre El Prode Argento 👋')
 
 export function WhatsAppSupportButton() {
   const pathname = usePathname()
-  const [isParticipantPage, setIsParticipantPage] = useState(false)
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname
-      const isSubdomain = hostname.split('.').length > 2 && !hostname.includes('localhost')
-      
-      const isMarketingPath = pathname === '/' || 
-                             pathname.startsWith('/ayuda') || 
-                             pathname.startsWith('/terminos') || 
-                             pathname.startsWith('/privacidad')
-      
-      const isEnterprisePath = pathname.startsWith('/empresa')
-      
-      // El soporte solo es para el sitio principal (marketing) y el panel de control
-      const shouldShowSupport = isMarketingPath || isEnterprisePath
-      
-      setIsParticipantPage(isSubdomain || !shouldShowSupport)
-    }
-  }, [pathname])
-
-  if (isParticipantPage) return null
+  const MARKETING_PATHS = ['/', '/ayuda', '/terminos', '/privacidad', '/terminos-referidos']
+  const isMarketing = MARKETING_PATHS.some(p => pathname === p || pathname?.startsWith(p + '/'))
+  if (!isMarketing) return null
 
   return (
     <a
