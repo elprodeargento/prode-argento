@@ -93,12 +93,26 @@ const GRADIENT_BY_CAT: Record<string, string> = {
 
 function PromoCarousel({ promos }: { promos: Promo[] }) {
   const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const fadeRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const advance = () => {
+    if (fadeRef.current) clearTimeout(fadeRef.current)
+    setVisible(false)
+    fadeRef.current = setTimeout(() => {
+      setCurrent(c => (c + 1) % promos.length)
+      setVisible(true)
+    }, 200)
+  }
 
   useEffect(() => {
     if (promos.length <= 1) return
-    timerRef.current = setInterval(() => setCurrent(c => (c + 1) % promos.length), 4000)
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+    timerRef.current = setInterval(advance, 4000)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (fadeRef.current) clearTimeout(fadeRef.current)
+    }
   }, [promos.length])
 
   if (!promos.length) return null
@@ -112,9 +126,9 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
     <div className="px-4 pt-4">
       <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">Promociones locales</div>
       <div
-        className={`rounded-[16px] overflow-hidden relative cursor-pointer select-none${!promo.image_url ? ' aspect-[3/1]' : ''}`}
+        className={`rounded-[16px] overflow-hidden relative cursor-pointer select-none transition-opacity duration-200${!visible ? ' opacity-0' : ''}${!promo.image_url ? ' aspect-[3/1]' : ''}`}
         style={{ background: bg }}
-        onClick={() => setCurrent(c => (c + 1) % promos.length)}
+        onClick={advance}
       >
         {promo.image_url && (
           <img src={promo.image_url} alt="" className="w-full h-auto block" />
