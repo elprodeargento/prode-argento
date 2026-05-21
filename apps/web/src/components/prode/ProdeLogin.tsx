@@ -219,8 +219,8 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   // Step: CONFIRM (returning user from sessionStorage)
   if (step === 'confirm' && participant) {
     return (
-      <div className="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: color }}>
-        <div className="w-full sm:max-w-sm bg-white sm:rounded-3xl overflow-hidden shadow-2xl">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: color }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/25">
           <HeroBanner />
           <div className="p-6 text-center">
             <div className="w-16 h-16 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-2xl font-black text-slate-600 mx-auto mb-4">
@@ -253,8 +253,8 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   // Step: IDENTIFIER (login screen)
   if (step === 'identifier') {
     return (
-      <div className="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: color }}>
-        <div className="w-full sm:max-w-sm bg-white sm:rounded-3xl overflow-hidden shadow-2xl">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: color }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/25">
           <HeroBanner />
           <div className="p-6">
             <div className="text-xl font-black text-slate-900 mb-1">¡Bienvenido!</div>
@@ -322,8 +322,8 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const secondaryRequired = secondaryIsEmail ? requireEmail : requirePhone
 
   return (
-    <div className="min-h-screen flex items-end sm:items-center justify-center p-0 sm:p-4" style={{ background: color }}>
-      <div className="w-full sm:max-w-sm bg-white sm:rounded-3xl overflow-hidden shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: color }}>
+      <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/25">
         <HeroBanner />
         <div className="p-6">
           <div className="mb-5 p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-2.5">
