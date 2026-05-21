@@ -48,7 +48,7 @@ export class PromosController {
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete a promo' })
-  remove(@Req() req: any, @Param('id') id: string) {
+  remove(@Req() req: any, @Param('id') id: string, @Body() _body?: any) {
     return this.promosService.remove(req.user.id, id);
   }
 }
