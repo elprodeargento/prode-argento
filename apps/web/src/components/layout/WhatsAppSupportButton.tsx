@@ -1,15 +1,24 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const WA_URL = 'https://wa.me/5492236994563?text=' + encodeURIComponent('Hola! Tengo una consulta sobre El Prode Argento 👋')
+const MARKETING_PATHS = ['/', '/ayuda', '/terminos', '/privacidad', '/terminos-referidos']
+const MARKETING_HOSTS = ['elprode.ar', 'www.elprode.ar']
 
 export function WhatsAppSupportButton() {
   const pathname = usePathname()
+  const [show, setShow] = useState(false)
 
-  const MARKETING_PATHS = ['/', '/ayuda', '/terminos', '/privacidad', '/terminos-referidos']
-  const isMarketing = MARKETING_PATHS.some(p => pathname === p || pathname?.startsWith(p + '/'))
-  if (!isMarketing) return null
+  useEffect(() => {
+    const hostname = window.location.hostname
+    const isMarketingHost = MARKETING_HOSTS.includes(hostname) || hostname === 'localhost' || hostname.startsWith('127.')
+    const isMarketingPath = MARKETING_PATHS.some(p => pathname === p || pathname?.startsWith(p + '/'))
+    setShow(isMarketingHost && isMarketingPath)
+  }, [pathname])
+
+  if (!show) return null
 
   return (
     <a
