@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
@@ -71,11 +71,13 @@ export class ParticipantsService {
 
     if (email) {
       const { data: participant } = await query.eq('email', email.toLowerCase()).maybeSingle();
+      if (participant?.is_disabled) throw new ForbiddenException('Tu acceso fue deshabilitado por el administrador del prode.');
       return { found: !!participant, participant: participant ?? undefined };
     } else if (phone) {
       const normalizedPhone = normalizeE164AR(phone) ?? phone;
       const { data } = await query.eq('phone', normalizedPhone).limit(1);
       const participant = data?.[0] ?? null;
+      if (participant?.is_disabled) throw new ForbiddenException('Tu acceso fue deshabilitado por el administrador del prode.');
       return { found: !!participant, participant: participant ?? undefined };
     } else {
       throw new BadRequestException('Se requiere email o celular');
@@ -136,6 +138,7 @@ export class ParticipantsService {
 
     if (existing) {
       this.logger.log(`Participant already exists id="${existing.id}"`);
+      if (existing.is_disabled) throw new ForbiddenException('Tu acceso fue deshabilitado por el administrador del prode.');
       return { participant: existing, business };
     }
 
@@ -213,6 +216,33 @@ export class ParticipantsService {
       with_predictions: withPredictions,
       without_predictions: total - withPredictions,
     }
+  }
+
+  async setDisabled(adminUserId: string, participantId: string, is_disabled: boolean) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id, plan')
+      .eq('admin_user_id', adminUserId)
+      .maybeSingle()
+    if (!business) throw new BadRequestException('Business not found')
+    if (business.plan !== 'premium') throw new ForbiddenException('Solo el plan Premium puede deshabilitar participantes')
+
+    const { data: participant } = await this.supabase.client
+      .from('participants')
+      .select('id')
+      .eq('id', participantId)
+      .eq('business_id', business.id)
+      .maybeSingle()
+    if (!participant) throw new BadRequestException('Participante no encontrado')
+
+    const { data, error } = await this.supabase.client
+      .from('participants')
+      .update({ is_disabled })
+      .eq('id', participantId)
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return data
   }
 
   async findAllByBusiness(businessId: string) {

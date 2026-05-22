@@ -80,4 +80,16 @@ export class ParticipantsController {
   ) {
     return this.participantsService.update(id, body)
   }
+
+  @Patch(':id/disabled')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Enable or disable a participant (Premium only)' })
+  setDisabled(
+    @Param('id') id: string,
+    @Body() body: { is_disabled: boolean },
+    @Req() req: any,
+  ) {
+    return this.participantsService.setDisabled(req.user.id, id, body.is_disabled)
+  }
 }

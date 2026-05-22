@@ -47,6 +47,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState('')
+  const [disabled, setDisabled] = useState(false)
   const [participant, setParticipant] = useState<Participant | null>(null)
 
   useEffect(() => {
@@ -55,9 +56,26 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
     if (stored) {
       try {
         const data = JSON.parse(stored) as Participant
-        setParticipant(data)
-        setStep('app')
-      } catch {}
+        const body = requireEmail && data.email
+          ? { slug: empresa.slug, email: data.email }
+          : data.phone
+            ? { slug: empresa.slug, phone: data.phone }
+            : null
+        if (!body) { setParticipant(data); setStep('app'); return }
+        fetch(`${API_URL}/participants/lookup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }).then(async res => {
+          if (res.status === 403) {
+            sessionStorage.removeItem(storageKey(empresa.slug))
+            setDisabled(true)
+          } else {
+            setParticipant(data)
+            setStep('app')
+          }
+        }).catch(() => { setParticipant(data); setStep('app') })
+      } catch { sessionStorage.removeItem(storageKey(empresa.slug)) }
     }
   }, [empresa.slug])
 
@@ -84,7 +102,10 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error('Error al verificar')
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err.message ?? 'Error al verificar')
+      }
       const json = await res.json()
       if (json.found && json.participant) {
         const p: Participant = {
@@ -100,8 +121,12 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       } else {
         setStep('register')
       }
-    } catch {
-      setApiError('Hubo un error. Intentá de nuevo.')
+    } catch (err: any) {
+      if (err.message?.includes('deshabilitado')) {
+        setDisabled(true)
+      } else {
+        setApiError('Hubo un error. Intentá de nuevo.')
+      }
     } finally {
       setLoading(false)
     }
@@ -163,7 +188,11 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       trackEvent('player_registered', { business_slug: empresa.slug })
       setStep('app')
     } catch (err: any) {
-      setApiError(err.message ?? 'Hubo un error. Intentá de nuevo.')
+      if (err.message?.includes('deshabilitado')) {
+        setDisabled(true)
+      } else {
+        setApiError(err.message ?? 'Hubo un error. Intentá de nuevo.')
+      }
     } finally {
       setLoading(false)
     }
@@ -215,6 +244,23 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       <span className="text-sm font-semibold text-slate-700">Recordarme en esta sesión</span>
     </label>
   )
+
+  if (disabled) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: color }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/25">
+          <HeroBanner />
+          <div className="p-8 text-center flex flex-col items-center gap-3">
+            <div className="text-5xl">🚫</div>
+            <div className="font-black text-[18px] text-[#0D1A3A]">Acceso deshabilitado</div>
+            <p className="text-[13px] text-[#5A6480] font-medium">
+              El administrador de este prode deshabilitó tu acceso. Contactalo para más información.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   // Step: CONFIRM (returning user from sessionStorage)
   if (step === 'confirm' && participant) {

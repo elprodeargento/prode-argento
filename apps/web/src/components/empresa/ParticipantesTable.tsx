@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download } from 'lucide-react'
-import { apiGet } from '@/lib/api'
+import { Search, X, Loader2, ChevronUp, ChevronDown, ChevronsUpDown, Download, Ban, CheckCircle } from 'lucide-react'
+import { apiGet, apiPatch } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
 
 interface Participant {
@@ -16,6 +16,7 @@ interface Participant {
   registered_at: string
   predictions_count: number
   total_matches: number
+  is_disabled: boolean
 }
 
 interface PredictionRow {
@@ -67,9 +68,16 @@ function PointsBadge({ pts }: { pts: number | null }) {
   return <span className={`px-2 py-0.5 rounded-md text-[11px] font-black ${color}`}>{label}</span>
 }
 
-function ParticipantDrawer({ participant, onClose }: { participant: Participant; onClose: () => void }) {
+function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
+  participant: Participant
+  plan: string
+  onClose: () => void
+  onToggleDisabled: (id: string, disabled: boolean) => void
+}) {
   const [predictions, setPredictions] = useState<PredictionRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [toggling, setToggling] = useState(false)
+  const [toggleError, setToggleError] = useState('')
 
   useEffect(() => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
@@ -192,8 +200,40 @@ function ParticipantDrawer({ participant, onClose }: { participant: Participant;
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-[#DDE1EF] bg-[#F8F9FC]">
-          <span className="text-[11px] text-[#8E96AE] font-medium">Se unió el {formatDate(participant.registered_at)}</span>
+        <div className="px-5 py-3 border-t border-[#DDE1EF] bg-[#F8F9FC] flex flex-col gap-2">
+          {toggleError && (
+            <div className="text-[11px] text-[#E34646] font-semibold bg-[#FEF0F0] px-3 py-1.5 rounded-lg border border-[#E34646]/20">
+              {toggleError}
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[11px] text-[#8E96AE] font-medium">Se unió el {formatDate(participant.registered_at)}</span>
+            {plan === 'premium' && (
+              <button
+                onClick={async () => {
+                  setToggling(true)
+                  setToggleError('')
+                  try {
+                    await apiPatch(`/participants/${participant.id}/disabled`, { is_disabled: !participant.is_disabled })
+                    onToggleDisabled(participant.id, !participant.is_disabled)
+                  } catch (e: any) {
+                    setToggleError(e?.message ?? 'Error al actualizar')
+                  } finally {
+                    setToggling(false)
+                  }
+                }}
+                disabled={toggling}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black transition-all disabled:opacity-60 ${
+                  participant.is_disabled
+                    ? 'bg-[#E8F8F1] text-[#18A06A] border border-[#18A06A]/20 hover:bg-[#18A06A] hover:text-white'
+                    : 'bg-[#FEF0F0] text-[#E34646] border border-[#E34646]/20 hover:bg-[#E34646] hover:text-white'
+                }`}
+              >
+                {toggling ? <Loader2 size={11} className="animate-spin" /> : participant.is_disabled ? <CheckCircle size={11} /> : <Ban size={11} />}
+                {participant.is_disabled ? 'Habilitar' : 'Deshabilitar'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -235,11 +275,12 @@ export function ParticipantesTable() {
   const [selected, setSelected] = useState<Participant | null>(null)
   const [exporting, setExporting] = useState(false)
   const [businessName, setBusinessName] = useState('')
+  const [plan, setPlan] = useState('')
   const router = useRouter()
   const pageSize = 10
 
   useEffect(() => {
-    apiGet<{ name: string }>('/businesses/me').then(b => setBusinessName(b.name)).catch(() => {})
+    apiGet<{ name: string; plan: string }>('/businesses/me').then(b => { setBusinessName(b.name); setPlan(b.plan) }).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -315,7 +356,17 @@ export function ParticipantesTable() {
 
   return (
     <>
-      {selected && <ParticipantDrawer participant={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ParticipantDrawer
+          participant={selected}
+          plan={plan}
+          onClose={() => setSelected(null)}
+          onToggleDisabled={(id, disabled) => {
+            setParticipants(ps => ps.map(p => p.id === id ? { ...p, is_disabled: disabled } : p))
+            setSelected(s => s && s.id === id ? { ...s, is_disabled: disabled } : s)
+          }}
+        />
+      )}
 
       <div className="card">
         <div className="p-[18px] border-b-[1.5px] border-[#DDE1EF] flex items-center gap-3 flex-wrap">
@@ -380,13 +431,19 @@ export function ParticipantesTable() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
-                      p.predictions_count > 0
-                        ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10'
-                        : 'bg-[#F1F3F9] text-[#8E96AE] border-[#DDE1EF]'
-                    }`}>
-                      {p.predictions_count > 0 ? 'Jugando' : 'Sin pronósticos'}
-                    </span>
+                    {p.is_disabled ? (
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-black border bg-[#FEF0F0] text-[#E34646] border-[#E34646]/10">
+                        🚫 Deshabilitado
+                      </span>
+                    ) : (
+                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
+                        p.predictions_count > 0
+                          ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10'
+                          : 'bg-[#F1F3F9] text-[#8E96AE] border-[#DDE1EF]'
+                      }`}>
+                        {p.predictions_count > 0 ? 'Jugando' : 'Sin pronósticos'}
+                      </span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 text-center">
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F3F9] font-bebas text-[18px] text-[#0D1A3A] border-[1.5px] border-[#DDE1EF]">
