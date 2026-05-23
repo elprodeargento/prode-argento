@@ -61,7 +61,10 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           : data.phone
             ? { slug: empresa.slug, phone: data.phone }
             : null
-        if (!body) { setParticipant(data); setStep('app'); return }
+        if (!body) {
+          sessionStorage.removeItem(storageKey(empresa.slug))
+          return
+        }
         fetch(`${API_URL}/participants/lookup`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -70,10 +73,16 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           if (res.status === 403) {
             sessionStorage.removeItem(storageKey(empresa.slug))
             setDisabled(true)
-          } else {
-            setParticipant(data)
-            setStep('app')
+            return
           }
+          const json = await res.json().catch(() => ({}))
+          if (json?.participant?.is_disabled) {
+            sessionStorage.removeItem(storageKey(empresa.slug))
+            setDisabled(true)
+            return
+          }
+          setParticipant(data)
+          setStep('app')
         }).catch(() => { setParticipant(data); setStep('app') })
       } catch { sessionStorage.removeItem(storageKey(empresa.slug)) }
     }
@@ -108,6 +117,10 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
       }
       const json = await res.json()
       if (json.found && json.participant) {
+        if (json.participant.is_disabled) {
+          setDisabled(true)
+          return
+        }
         const p: Participant = {
           id: json.participant.id,
           name: json.participant.name,
