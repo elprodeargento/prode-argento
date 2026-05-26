@@ -63,6 +63,7 @@ interface Promo {
   radius_km: number
   lat: number
   lon: number
+  link_url?: string
 }
 
 const GRADIENT_BY_CAT: Record<string, string> = {
@@ -96,15 +97,30 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
   const [visible, setVisible] = useState(true)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const fadeRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const viewedRef = useRef<Set<string>>(new Set())
+
+  const trackView = (promoId: string) => {
+    if (viewedRef.current.has(promoId)) return
+    viewedRef.current.add(promoId)
+    fetch(`${API_URL}/promos/${promoId}/view`, { method: 'POST' }).catch(() => {})
+  }
 
   const advance = () => {
     if (fadeRef.current) clearTimeout(fadeRef.current)
     setVisible(false)
     fadeRef.current = setTimeout(() => {
-      setCurrent(c => (c + 1) % promos.length)
+      setCurrent(c => {
+        const next = (c + 1) % promos.length
+        trackView(promos[next].id)
+        return next
+      })
       setVisible(true)
     }, 200)
   }
+
+  useEffect(() => {
+    if (promos.length > 0) trackView(promos[0].id)
+  }, [promos])
 
   useEffect(() => {
     if (promos.length <= 1) return
@@ -128,7 +144,7 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
       <div
         className={`rounded-[16px] overflow-hidden relative cursor-pointer select-none transition-opacity duration-200${!visible ? ' opacity-0' : ''}${!promo.image_url ? ' aspect-[3/1]' : ''}`}
         style={{ background: bg }}
-        onClick={advance}
+        onClick={() => promo.link_url ? window.open(promo.link_url, '_blank', 'noopener,noreferrer') : advance()}
       >
         {promo.image_url && (
           <img src={promo.image_url} alt="" className="w-full h-auto block" />

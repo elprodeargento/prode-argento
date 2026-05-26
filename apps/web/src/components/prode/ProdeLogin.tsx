@@ -52,7 +52,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
 
   useEffect(() => {
     trackEvent('player_login_view', { business_slug: empresa?.slug })
-    const stored = sessionStorage.getItem(storageKey(empresa.slug))
+    const stored = localStorage.getItem(storageKey(empresa.slug))
     if (stored) {
       try {
         const data = JSON.parse(stored) as Participant
@@ -62,7 +62,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
             ? { slug: empresa.slug, phone: data.phone }
             : null
         if (!body) {
-          sessionStorage.removeItem(storageKey(empresa.slug))
+          localStorage.removeItem(storageKey(empresa.slug))
           return
         }
         fetch(`${API_URL}/participants/lookup`, {
@@ -71,25 +71,25 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           body: JSON.stringify(body),
         }).then(async res => {
           if (res.status === 403) {
-            sessionStorage.removeItem(storageKey(empresa.slug))
+            localStorage.removeItem(storageKey(empresa.slug))
             setDisabled(true)
             return
           }
           const json = await res.json().catch(() => ({}))
           if (json?.participant?.is_disabled) {
-            sessionStorage.removeItem(storageKey(empresa.slug))
+            localStorage.removeItem(storageKey(empresa.slug))
             setDisabled(true)
             return
           }
           setParticipant(data)
           setStep('app')
         }).catch(() => { setParticipant(data); setStep('app') })
-      } catch { sessionStorage.removeItem(storageKey(empresa.slug)) }
+      } catch { localStorage.removeItem(storageKey(empresa.slug)) }
     }
   }, [empresa.slug])
 
   const saveSession = (p: Participant) => {
-    if (remember) sessionStorage.setItem(storageKey(empresa.slug), JSON.stringify(p))
+    if (remember) localStorage.setItem(storageKey(empresa.slug), JSON.stringify(p))
   }
 
   const handleIdentifierSubmit = async (e: React.FormEvent) => {
@@ -212,7 +212,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   }
 
   const handleLogout = () => {
-    sessionStorage.removeItem(storageKey(empresa.slug))
+    localStorage.removeItem(storageKey(empresa.slug))
     setParticipant(null)
     setIdentifier('')
     setForm({ name: '', secondary: '', countryCode: '54' })
@@ -242,6 +242,9 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
         </div>
         <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
         <div className="text-white/60 text-sm mt-1">Prode Mundial 2026 🏆</div>
+        {empresa.welcome_msg && (
+          <div className="mt-3 px-4 py-2 rounded-xl bg-white/15 text-white/90 text-sm font-medium leading-snug">{empresa.welcome_msg}</div>
+        )}
       </div>
     </div>
   )
@@ -370,6 +373,18 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
                 {loading ? 'Verificando...' : 'Continuar →'}
               </Button>
             </form>
+
+            <div className="mt-4 text-center">
+              <span className="text-xs text-slate-400">¿Primera vez?{' '}</span>
+              <button
+                type="button"
+                onClick={() => setStep('register')}
+                className="text-xs font-bold underline underline-offset-2"
+                style={{ color }}
+              >
+                Registrate directo
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,17 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { EmpresaSidebar } from '@/components/layout/EmpresaSidebar'
 import { EmpresaHeader } from '@/components/layout/EmpresaHeader'
 import { EmpresaBottomNav } from '@/components/layout/EmpresaBottomNav'
 import { useAdminPushNotifications } from '@/hooks/useAdminPushNotifications'
-
-import { usePathname } from 'next/navigation'
+import { createClient } from '@/utils/supabase/client'
+import { usePathname, useRouter } from 'next/navigation'
 
 export default function EmpresaLayout({ children }: { children: React.ReactNode }) {
   useAdminPushNotifications()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+    const supabase = createClient()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        router.push('/empresa/login')
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [])
   const isOnboarding = pathname === '/empresa/onboarding'
 
   if (isOnboarding) {

@@ -86,7 +86,20 @@ export async function middleware(request: NextRequest) {
     },
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Refresh token inválido o expirado — limpiar cookies y redirigir a login
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/empresa/login'
+    const redirect = NextResponse.redirect(loginUrl)
+    request.cookies.getAll()
+      .filter(c => c.name.startsWith('sb-'))
+      .forEach(c => redirect.cookies.delete(c.name))
+    return redirect
+  }
 
   const isEmpresaRoute = pathname.startsWith('/empresa/')
   const isEmpresaPublic = EMPRESA_PUBLIC_PATHS.some(p => pathname.startsWith(p))

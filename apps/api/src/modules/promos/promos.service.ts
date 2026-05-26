@@ -102,6 +102,10 @@ export class PromosService {
     return data;
   }
 
+  async incrementView(promoId: string) {
+    await this.supabase.client.rpc('increment_promo_views', { promo_id: promoId })
+  }
+
   async remove(adminUserId: string, id: string) {
     const { data: biz } = await this.supabase.client
       .from('businesses').select('id').eq('admin_user_id', adminUserId).single()

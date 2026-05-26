@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Req, Query, ParseFloatPipe, DefaultValuePipe, Patch, Delete, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Query, ParseFloatPipe, DefaultValuePipe, Patch, Delete, Param, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PromosService } from './promos.service';
 import { SupabaseAuthGuard } from '../../shared/guards/supabase-auth.guard';
@@ -18,6 +18,13 @@ export class PromosController {
     @Query('lon', new DefaultValuePipe(0), ParseFloatPipe) lon: number,
   ) {
     return this.promosService.findNearby(lat, lon);
+  }
+
+  @Post(':id/view')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Increment view count for a promo (public)' })
+  trackView(@Param('id') id: string) {
+    return this.promosService.incrementView(id)
   }
 
   @Get('me')
