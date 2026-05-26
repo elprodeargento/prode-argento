@@ -147,6 +147,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
 
   const validateRegister = () => {
     const e: Record<string, string> = {}
+    if (!identifier.trim()) e.identifier = primaryField === 'email' ? 'Ingresá tu email' : 'Ingresá tu celular'
     if (!form.name.trim()) e.name = 'Ingresá tu nombre'
     const secondaryIsEmail = primaryField === 'phone'
     if (secondaryIsEmail && requireEmail && !form.secondary.trim()) e.secondary = 'Ingresá tu email'
@@ -413,15 +414,51 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           )}
 
           <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4" autoComplete="off">
-            {/* Identificador pre-completado */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                {primaryField === 'email' ? 'Correo electrónico' : 'Celular'}
-              </label>
-              <div className="px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-500 font-medium text-sm">
-                {primaryField === 'phone' && !identifier.startsWith('+') ? `+${form.countryCode} ` : ''}{identifier}
+            {/* Identificador: editable si vino de "Registrate directo", bloqueado si vino del paso normal */}
+            {identifier ? (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                  {primaryField === 'email' ? 'Correo electrónico' : 'Celular'}
+                </label>
+                <div className="px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-500 font-medium text-sm">
+                  {primaryField === 'phone' && !identifier.startsWith('+') ? `+${form.countryCode} ` : ''}{identifier}
+                </div>
               </div>
-            </div>
+            ) : primaryField === 'email' ? (
+              <Input
+                label="Correo electrónico"
+                type="email"
+                placeholder="tu@correo.com"
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
+                error={errors.identifier}
+                autoComplete="off"
+              />
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">Celular</label>
+                <div className="flex gap-2">
+                  <select
+                    value={form.countryCode}
+                    onChange={e => setForm(f => ({ ...f, countryCode: e.target.value }))}
+                    className="flex items-center justify-center px-2 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-bold text-slate-500 focus:outline-none focus:border-[#002B72] appearance-none cursor-pointer"
+                  >
+                    {SORTED_COUNTRIES.map(c => (
+                      <option key={`${c.code}-${c.name}`} value={c.code}>{c.flag} +{c.code}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    placeholder="11 1234-5678"
+                    value={identifier}
+                    onChange={e => setIdentifier(e.target.value)}
+                    autoComplete="off"
+                    className={`flex-1 px-4 py-3 rounded-xl border-2 font-medium text-slate-900 bg-slate-50 placeholder:text-slate-400 focus:outline-none focus:border-[#002B72] focus:bg-white transition-colors ${errors.identifier ? 'border-red-400' : 'border-slate-200'}`}
+                  />
+                </div>
+                {errors.identifier && <p className="text-xs text-red-500 font-semibold">{errors.identifier}</p>}
+              </div>
+            )}
 
             <Input
               label="Tu nombre completo"
