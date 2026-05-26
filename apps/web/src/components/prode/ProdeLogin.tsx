@@ -39,10 +39,13 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   const requirePhone = empresa.require_phone !== false
   const primaryField: 'email' | 'phone' = requireEmail ? 'email' : 'phone'
 
+  const hasStored = typeof window !== 'undefined' && !!localStorage.getItem(storageKey(empresa.slug))
+
   const [step, setStep] = useState<'identifier' | 'register' | 'confirm' | 'app'>('identifier')
+  const [checking, setChecking] = useState(hasStored)
   const [loading, setLoading] = useState(false)
   const [identifier, setIdentifier] = useState('')
-  const [remember, setRemember] = useState(false)
+  const [remember, setRemember] = useState(hasStored)
   const [form, setForm] = useState({ name: '', secondary: '', countryCode: '54' })
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -63,6 +66,7 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
             : null
         if (!body) {
           localStorage.removeItem(storageKey(empresa.slug))
+          setChecking(false)
           return
         }
         fetch(`${API_URL}/participants/lookup`, {
@@ -73,18 +77,21 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           if (res.status === 403) {
             localStorage.removeItem(storageKey(empresa.slug))
             setDisabled(true)
+            setChecking(false)
             return
           }
           const json = await res.json().catch(() => ({}))
           if (json?.participant?.is_disabled) {
             localStorage.removeItem(storageKey(empresa.slug))
             setDisabled(true)
+            setChecking(false)
             return
           }
           setParticipant(data)
           setStep('app')
-        }).catch(() => { setParticipant(data); setStep('app') })
-      } catch { localStorage.removeItem(storageKey(empresa.slug)) }
+          setChecking(false)
+        }).catch(() => { setParticipant(data); setStep('app'); setChecking(false) })
+      } catch { localStorage.removeItem(storageKey(empresa.slug)); setChecking(false) }
     }
   }, [empresa.slug])
 
@@ -226,6 +233,31 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
   }
 
   const color = empresa.primary_color ?? '#002B72'
+
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: color }}>
+        <div className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl ring-2 ring-white/25">
+          <div className="p-8 text-center relative overflow-hidden" style={{
+            background: color,
+            ...(empresa.background_url ? { backgroundImage: `url(${empresa.background_url})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}),
+          }}>
+            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+            <div className="relative z-10">
+              <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
+                {empresa.logo_url ? <img src={empresa.logo_url} alt={empresa.name} className="w-12 h-12 object-contain rounded-xl p-0.5" /> : '⚽'}
+              </div>
+              <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
+            </div>
+          </div>
+          <div className="p-8 flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-4 border-slate-200 rounded-full animate-spin" style={{ borderTopColor: color }} />
+            <p className="text-sm text-slate-400 font-medium">Iniciando sesión...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const HeroBanner = () => (
     <div className="p-8 text-center relative overflow-hidden" style={{
