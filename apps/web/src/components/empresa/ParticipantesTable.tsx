@@ -139,6 +139,39 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
           </a>
         </div>
 
+        {(plan === 'premium' || plan === 'pro') && (
+          <div className="px-5 py-3 border-b border-[#DDE1EF]">
+            {toggleError && (
+              <div className="text-[11px] text-[#E34646] font-semibold bg-[#FEF0F0] px-3 py-1.5 rounded-lg border border-[#E34646]/20 mb-2">
+                {toggleError}
+              </div>
+            )}
+            <button
+              onClick={async () => {
+                setToggling(true)
+                setToggleError('')
+                try {
+                  await apiPatch(`/participants/${participant.id}/disabled`, { is_disabled: !participant.is_disabled })
+                  onToggleDisabled(participant.id, !participant.is_disabled)
+                } catch (e: any) {
+                  setToggleError(e?.message ?? 'Error al actualizar')
+                } finally {
+                  setToggling(false)
+                }
+              }}
+              disabled={toggling}
+              className={`w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[12px] font-black transition-all disabled:opacity-60 ${
+                participant.is_disabled
+                  ? 'bg-[#E8F8F1] text-[#18A06A] border border-[#18A06A]/20 hover:bg-[#18A06A] hover:text-white'
+                  : 'bg-[#FEF0F0] text-[#E34646] border border-[#E34646]/20 hover:bg-[#E34646] hover:text-white'
+              }`}
+            >
+              {toggling ? <Loader2 size={12} className="animate-spin" /> : participant.is_disabled ? <CheckCircle size={12} /> : <Ban size={12} />}
+              {participant.is_disabled ? 'Habilitar participante' : 'Deshabilitar participante'}
+            </button>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center items-center h-32">
@@ -200,40 +233,8 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
           )}
         </div>
 
-        <div className="px-5 py-3 border-t border-[#DDE1EF] bg-[#F8F9FC] flex flex-col gap-2">
-          {toggleError && (
-            <div className="text-[11px] text-[#E34646] font-semibold bg-[#FEF0F0] px-3 py-1.5 rounded-lg border border-[#E34646]/20">
-              {toggleError}
-            </div>
-          )}
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-[11px] text-[#8E96AE] font-medium">Se unió el {formatDate(participant.registered_at)}</span>
-            {(plan === 'premium' || plan === 'pro') && (
-              <button
-                onClick={async () => {
-                  setToggling(true)
-                  setToggleError('')
-                  try {
-                    await apiPatch(`/participants/${participant.id}/disabled`, { is_disabled: !participant.is_disabled })
-                    onToggleDisabled(participant.id, !participant.is_disabled)
-                  } catch (e: any) {
-                    setToggleError(e?.message ?? 'Error al actualizar')
-                  } finally {
-                    setToggling(false)
-                  }
-                }}
-                disabled={toggling}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-black transition-all disabled:opacity-60 ${
-                  participant.is_disabled
-                    ? 'bg-[#E8F8F1] text-[#18A06A] border border-[#18A06A]/20 hover:bg-[#18A06A] hover:text-white'
-                    : 'bg-[#FEF0F0] text-[#E34646] border border-[#E34646]/20 hover:bg-[#E34646] hover:text-white'
-                }`}
-              >
-                {toggling ? <Loader2 size={11} className="animate-spin" /> : participant.is_disabled ? <CheckCircle size={11} /> : <Ban size={11} />}
-                {participant.is_disabled ? 'Habilitar' : 'Deshabilitar'}
-              </button>
-            )}
-          </div>
+        <div className="px-5 py-3 border-t border-[#DDE1EF] bg-[#F8F9FC]">
+          <span className="text-[11px] text-[#8E96AE] font-medium">Se unió el {formatDate(participant.registered_at)}</span>
         </div>
       </div>
     </div>

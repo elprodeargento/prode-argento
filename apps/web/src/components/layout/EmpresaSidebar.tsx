@@ -146,7 +146,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
           ))}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="hidden lg:block p-4 border-t border-white/10">
           <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3.5">
             <div className="w-[38px] h-[38px] rounded-full bg-[#F5C518] flex items-center justify-center font-black text-[#002B72] text-[16px] shrink-0">
               {userInitials}
