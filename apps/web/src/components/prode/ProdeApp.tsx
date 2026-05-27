@@ -1597,7 +1597,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     </div>
                   </div>
                   <iframe
-                    src={participantCampaign.terms_pdf_url}
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(participantCampaign.terms_pdf_url)}&embedded=true`}
                     className="flex-1 w-full bg-white"
                     title="Términos y condiciones"
                   />

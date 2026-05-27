@@ -28,6 +28,8 @@ interface LeaderboardEntry {
   referral_count: number
 }
 
+const MAX_PDF_MB = 5
+
 export function CampanaReferidosClient() {
   const [plan, setPlan] = useState<string>('free')
   const [businessId, setBusinessId] = useState<string>('')
@@ -238,6 +240,7 @@ export function CampanaReferidosClient() {
                     onChange={async (e) => {
                       const file = e.target.files?.[0]
                       if (!file) return
+                      if (file.size > MAX_PDF_MB * 1024 * 1024) { setError(`El PDF no puede superar ${MAX_PDF_MB} MB`); e.target.value = ''; return }
                       setUploadingPdf(true)
                       try { setTermsUrl(await uploadToR2(file, businessId)) } catch { setError('Error al subir el PDF') } finally { setUploadingPdf(false) }
                       e.target.value = ''
@@ -252,6 +255,7 @@ export function CampanaReferidosClient() {
                   onChange={async (e) => {
                     const file = e.target.files?.[0]
                     if (!file) return
+                    if (file.size > MAX_PDF_MB * 1024 * 1024) { setError(`El PDF no puede superar ${MAX_PDF_MB} MB`); e.target.value = ''; return }
                     setUploadingPdf(true)
                     try { setTermsUrl(await uploadToR2(file, businessId)) } catch { setError('Error al subir el PDF') } finally { setUploadingPdf(false) }
                     e.target.value = ''
