@@ -86,7 +86,7 @@ export function EmpresaSidebar({ isOpen, onClose }: { isOpen: boolean; onClose: 
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden animate-in fade-in duration-300"
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden animate-in fade-in duration-300 cursor-pointer"
           onClick={onClose}
         />
       )}
