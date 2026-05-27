@@ -451,6 +451,8 @@ export function PromoManager() {
                   <option value={1}>1 km</option>
                   <option value={2}>2 km</option>
                   <option value={5}>5 km</option>
+                  <option value={10}>10 km</option>
+                  <option value={20}>20 km</option>
                 </select>
               </div>
             </div>
@@ -459,7 +461,7 @@ export function PromoManager() {
             <div className="flex items-center gap-2 text-[12px] font-medium">
               {geoStatus === 'idle' && <span className="text-[#8E96AE]">📍 Detectando ubicación del local...</span>}
               {geoStatus === 'ok' && <span className="text-[#18A06A]">📍 Ubicación capturada — la promo aparecerá a {form.radius_km} km a la redonda</span>}
-              {geoStatus === 'denied' && <span className="text-amber-500">⚠️ Sin ubicación — la promo se mostrará a todos los participantes</span>}
+              {geoStatus === 'denied' && <span className="text-amber-500">⚠️ Sin ubicación — la promo solo se mostrará a participantes que tampoco compartan su ubicación</span>}
             </div>
 
             {/* Imagen de fondo */}

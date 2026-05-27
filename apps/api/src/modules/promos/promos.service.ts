@@ -35,14 +35,21 @@ export class PromosService {
       .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
 
+    const userHasLocation = !(userLat === 0 && userLon === 0);
+
     return (data ?? []).filter((promo) => {
-      // lat=0 lon=0 significa sin ubicación configurada → mostrar siempre
-      if (promo.lat === 0 && promo.lon === 0) return true;
+      const promoHasLocation = !(Number(promo.lat) === 0 && Number(promo.lon) === 0);
+
+      if (!userHasLocation) {
+        // Usuario sin ubicación: solo mostrar promos sin coordenadas (alcance global)
+        return !promoHasLocation;
+      }
+
+      // Usuario con ubicación: solo mostrar promos con coordenadas dentro del radio
+      if (!promoHasLocation) return false;
       const dist = haversineKm(userLat, userLon, Number(promo.lat), Number(promo.lon));
       return dist <= Number(promo.radius_km);
     }).sort((a, b) => {
-      if (a.lat === 0 && a.lon === 0) return 1;
-      if (b.lat === 0 && b.lon === 0) return -1;
       const da = haversineKm(userLat, userLon, Number(a.lat), Number(a.lon));
       const db = haversineKm(userLat, userLon, Number(b.lat), Number(b.lon));
       return da - db;

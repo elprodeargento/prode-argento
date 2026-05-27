@@ -208,7 +208,7 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
           )}
           <div className="flex items-center justify-between gap-3">
             <span className="text-[11px] text-[#8E96AE] font-medium">Se unió el {formatDate(participant.registered_at)}</span>
-            {plan === 'premium' && (
+            {(plan === 'premium' || plan === 'pro') && (
               <button
                 onClick={async () => {
                   setToggling(true)

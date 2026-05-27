@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api'
+import { uploadToR2 } from '@/lib/storage/r2'
 import { Loader2, Plus, Trash2, Pencil, ArrowLeft } from 'lucide-react'
 
 interface Milestone {
@@ -17,6 +18,8 @@ interface Campaign {
   prizes: Array<{ rank: number; description: string }>
   milestones: Milestone[]
   is_active: boolean
+  terms_pdf_url?: string
+  invite_button_text?: string
 }
 
 interface LeaderboardEntry {
@@ -27,6 +30,7 @@ interface LeaderboardEntry {
 
 export function CampanaReferidosClient() {
   const [plan, setPlan] = useState<string>('free')
+  const [businessId, setBusinessId] = useState<string>('')
   const [businessSlug, setBusinessSlug] = useState<string>('')
   const [campaign, setCampaign] = useState<Campaign | null>(null)
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
@@ -34,9 +38,11 @@ export function CampanaReferidosClient() {
   const [linkCopied, setLinkCopied] = useState(false)
 
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', description: '', invite_message: '', prizes: [] as Array<{ rank: number; description: string }>, milestones: [] as Milestone[] })
+  const [form, setForm] = useState({ name: '', description: '', invite_message: '', invite_button_text: '', prizes: [] as Array<{ rank: number; description: string }>, milestones: [] as Milestone[] })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [termsUrl, setTermsUrl] = useState('')
+  const [uploadingPdf, setUploadingPdf] = useState(false)
 
   const [confirmDeactivate, setConfirmDeactivate] = useState(false)
   const [deactivating, setDeactivating] = useState(false)
@@ -49,6 +55,7 @@ export function CampanaReferidosClient() {
       apiGet<{ campaign: Campaign | null; leaderboard: LeaderboardEntry[]; plan: string }>('/referral-campaigns/my').catch(() => null),
     ]).then(([biz, res]) => {
       setPlan((biz as any)?.plan ?? 'free')
+      setBusinessId((biz as any)?.id ?? '')
       setBusinessSlug((biz as any)?.slug ?? '')
       if (res) {
         setCampaign(res.campaign)
@@ -68,6 +75,8 @@ export function CampanaReferidosClient() {
       invite_message: form.invite_message.trim() || undefined,
       prizes: form.prizes.filter(p => p.description.trim()),
       milestones: form.milestones.filter(m => m.prize.trim()).map(m => ({ at: m.at, prize: m.prize.trim() })),
+      invite_button_text: form.invite_button_text.trim() || null,
+      terms_pdf_url: termsUrl || null,
     }
     try {
       if (isEditing && campaign) {
@@ -189,6 +198,68 @@ export function CampanaReferidosClient() {
             </p>
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">
+              Texto del botón de invitación <span className="text-[#8E96AE] font-medium normal-case">(opcional)</span>
+            </label>
+            <input
+              value={form.invite_button_text}
+              onChange={e => setForm(f => ({ ...f, invite_button_text: e.target.value }))}
+              placeholder="Ej: ¡Invitá a tus amigos y ganá premios!"
+              maxLength={60}
+              className="px-4 py-3 rounded-xl border-2 border-[#DDE1EF] text-[13px] font-medium text-[#0D1A3A] bg-[#F1F3F9] focus:outline-none focus:border-[#002B72] transition-colors"
+            />
+            <p className="text-[11px] text-[#8E96AE] font-medium">
+              Reemplaza el texto del botón "Invitá a un amigo" en la app del jugador
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">
+              Términos y condiciones <span className="text-[#8E96AE] font-medium normal-case">(PDF, opcional)</span>
+            </label>
+            {termsUrl ? (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-[#DDE1EF] bg-[#F1F3F9]">
+                  <span className="text-base">📄</span>
+                  <a href={termsUrl} target="_blank" rel="noopener noreferrer"
+                    className="flex-1 text-[13px] font-bold text-[#002B72] underline underline-offset-2 truncate">
+                    Ver PDF actual
+                  </a>
+                  <button type="button" onClick={() => setTermsUrl('')}
+                    className="text-[12px] font-black text-red-500 hover:text-red-700 shrink-0 px-2">
+                    ✕ Eliminar
+                  </button>
+                </div>
+                <label className="flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#002B72] hover:text-[#002B72] transition-colors cursor-pointer">
+                  {uploadingPdf ? <Loader2 size={14} className="animate-spin" /> : '🔄'}
+                  {uploadingPdf ? 'Subiendo...' : 'Reemplazar PDF'}
+                  <input type="file" accept=".pdf" className="hidden" disabled={uploadingPdf}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      setUploadingPdf(true)
+                      try { setTermsUrl(await uploadToR2(file, businessId)) } catch { setError('Error al subir el PDF') } finally { setUploadingPdf(false) }
+                      e.target.value = ''
+                    }} />
+                </label>
+              </div>
+            ) : (
+              <label className="flex items-center justify-center gap-2 py-4 rounded-xl border-2 border-dashed border-[#DDE1EF] text-[12px] font-black text-[#5A6480] hover:border-[#002B72] hover:text-[#002B72] transition-colors cursor-pointer">
+                {uploadingPdf ? <Loader2 size={14} className="animate-spin" /> : '📎'}
+                {uploadingPdf ? 'Subiendo...' : 'Subir PDF de términos y condiciones'}
+                <input type="file" accept=".pdf" className="hidden" disabled={uploadingPdf}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    setUploadingPdf(true)
+                    try { setTermsUrl(await uploadToR2(file, businessId)) } catch { setError('Error al subir el PDF') } finally { setUploadingPdf(false) }
+                    e.target.value = ''
+                  }} />
+              </label>
+            )}
+          </div>
+
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label className="text-[12px] font-black text-[#0D1A3A] uppercase tracking-wide">Hitos de referidos</label>
@@ -272,6 +343,7 @@ export function CampanaReferidosClient() {
         <button
           onClick={() => {
             setForm({ name: '', description: '', invite_message: '', prizes: [], milestones: [] })
+            setTermsUrl('')
             setError('')
             setShowForm(true)
           }}
@@ -355,9 +427,11 @@ export function CampanaReferidosClient() {
                   name: campaign.name,
                   description: campaign.description ?? '',
                   invite_message: campaign.invite_message ?? '',
+                  invite_button_text: campaign.invite_button_text ?? '',
                   prizes: campaign.prizes,
                   milestones: campaign.milestones ?? [],
                 })
+                setTermsUrl(campaign.terms_pdf_url ?? '')
                 setError('')
                 setShowForm(true)
               }}

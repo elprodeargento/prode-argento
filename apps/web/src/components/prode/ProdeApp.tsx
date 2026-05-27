@@ -254,10 +254,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [payoutSent, setPayoutSent] = useState(false)
   const [copied, setCopied] = useState(false)
   const [participantCampaign, setParticipantCampaign] = useState<{
-    id: string; name: string; description?: string; invite_message?: string
+    id: string; name: string; description?: string; invite_message?: string; invite_button_text?: string
     prizes: Array<{ rank: number; description: string }>
     milestones: Array<{ at: number; prize: string }>
+    terms_pdf_url?: string
   } | null>(null)
+  const [showTermsPdf, setShowTermsPdf] = useState(false)
   const [participantReferralCount, setParticipantReferralCount] = useState(0)
   const [participantReferralHistory, setParticipantReferralHistory] = useState<Array<{ name: string; registered_at: string }>>([])
   const [campaignLinkCopied, setCampaignLinkCopied] = useState(false)
@@ -833,7 +835,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 font-black text-sm transition-all"
                   style={{ borderColor: color, color, background: `${color}10` }}
                 >
-                  👥 Invitá a un amigo
+                  👥 {participantCampaign?.invite_button_text ?? 'Invitá a un amigo'}
                   {isFree && <span className="ml-1 opacity-50 text-[10px] font-bold">({count}/5)</span>}
                 </button>
               )
@@ -1559,6 +1561,15 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     </div>
                   </div>
 
+                  {/* Términos y condiciones PDF */}
+                  {participantCampaign.terms_pdf_url && (
+                    <button
+                      onClick={() => setShowTermsPdf(true)}
+                      className="flex items-center justify-center gap-2 py-3 rounded-2xl border border-slate-200 bg-white text-[13px] font-black text-slate-600 hover:bg-slate-50 transition-colors w-full">
+                      📄 Ver términos y condiciones
+                    </button>
+                  )}
+
                   {/* Link a prode.ar referidos */}
                   <button
                     onClick={() => setReferidosView('prode-ar')}
@@ -1566,6 +1577,31 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     ¿Tenés un comercio? Ver referidos de prode.ar →
                   </button>
                 </>
+              )}
+
+              {/* Modal PDF términos y condiciones */}
+              {showTermsPdf && participantCampaign?.terms_pdf_url && (
+                <div className="fixed inset-0 z-50 flex flex-col" style={{ background: 'rgba(0,0,0,0.7)' }}>
+                  <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200">
+                    <span className="text-[15px] font-black text-slate-900">Términos y condiciones</span>
+                    <div className="flex items-center gap-3">
+                      <a href={participantCampaign.terms_pdf_url} target="_blank" rel="noopener noreferrer"
+                        onClick={() => setShowTermsPdf(false)}
+                        className="text-[12px] font-bold text-blue-600 underline underline-offset-2">
+                        Abrir en nueva pestaña
+                      </a>
+                      <button onClick={() => setShowTermsPdf(false)}
+                        className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 font-black text-base hover:bg-slate-200 transition-colors">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <iframe
+                    src={participantCampaign.terms_pdf_url}
+                    className="flex-1 w-full bg-white"
+                    title="Términos y condiciones"
+                  />
+                </div>
               )}
 
               {/* Vista: prode.ar referidos (default si no hay campaña, o si el usuario navega a ella) */}

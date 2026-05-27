@@ -31,6 +31,8 @@ export class ReferralCampaignsService {
         invite_message: dto.invite_message ?? null,
         prizes: dto.prizes ?? [],
         milestones: dto.milestones ?? [],
+        terms_pdf_url: dto.terms_pdf_url ?? null,
+        invite_button_text: dto.invite_button_text ?? null,
         is_active: true,
       })
       .select()
@@ -115,7 +117,7 @@ export class ReferralCampaignsService {
 
     const { data: campaign } = await this.supabase.client
       .from('referral_campaigns')
-      .select('id, name, description, prizes, invite_message, milestones')
+      .select('id, name, description, prizes, invite_message, milestones, terms_pdf_url, invite_button_text')
       .eq('business_id', business.id)
       .eq('is_active', true)
       .maybeSingle()

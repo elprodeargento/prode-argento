@@ -17,4 +17,6 @@ export class CreateReferralCampaignDto {
   @IsOptional() @IsString() invite_message?: string
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => PrizeDto) prizes?: PrizeDto[]
   @IsOptional() @IsArray() @ValidateNested({ each: true }) @Type(() => MilestoneDto) milestones?: MilestoneDto[]
+  @IsOptional() @IsString() terms_pdf_url?: string
+  @IsOptional() @IsString() invite_button_text?: string
 }
