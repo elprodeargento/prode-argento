@@ -81,6 +81,7 @@ export function PlanesClient() {
       setToast({ msg: `¡Plan ${plan} activado correctamente!`, type: 'success' })
       setCurrentPlan(plan as Plan)
       setTimeout(() => setToast(null), 5000)
+      trackEvent('biz_plan_purchased', { plan })
     } else if (status === 'error') {
       setToast({ msg: 'Hubo un error con el pago. Intentá de nuevo.', type: 'error' })
       setTimeout(() => setToast(null), 5000)
