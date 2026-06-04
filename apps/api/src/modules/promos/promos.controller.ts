@@ -23,8 +23,8 @@ export class PromosController {
   @Post(':id/view')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Increment view count for a promo (public)' })
-  trackView(@Param('id') id: string) {
-    return this.promosService.incrementView(id)
+  trackView(@Param('id') id: string, @Body() body: { viewer_key?: string }) {
+    return this.promosService.incrementView(id, body?.viewer_key)
   }
 
   @Get('me')

@@ -17,6 +17,7 @@ interface Participant {
   predictions_count: number
   total_matches: number
   is_disabled: boolean
+  referred_by_participant_id: string | null
 }
 
 interface PredictionRow {
@@ -419,7 +420,14 @@ export function ParticipantesTable() {
                         {p.name.charAt(0)}
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[13px] font-extrabold text-[#0D1A3A] truncate">{p.name}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[13px] font-extrabold text-[#0D1A3A] truncate">{p.name}</span>
+                          {p.referred_by_participant_id && (
+                            <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-black bg-[#EBF4FC] text-[#003FA3] border border-[#003FA3]/20">
+                              🔗 Referido
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[11px] font-medium text-[#8E96AE] truncate">{p.email}</span>
                         {p.phone && (
                           <a href={waLink(p.phone)} target="_blank" rel="noopener noreferrer"

@@ -102,7 +102,16 @@ function PromoCarousel({ promos }: { promos: Promo[] }) {
   const trackView = (promoId: string) => {
     if (viewedRef.current.has(promoId)) return
     viewedRef.current.add(promoId)
-    fetch(`${API_URL}/promos/${promoId}/view`, { method: 'POST' }).catch(() => {})
+    let viewerKey = localStorage.getItem('prode_viewer_id')
+    if (!viewerKey) {
+      viewerKey = crypto.randomUUID()
+      localStorage.setItem('prode_viewer_id', viewerKey)
+    }
+    fetch(`${API_URL}/promos/${promoId}/view`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ viewer_key: viewerKey }),
+    }).catch(() => {})
   }
 
   const advance = () => {

@@ -225,7 +225,7 @@ export class ParticipantsService {
       .eq('admin_user_id', adminUserId)
       .maybeSingle()
     if (!business) throw new BadRequestException('Business not found')
-    if (business.plan !== 'premium') throw new ForbiddenException('Solo el plan Premium puede deshabilitar participantes')
+    if (business.plan !== 'premium' && business.plan !== 'pro') throw new ForbiddenException('Solo los planes Pro y Premium pueden deshabilitar participantes')
 
     const { data: participant } = await this.supabase.client
       .from('participants')

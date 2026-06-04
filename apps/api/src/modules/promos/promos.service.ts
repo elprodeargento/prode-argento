@@ -109,8 +109,9 @@ export class PromosService {
     return data;
   }
 
-  async incrementView(promoId: string) {
-    await this.supabase.client.rpc('increment_promo_views', { promo_id: promoId })
+  async incrementView(promoId: string, viewerKey?: string) {
+    const key = viewerKey || crypto.randomUUID()
+    await this.supabase.client.rpc('increment_promo_views', { promo_id: promoId, viewer_key: key })
   }
 
   async remove(adminUserId: string, id: string) {
