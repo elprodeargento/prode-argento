@@ -49,6 +49,14 @@ export class ParticipantsController {
     return this.participantsService.getStats(req.user.id)
   }
 
+  @Get('me/growth')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'New participants per day — last 7 days' })
+  getGrowth(@Req() req: any) {
+    return this.participantsService.getGrowth(req.user.id)
+  }
+
   @Get('me')
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()

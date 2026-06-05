@@ -218,6 +218,43 @@ export class ParticipantsService {
     }
   }
 
+  async getGrowth(adminUserId: string) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', adminUserId)
+      .single()
+    if (!business) throw new Error('Business not found')
+
+    // Build last 7 days range (UTC dates)
+    const days: { date: string; label: string; count: number }[] = []
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date()
+      d.setUTCHours(0, 0, 0, 0)
+      d.setUTCDate(d.getUTCDate() - i)
+      const dateStr = d.toISOString().slice(0, 10) // "YYYY-MM-DD"
+      const day = d.getUTCDate()
+      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+      const label = i === 0 ? 'Hoy' : `${day} ${months[d.getUTCMonth()]}`
+      days.push({ date: dateStr, label, count: 0 })
+    }
+
+    const since = days[0].date + 'T00:00:00Z'
+    const { data: rows } = await this.supabase.client
+      .from('participants')
+      .select('registered_at')
+      .eq('business_id', business.id)
+      .gte('registered_at', since)
+
+    for (const row of rows ?? []) {
+      const dayKey = (row.registered_at as string).slice(0, 10)
+      const found = days.find(d => d.date === dayKey)
+      if (found) found.count++
+    }
+
+    return days.map(({ date: _date, label, count }) => ({ label, count }))
+  }
+
   async setDisabled(adminUserId: string, participantId: string, is_disabled: boolean) {
     const { data: business } = await this.supabase.client
       .from('businesses')
