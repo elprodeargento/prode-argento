@@ -44,11 +44,26 @@ export default async function EmpresaDashboardPage() {
   }
 
   // Fetch real stats via RPC
-  const { data: stats } = await supabase.rpc('get_empresa_stats', { 
-    business_id: business.id 
+  const { data: stats } = await supabase.rpc('get_empresa_stats', {
+    business_id: business.id
   })
 
-  const dashboardStats = stats?.[0] || { total_participants: 0, predictions_loaded: 0, coverage_pct: 0 }
+  // Recalcular new_today usando día calendario ART (igual que el gráfico de crecimiento)
+  // El RPC usa ventana de 24hs rolling — esto lo reemplaza con medianoche ART
+  const todayStartART = new Date(
+    new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' })
+    + 'T00:00:00-03:00'
+  ).toISOString()
+  const { count: newTodayART } = await supabase
+    .from('participants')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', business.id)
+    .gte('registered_at', todayStartART)
+
+  const dashboardStats = {
+    ...(stats?.[0] || { total_participants: 0, predictions_loaded: 0, coverage_pct: 0 }),
+    new_today: newTodayART ?? 0,
+  }
 
   return (
     <div className="space-y-6">
