@@ -39,11 +39,11 @@ export function DashboardActivity() {
         {data === null ? (
           // Loading skeleton
           <div className="flex items-end gap-2 h-[64px]">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="flex-1 flex flex-col justify-end gap-1">
+            {[30, 55, 40, 20, 70, 45, 60].map((pct, i) => (
+              <div key={i} className="flex-1 h-full flex flex-col justify-end">
                 <div
                   className="rounded-t-[4px] bg-[#EEF0F6] animate-pulse"
-                  style={{ height: `${20 + Math.random() * 60}%`, minHeight: 4 }}
+                  style={{ height: `${pct}%` }}
                 />
               </div>
             ))}
@@ -51,14 +51,18 @@ export function DashboardActivity() {
         ) : (
           <div className="flex items-end gap-2 h-[64px]">
             {data.map((day, i) => (
-              <div key={i} className="flex-1 flex flex-col justify-end gap-1">
+              <div key={i} className="flex-1 h-full flex flex-col justify-end">
                 <div
                   className={`rounded-t-[4px] transition-all ${
                     i === data.length - 1
                       ? 'bg-[#F5C518]'
                       : 'bg-[#DDE1EF] hover:bg-[#B0B8CC]'
                   }`}
-                  style={{ height: `${(day.count / max) * 100}%`, minHeight: 4 }}
+                  style={{
+                    height: day.count > 0
+                      ? `${Math.max(10, Math.round((day.count / max) * 100))}%`
+                      : '4px',
+                  }}
                   title={`${day.label}: ${day.count} ${day.count === 1 ? 'persona' : 'personas'}`}
                 />
               </div>
