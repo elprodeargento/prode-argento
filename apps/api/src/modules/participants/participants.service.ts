@@ -226,29 +226,46 @@ export class ParticipantsService {
       .single()
     if (!business) throw new Error('Business not found')
 
-    // Build last 7 days range (UTC dates)
+    // Usar timezone de Argentina (UTC-3, sin DST)
+    const TZ = 'America/Argentina/Buenos_Aires'
+    const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+
+    // Función que convierte un Date a "YYYY-MM-DD" en TZ de Argentina
+    const toLocalDate = (d: Date): string =>
+      d.toLocaleDateString('en-CA', { timeZone: TZ }) // en-CA produce YYYY-MM-DD
+
+    // Función para el label de una fecha local
+    const toLabel = (localDate: string): string => {
+      const [, m, dd] = localDate.split('-')
+      return `${parseInt(dd)} ${months[parseInt(m) - 1]}`
+    }
+
+    // Construir los 7 días basados en la fecha local de Argentina
     const days: { date: string; label: string; count: number }[] = []
+    const now = new Date()
     for (let i = 6; i >= 0; i--) {
-      const d = new Date()
-      d.setUTCHours(0, 0, 0, 0)
-      d.setUTCDate(d.getUTCDate() - i)
-      const dateStr = d.toISOString().slice(0, 10) // "YYYY-MM-DD"
-      const day = d.getUTCDate()
-      const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-      const label = i === 0 ? 'Hoy' : `${day} ${months[d.getUTCMonth()]}`
+      const d = new Date(now)
+      d.setDate(d.getDate() - i)
+      const dateStr = toLocalDate(d)
+      const label = i === 0 ? 'Hoy' : toLabel(dateStr)
       days.push({ date: dateStr, label, count: 0 })
     }
 
-    const since = days[0].date + 'T00:00:00Z'
+    // "since" = inicio del primer día en Argentina = medianoche ART del día más antiguo
+    // Ej: "2026-05-30" → "2026-05-30T03:00:00Z" (ART = UTC-3)
+    const sinceLocal = days[0].date + 'T00:00:00'
+    const sinceUTC   = new Date(sinceLocal + '-03:00').toISOString()
+
     const { data: rows } = await this.supabase.client
       .from('participants')
       .select('registered_at')
       .eq('business_id', business.id)
-      .gte('registered_at', since)
+      .gte('registered_at', sinceUTC)
 
     for (const row of rows ?? []) {
-      const dayKey = (row.registered_at as string).slice(0, 10)
-      const found = days.find(d => d.date === dayKey)
+      // Convertir el timestamp a fecha local Argentina para agrupar
+      const localDate = toLocalDate(new Date(row.registered_at as string))
+      const found = days.find(d => d.date === localDate)
       if (found) found.count++
     }
 
