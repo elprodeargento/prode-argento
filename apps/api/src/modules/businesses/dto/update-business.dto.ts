@@ -1,10 +1,50 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateBusinessDto } from './create-business.dto';
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class UpdateBusinessDto extends PartialType(CreateBusinessDto) {
+  // Declarados explícitamente para que whitelist:true + forbidNonWhitelisted no los descarte
+  // y para que @Transform corra correctamente (PartialType no siempre copia class-transformer)
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(({ value }) =>
+    String(value)
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  )
+  @IsString()
+  @Matches(/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{1,2}$/, {
+    message: 'El slug solo puede contener letras minúsculas, números y guiones',
+  })
+  slug?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  primary_color?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  logo_url?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  background_url?: string;
+
   @ApiProperty({ required: false, enum: ['free', 'premium', 'pro'] })
   @IsOptional()
   @IsEnum(['free', 'premium', 'pro'])

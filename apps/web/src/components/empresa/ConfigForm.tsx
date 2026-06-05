@@ -268,6 +268,7 @@ export function ConfigForm() {
       if (res.ok) {
         trackEvent('biz_config_saved')
         setSuccess(true)
+        setSlug(data.slug)   // sincronizar shareUrl con el nuevo slug guardado
         router.refresh()
         setTimeout(() => setSuccess(false), 3000)
       } else {
