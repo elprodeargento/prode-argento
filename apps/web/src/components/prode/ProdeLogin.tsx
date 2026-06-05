@@ -244,8 +244,15 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
           }}>
             <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
             <div className="relative z-10">
-              <div className="w-16 h-16 bg-white/15 border-2 border-white/25 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-3">
-                {empresa.logo_url ? <img src={empresa.logo_url} alt={empresa.name} className="w-12 h-12 object-contain rounded-xl p-0.5" /> : '⚽'}
+              <div className="mx-auto mb-4 flex items-center justify-center" style={{ width: 88, height: 88 }}>
+                {empresa.logo_url
+                  ? <img
+                      src={empresa.logo_url}
+                      alt={empresa.name}
+                      className="w-full h-full object-contain rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.35)] ring-4 ring-white/20"
+                    />
+                  : <span className="text-5xl drop-shadow-lg">⚽</span>
+                }
               </div>
               <div className="font-bebas text-2xl text-white tracking-widest leading-tight uppercase">{empresa.name}</div>
             </div>
