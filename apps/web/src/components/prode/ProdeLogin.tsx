@@ -463,9 +463,18 @@ export function ProdeLogin({ empresa }: { empresa: Empresa }) {
             {/* Identificador: editable si vino de "Registrate directo", bloqueado si vino del paso normal */}
             {identifier ? (
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">
-                  {primaryField === 'email' ? 'Correo electrónico' : 'Celular'}
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-bold text-slate-700 uppercase tracking-wide">
+                    {primaryField === 'email' ? 'Correo electrónico' : 'Celular'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setStep('identifier')}
+                    className="text-xs font-bold text-blue-600 hover:underline"
+                  >
+                    ← Cambiar
+                  </button>
+                </div>
                 <div className="px-4 py-3 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-500 font-medium text-sm">
                   {primaryField === 'phone' && !identifier.startsWith('+') ? `+${form.countryCode} ` : ''}{identifier}
                 </div>
