@@ -177,7 +177,7 @@ export class NotificationsService {
         .select('participant_id')
         .eq('business_id', businessId)
 
-      const predIds = (withPred ?? []).map((p: any) => p.participant_id)
+      const predIds = [...new Set((withPred ?? []).map((p: any) => p.participant_id))]
 
       let query = this.supabase.client
         .from('participants')
@@ -373,7 +373,7 @@ export class NotificationsService {
         .from('predictions')
         .select('participant_id')
         .eq('business_id', businessId)
-      const predIds = (withPred ?? []).map((p: any) => p.participant_id)
+      const predIds = [...new Set((withPred ?? []).map((p: any) => p.participant_id))]
 
       let query = this.supabase.client
         .from('participants')
@@ -382,7 +382,8 @@ export class NotificationsService {
       if (predIds.length > 0) {
         query = query.not('id', 'in', `(${predIds.join(',')})`)
       }
-      const { data } = await query
+      const { data, error } = await query
+      if (error) this.logger.error(`getFilteredParticipantIds no_pred error: ${JSON.stringify(error)}`)
       return (data ?? []).map((p: any) => p.id)
     }
 
