@@ -23,13 +23,12 @@ interface ParticipantStats {
 }
 
 function formatKickoff(kickoff_at: string): string {
+  const TZ = 'America/Argentina/Buenos_Aires'
   const d = new Date(kickoff_at)
-  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  const day = d.getDate()
-  const month = months[d.getMonth()]
-  const hours = String(d.getHours()).padStart(2, '0')
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  return `${day} ${month} · ${hours}:${minutes} hs`
+  const day = d.toLocaleDateString('es-AR', { day: 'numeric', timeZone: TZ })
+  const month = d.toLocaleDateString('es-AR', { month: 'short', timeZone: TZ })
+  const time = d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', timeZone: TZ, hour12: false })
+  return `${day} ${month} · ${time} hs`
 }
 
 export function DashboardNextMatch() {
