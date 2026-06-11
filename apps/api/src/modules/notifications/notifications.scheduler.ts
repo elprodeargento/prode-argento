@@ -44,18 +44,20 @@ export class NotificationsScheduler {
   /** After a match finishes — score predictions and send result notifications */
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkFinishedMatches() {
+    // Only process matches where the score is already confirmed — status can flip to
+    // 'finished' before the API populates the goals, so we wait for non-null scores.
     const { data: matches } = await this.supabase.client
       .from('matches')
       .select('id, home_score, away_score')
       .eq('status', 'finished')
+      .not('home_score', 'is', null)
+      .not('away_score', 'is', null)
       .is('scored_at', null)
 
     if (!matches?.length) return
     this.logger.log(`Scoring ${matches.length} finished matches`)
 
     for (const match of matches) {
-      if (match.home_score === null || match.away_score === null) continue
-
       // Score all predictions for this match and update leaderboard cache
       const results = await this.leaderboard.scoreMatch(
         match.id,

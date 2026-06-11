@@ -123,12 +123,45 @@ export class MatchesService {
         status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
       }))
 
-    const { error } = await this.supabase.client
-      .from('matches')
-      .upsert(rows, { onConflict: 'fd_match_id' })
-    if (error) throw new Error(error.message)
+    // For each FD match, prefer updating an existing seed row (fd_match_id = NULL)
+    // matched by kickoff_at rather than inserting a duplicate row.
+    // Seed rows hold the predictions, so they must be the ones that get updated.
+    for (const row of rows) {
+      const { data: seedMatch } = await this.supabase.client
+        .from('matches')
+        .select('id')
+        .is('fd_match_id', null)
+        .eq('kickoff_at', row.kickoff_at)
+        .maybeSingle()
 
-    // Identify matches that just finished but haven't been scored yet
+      if (seedMatch) {
+        // Remove any stale FD-sync duplicate that was created before this fix
+        await this.supabase.client
+          .from('matches')
+          .delete()
+          .eq('fd_match_id', row.fd_match_id)
+
+        // Update the seed row: link it to the real FD match and set live data.
+        // team names and flags are kept from the seed (Spanish names + emoji flags).
+        await this.supabase.client
+          .from('matches')
+          .update({
+            fd_match_id: row.fd_match_id,
+            status:      row.status,
+            home_score:  row.home_score,
+            away_score:  row.away_score,
+          })
+          .eq('id', seedMatch.id)
+      } else {
+        // No seed row matched — upsert by fd_match_id (handles re-runs and knockout rounds)
+        await this.supabase.client
+          .from('matches')
+          .upsert(row, { onConflict: 'fd_match_id' })
+      }
+    }
+
+    // Score finished matches that already have both goals confirmed.
+    // scored_at is only set once we have the result — no score = no scoring.
     const { data: toScore, error: tsErr } = await this.supabase.client
       .from('matches')
       .select('id, home_score, away_score')
@@ -143,15 +176,11 @@ export class MatchesService {
     if (toScore && toScore.length > 0) {
       for (const match of toScore) {
         try {
-          // 1. Calculate points and update leaderboard cache
           await this.leaderboard.scoreMatch(match.id, match.home_score, match.away_score)
-
-          // 2. Mark as scored so we don't process it again
           await this.supabase.client
             .from('matches')
             .update({ scored_at: new Date().toISOString() })
             .eq('id', match.id)
-
           markedFinished++
         } catch (err) {
           console.error(`Error scoring match ${match.id}:`, err)
