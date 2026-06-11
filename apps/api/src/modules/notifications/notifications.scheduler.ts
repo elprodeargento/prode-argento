@@ -32,12 +32,12 @@ export class NotificationsScheduler {
 
     const { data: businesses } = await this.supabase.client
       .from('businesses')
-      .select('id, name, plan')
+      .select('id, name, plan, notify_whatsapp')
       .eq('active', true)
       .in('plan', ['premium', 'pro'])
 
     for (const biz of businesses ?? []) {
-      await this.notifications.sendReminderForFecha(biz.id, `Fecha de grupos`)
+      await this.notifications.sendReminderForFecha(biz.id, `Fecha de grupos`, biz.notify_whatsapp)
     }
   }
 
@@ -73,26 +73,27 @@ export class NotificationsScheduler {
       for (const result of results) {
         const { data: participant } = await this.supabase.client
           .from('participants')
-          .select('id, phone, name, rank, last_wa_sent_at, businesses(name, plan, slug)')
+          .select('id, phone, name, rank, last_wa_sent_at, businesses(name, plan, slug, notify_whatsapp)')
           .eq('id', result.participantId)
           .single()
 
         if (!participant) continue
         const biz = participant.businesses as any
         if (!biz || !['premium', 'pro'].includes(biz.plan)) continue
-        if (!participant.phone) continue
 
-        await this.notifications.sendResultNotification(
-          participant.id,
-          participant.phone,
-          participant.name,
-          biz.name,
-          biz.slug ?? '',
-          `Partido ${match.id}`,
-          result.pointsEarned,
-          participant.rank ?? 0,
-          participant.last_wa_sent_at ?? null,
-        )
+        if (biz.notify_whatsapp && participant.phone) {
+          await this.notifications.sendResultNotification(
+            participant.id,
+            participant.phone,
+            participant.name,
+            biz.name,
+            biz.slug ?? '',
+            `Partido ${match.id}`,
+            result.pointsEarned,
+            participant.rank ?? 0,
+            participant.last_wa_sent_at ?? null,
+          )
+        }
 
         await this.notifications.sendPushToParticipant(
           participant.id,

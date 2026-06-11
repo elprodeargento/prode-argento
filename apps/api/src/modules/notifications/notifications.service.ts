@@ -263,7 +263,7 @@ export class NotificationsService {
     return data ?? []
   }
 
-  async sendReminderForFecha(businessId: string, fechaLabel: string) {
+  async sendReminderForFecha(businessId: string, fechaLabel: string, notifyWhatsapp: boolean) {
     const { data: business } = await this.supabase.client
       .from('businesses')
       .select('name, slug')
@@ -272,47 +272,50 @@ export class NotificationsService {
 
     if (!business) return
 
-    const { data: withPreds } = await this.supabase.client
-      .from('predictions')
-      .select('participant_id')
-      .eq('business_id', businessId)
+    if (notifyWhatsapp) {
+      const { data: withPreds } = await this.supabase.client
+        .from('predictions')
+        .select('participant_id')
+        .eq('business_id', businessId)
 
-    const predIds = (withPreds ?? []).map((p: any) => p.participant_id)
+      const predIds = (withPreds ?? []).map((p: any) => p.participant_id)
 
-    let query = this.supabase.client
-      .from('participants')
-      .select('id, phone, name, last_wa_sent_at')
-      .eq('business_id', businessId)
+      let query = this.supabase.client
+        .from('participants')
+        .select('id, phone, name, last_wa_sent_at')
+        .eq('business_id', businessId)
 
-    if (predIds.length > 0) {
-      query = query.not('id', 'in', `(${predIds.join(',')})`)
-    }
+      if (predIds.length > 0) {
+        query = query.not('id', 'in', `(${predIds.join(',')})`)
+      }
 
-    const { data: participants } = await query
-    if (!participants?.length) return
+      const { data: participants } = await query
 
-    const message =
-      `⚽ Los partidos de la ${fechaLabel} arrancan pronto.\n` +
-      `Entrá a cargar tus pronósticos antes de que cierre ⏰`
+      if (participants?.length) {
+        const message =
+          `⚽ Los partidos de la ${fechaLabel} arrancan pronto.\n` +
+          `Entrá a cargar tus pronósticos antes de que cierre ⏰`
 
-    const results = await Promise.allSettled(
-      participants.map((p) => {
-        const phone = normalizeE164AR(p.phone)
-        if (!phone) return Promise.resolve(false)
-        return this.sendWAToParticipant(
-          p.id,
-          phone,
-          p.name,
-          business.name,
-          business.slug,
-          message,
-          p.last_wa_sent_at,
+        const results = await Promise.allSettled(
+          participants.map((p) => {
+            const phone = normalizeE164AR(p.phone)
+            if (!phone) return Promise.resolve(false)
+            return this.sendWAToParticipant(
+              p.id,
+              phone,
+              p.name,
+              business.name,
+              business.slug,
+              message,
+              p.last_wa_sent_at,
+            )
+          }),
         )
-      }),
-    )
 
-    const sent = results.filter((r) => r.status === 'fulfilled' && r.value === true).length
-    this.logger.log(`WA Reminders sent: ${sent}/${participants.length} for business ${businessId}`)
+        const sent = results.filter((r) => r.status === 'fulfilled' && r.value === true).length
+        this.logger.log(`WA Reminders sent: ${sent}/${participants.length} for business ${businessId}`)
+      }
+    }
 
     // Also send push reminders
     await this.sendPushReminderForBusiness(

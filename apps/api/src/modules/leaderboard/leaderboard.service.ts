@@ -130,12 +130,10 @@ export class LeaderboardService {
     if (pErr) throw new Error(pErr.message)
     if (!participants?.length) return { entries: [], weekStart: new Date().toISOString(), weekEnd: new Date().toISOString() }
 
-    const participantIds = participants.map(p => p.id)
-
     const { data: predictions, error: predErr } = await this.supabase.client
       .from('predictions')
       .select('participant_id, points_earned')
-      .in('participant_id', participantIds)
+      .eq('business_id', businessId)
       .not('points_earned', 'is', null)
 
     if (predErr) throw new Error(predErr.message)
