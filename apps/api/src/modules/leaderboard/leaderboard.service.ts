@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 
 export interface ScoringResult {
@@ -9,6 +9,8 @@ export interface ScoringResult {
 
 @Injectable()
 export class LeaderboardService {
+  private readonly logger = new Logger(LeaderboardService.name)
+
   constructor(private supabase: SupabaseService) {}
 
   /** Called after a match finishes — scores all predictions for that match */
@@ -43,9 +45,7 @@ export class LeaderboardService {
       ),
     )
 
-    // Recalculate leaderboard cache for each affected business
-    await this.recalculateLeaderboards(results.map((r) => r.participantId))
-
+    // Leaderboard recalculation is handled by the dedicated scheduler — decoupled from scoring
     return results
   }
 
@@ -122,38 +122,61 @@ export class LeaderboardService {
   }
 
   async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
+    // Compute Monday–Sunday window for the requested week
+    const now = new Date()
+    const daysFromMonday = (now.getDay() + 6) % 7
+    const monday = new Date(now)
+    monday.setDate(now.getDate() - daysFromMonday + offset * 7)
+    monday.setHours(0, 0, 0, 0)
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+
+    // Matches played in this week
+    const { data: weekMatches } = await this.supabase.client
+      .from('matches')
+      .select('id')
+      .gte('kickoff_at', monday.toISOString())
+      .lte('kickoff_at', sunday.toISOString())
+
+    const matchIds = (weekMatches ?? []).map((m) => m.id)
+
     const { data: participants, error: pErr } = await this.supabase.client
       .from('participants')
       .select('id, name, registered_at')
       .eq('business_id', businessId)
 
     if (pErr) throw new Error(pErr.message)
-    if (!participants?.length) return { entries: [], weekStart: new Date().toISOString(), weekEnd: new Date().toISOString() }
+    if (!participants?.length) return { entries: [], weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
 
-    const { data: predictions, error: predErr } = await this.supabase.client
-      .from('predictions')
-      .select('participant_id, points_earned')
-      .eq('business_id', businessId)
-      .not('points_earned', 'is', null)
+    const participantIds = participants.map((p) => p.id)
+    const participantMap = Object.fromEntries(participants.map((p) => [p.id, p]))
 
-    if (predErr) throw new Error(predErr.message)
+    const map: Record<string, { points: number; exact: number }> = {}
+    for (const p of participants) map[p.id] = { points: 0, exact: 0 }
 
-    const map: Record<string, { name: string; registered_at: string | null; points: number; exact: number }> = {}
-    for (const p of participants) {
-      map[p.id] = { name: p.name, registered_at: p.registered_at, points: 0, exact: 0 }
-    }
-    for (const pred of predictions ?? []) {
-      if (map[pred.participant_id]) {
-        map[pred.participant_id].points += pred.points_earned ?? 0
-        if (pred.points_earned === 3) map[pred.participant_id].exact++
+    if (matchIds.length > 0) {
+      const { data: predictions, error: predErr } = await this.supabase.client
+        .from('predictions')
+        .select('participant_id, points_earned')
+        .in('match_id', matchIds)
+        .in('participant_id', participantIds)
+
+      if (predErr) throw new Error(predErr.message)
+
+      for (const pred of predictions ?? []) {
+        if (map[pred.participant_id] && pred.points_earned != null) {
+          map[pred.participant_id].points += pred.points_earned
+          if (pred.points_earned === 3) map[pred.participant_id].exact++
+        }
       }
     }
 
     const entries = Object.entries(map)
       .map(([id, v]) => ({
         participant_id: id,
-        name: v.name,
-        registered_at: v.registered_at,
+        name: participantMap[id]?.name ?? 'Desconocido',
+        registered_at: participantMap[id]?.registered_at ?? null,
         weekly_points: v.points,
         exact_results: v.exact,
       }))
@@ -163,11 +186,7 @@ export class LeaderboardService {
       })
       .map((e, i) => ({ ...e, rank: i + 1 }))
 
-    return {
-      entries,
-      weekStart: new Date().toISOString(),
-      weekEnd: new Date().toISOString(),
-    }
+    return { entries, weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
   }
 
   async getLeaderboardByAdminId(adminUserId: string, limit = 50) {
@@ -208,17 +227,23 @@ export class LeaderboardService {
     }))
   }
 
-  private async recalculateLeaderboards(participantIds: string[]) {
-    // Get affected businesses
-    const { data: parts } = await this.supabase.client
-      .from('participants')
-      .select('id, business_id')
-      .in('id', participantIds)
+  async recalculateAllLeaderboards() {
+    const { data: businesses, error } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('active', true)
 
-    const businessIds = [...new Set(parts?.map((p) => p.business_id) ?? [])]
+    if (error) {
+      this.logger.error('Error fetching businesses for leaderboard recalc', error.message)
+      return
+    }
 
-    for (const businessId of businessIds) {
-      await this.supabase.client.rpc('recalculate_leaderboard', { p_business_id: businessId })
+    for (const biz of businesses ?? []) {
+      const { error: rpcErr } = await this.supabase.client
+        .rpc('recalculate_leaderboard', { p_business_id: biz.id })
+      if (rpcErr) {
+        this.logger.error(`Error recalculating leaderboard for business ${biz.id}`, rpcErr.message)
+      }
     }
   }
 }
