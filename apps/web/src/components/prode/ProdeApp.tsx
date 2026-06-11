@@ -304,7 +304,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   }, [])
 
   useEffect(() => {
-    const worldCupStart = new Date('2026-06-11T21:00:00-03:00')
+    // Usar el kickoff del primer partido real (el más próximo en estado scheduled)
+    const firstMatch = matches
+      .filter(m => m.status === 'scheduled')
+      .sort((a, b) => new Date(a.kickoff_at).getTime() - new Date(b.kickoff_at).getTime())[0]
+    if (!firstMatch) return
+    const worldCupStart = new Date(firstMatch.kickoff_at)
     const timer = setInterval(() => {
       const diff = worldCupStart.getTime() - Date.now()
       if (diff <= 0) { clearInterval(timer); return }
@@ -316,7 +321,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       })
     }, 1000)
     return () => clearInterval(timer)
-  }, [])
+  }, [matches])
 
   useEffect(() => {
     if (positionChange !== null) {
@@ -467,7 +472,8 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const closeMin = empresa.close_minutes ?? 5
   const nextMatch = scheduledMatches.find(m => !isLocked(m, closeMin))
   const nextMatchApiPred = nextMatch ? apiPreds[nextMatch.id] : null
-  const worldCupStarted = new Date() >= new Date('2026-06-11T21:00:00-03:00')
+  // Considera iniciado cuando ya hay al menos un partido no-scheduled (en curso o finalizado)
+  const worldCupStarted = matches.length > 0 && matches.some(m => m.status !== 'scheduled')
 
   const handleSave = async () => {
     setSaving(true)

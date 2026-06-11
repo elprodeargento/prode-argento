@@ -63,9 +63,14 @@ export function DashboardNextMatch() {
     load()
   }, [])
 
-  const daysUntil = match
-    ? Math.ceil((new Date(match.kickoff_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null
+  const daysUntil = match ? (() => {
+    const TZ = 'America/Argentina/Buenos_Aires'
+    const todayStr  = new Date().toLocaleDateString('en-CA', { timeZone: TZ })
+    const matchStr  = new Date(match.kickoff_at).toLocaleDateString('en-CA', { timeZone: TZ })
+    const today     = new Date(todayStr)
+    const matchDate = new Date(matchStr)
+    return Math.round((matchDate.getTime() - today.getTime()) / 86400000)
+  })() : null
 
   const badge = daysUntil === null ? null
     : daysUntil < 0 ? null
