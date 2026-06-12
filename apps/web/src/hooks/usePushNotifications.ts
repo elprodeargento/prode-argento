@@ -57,7 +57,15 @@ export function usePushNotifications(participantId: string | undefined) {
   // Handle foreground messages (app open) — separate path from SW to avoid duplicates
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const messaging = getFirebaseMessaging()
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return
+
+    let messaging
+    try {
+      messaging = getFirebaseMessaging()
+    } catch (err) {
+      console.error('[FCM] unsupported browser:', err)
+      return
+    }
     if (!messaging) return
 
     const unsub = onMessage(messaging, (payload) => {
