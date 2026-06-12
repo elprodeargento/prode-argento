@@ -18,6 +18,7 @@ interface Participant {
   total_matches: number
   is_disabled: boolean
   referred_by_participant_id: string | null
+  has_push_subscription: boolean
 }
 
 interface PredictionRow {
@@ -440,19 +441,29 @@ export function ParticipantesTable() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5">
-                    {p.is_disabled ? (
-                      <span className="px-2 py-0.5 rounded-md text-[11px] font-black border bg-[#FEF0F0] text-[#E34646] border-[#E34646]/10">
-                        🚫 Deshabilitado
-                      </span>
-                    ) : (
-                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
-                        p.predictions_count > 0
-                          ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10'
-                          : 'bg-[#F1F3F9] text-[#8E96AE] border-[#DDE1EF]'
-                      }`}>
-                        {p.predictions_count > 0 ? 'Jugando' : 'Sin pronósticos'}
-                      </span>
-                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {p.is_disabled ? (
+                        <span className="px-2 py-0.5 rounded-md text-[11px] font-black border bg-[#FEF0F0] text-[#E34646] border-[#E34646]/10">
+                          🚫 Deshabilitado
+                        </span>
+                      ) : (
+                        <span className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
+                          p.predictions_count > 0
+                            ? 'bg-[#E8F8F1] text-[#18A06A] border-[#18A06A]/10'
+                            : 'bg-[#F1F3F9] text-[#8E96AE] border-[#DDE1EF]'
+                        }`}>
+                          {p.predictions_count > 0 ? 'Jugando' : 'Sin pronósticos'}
+                        </span>
+                      )}
+                      {!p.has_push_subscription && (
+                        <span
+                          title="No aceptó notificaciones push"
+                          className="px-2 py-0.5 rounded-md text-[11px] font-black border bg-[#FFF7E6] text-[#B7791F] border-[#B7791F]/10"
+                        >
+                          🔔 Sin notificaciones
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-center">
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#F1F3F9] font-bebas text-[18px] text-[#0D1A3A] border-[1.5px] border-[#DDE1EF]">

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { NotifForm } from '@/components/empresa/NotifForm'
 import { NotifHistory } from '@/components/empresa/NotifHistory'
+import { NotifNoPushStat } from '@/components/empresa/NotifNoPushStat'
 
 export default function NotificacionesPage() {
   const [historyKey, setHistoryKey] = useState(0)
@@ -18,7 +19,10 @@ export default function NotificacionesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <NotifForm onSent={() => setHistoryKey(k => k + 1)} />
-        <NotifHistory key={historyKey} />
+        <div className="flex flex-col gap-3">
+          <NotifNoPushStat />
+          <NotifHistory key={historyKey} />
+        </div>
       </div>
     </div>
   )

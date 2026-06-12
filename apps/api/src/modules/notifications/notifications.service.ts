@@ -266,6 +266,37 @@ export class NotificationsService {
     return data ?? []
   }
 
+  async getNoPredNoPushCount(businessId: string) {
+    const { data: allParticipants } = await this.supabase.client
+      .from('participants')
+      .select('id')
+      .eq('business_id', businessId)
+      .limit(10000)
+
+    const allIds = (allParticipants ?? []).map((p: any) => p.id)
+    if (allIds.length === 0) return { count: 0 }
+
+    const { data: withPred } = await this.supabase.client
+      .from('predictions')
+      .select('participant_id')
+      .eq('business_id', businessId)
+      .limit(10000)
+
+    const predIds = new Set((withPred ?? []).map((p: any) => p.participant_id))
+    const noPredIds = allIds.filter((id) => !predIds.has(id))
+    if (noPredIds.length === 0) return { count: 0 }
+
+    const { data: withPush } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('participant_id')
+      .in('participant_id', noPredIds)
+
+    const pushIds = new Set((withPush ?? []).map((s: any) => s.participant_id))
+    const count = noPredIds.filter((id) => !pushIds.has(id)).length
+
+    return { count }
+  }
+
   async sendReminderForFecha(businessId: string, fechaLabel: string, notifyWhatsapp: boolean) {
     const { data: business } = await this.supabase.client
       .from('businesses')

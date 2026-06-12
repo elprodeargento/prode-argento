@@ -86,6 +86,21 @@ export class NotificationsController {
     return this.notificationsService.getNotificationHistory(business.id)
   }
 
+  @Get('no-pred-no-push-count')
+  @UseGuards(SupabaseAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cantidad de participantes sin pronósticos y sin notificaciones push' })
+  async getNoPredNoPushCount(@Req() req: any) {
+    const { data: business } = await this.supabase.client
+      .from('businesses')
+      .select('id')
+      .eq('admin_user_id', req.user.id)
+      .single()
+
+    if (!business) throw new NotFoundException('Negocio no encontrado')
+    return this.notificationsService.getNoPredNoPushCount(business.id)
+  }
+
   @Post('fcm-token')
   @ApiOperation({ summary: 'Registrar token FCM de participante (público)' })
   async registerParticipantToken(

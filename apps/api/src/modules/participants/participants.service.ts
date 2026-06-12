@@ -346,11 +346,19 @@ export class ParticipantsService {
     const { data, error, count } = await query;
     if (error) throw new Error(error.message);
 
+    const ids = (data ?? []).map((p: any) => p.id);
+    const { data: subs } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('participant_id')
+      .in('participant_id', ids.length > 0 ? ids : ['']);
+    const withPush = new Set((subs ?? []).map((s: any) => s.participant_id));
+
     const enriched = (data ?? []).map((p: any) => ({
       ...p,
       predictions_count: p.predictions?.[0]?.count ?? 0,
       total_matches: totalMatches ?? 0,
       predictions: undefined,
+      has_push_subscription: withPush.has(p.id),
     }));
 
     return { data: enriched, total: count ?? 0, page, limit };
