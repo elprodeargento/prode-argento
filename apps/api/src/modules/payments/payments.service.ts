@@ -136,14 +136,15 @@ export class PaymentsService {
     // Si el comercio fue referido por un jugador, confirmar conversión
     const { data: business } = await this.supabase.client
       .from('businesses')
-      .select('player_referral_code, name, slug')
+      .select('player_referral_code, name, slug, admin_user_id')
       .eq('id', ref.businessId)
       .single()
-    if (business?.player_referral_code) {
+    if (business?.player_referral_code && business.admin_user_id) {
       await this.playerReferralsService.confirmConversion(
         business.player_referral_code,
         business.name,
         business.slug,
+        business.admin_user_id,
       ).catch(() => {})
     }
 

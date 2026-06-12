@@ -142,6 +142,24 @@ export class ParticipantsService {
       return { participant: existing, business };
     }
 
+    // Self-referral check: nullify referrer if they share the same email or phone
+    let validatedReferrerId = referrerParticipantId ?? null
+    if (validatedReferrerId) {
+      const { data: referrer } = await this.supabase.client
+        .from('participants')
+        .select('email, phone')
+        .eq('id', validatedReferrerId)
+        .eq('business_id', business.id)
+        .maybeSingle()
+      if (
+        !referrer ||
+        (normalizedEmail && referrer.email?.toLowerCase() === normalizedEmail) ||
+        (normalizedPhone && referrer.phone === normalizedPhone)
+      ) {
+        validatedReferrerId = null
+      }
+    }
+
     this.logger.log(`Inserting new participant`);
     const { data, error } = await this.supabase.client
       .from('participants')
@@ -151,7 +169,7 @@ export class ParticipantsService {
         email: normalizedEmail ?? null,
         phone: normalizedPhone ?? '',
         accepted_terms: true,
-        referred_by_participant_id: referrerParticipantId ?? null,
+        referred_by_participant_id: validatedReferrerId,
       })
       .select()
       .single();

@@ -42,13 +42,31 @@ export class PlayerReferralsService {
     return { ...record, history: history ?? [] }
   }
 
-  async confirmConversion(playerReferralCode: string, businessName: string, businessSlug: string) {
+  async confirmConversion(
+    playerReferralCode: string,
+    businessName: string,
+    businessSlug: string,
+    adminUserId: string,
+  ) {
     const { data: referrer } = await this.supabase.client
       .from('player_referrers')
       .select('*')
       .eq('referral_code', playerReferralCode)
       .single()
     if (!referrer) return
+
+    // Self-referral check: the business admin must not be the referrer themselves
+    const { data: adminUser } = await this.supabase.client.auth.admin.getUserById(adminUserId)
+    if (adminUser?.user?.email?.toLowerCase() === referrer.email.toLowerCase()) return
+
+    // Idempotency check: don't process the same business twice
+    const { data: alreadyProcessed } = await this.supabase.client
+      .from('player_referral_history')
+      .select('id')
+      .eq('referral_code', playerReferralCode)
+      .eq('business_slug', businessSlug)
+      .maybeSingle()
+    if (alreadyProcessed) return
 
     const newTotal = referrer.total_referrals + 1
     const newPending = referrer.pending_amount + (newTotal % 3 === 0 ? 12000 : 0)
