@@ -42,7 +42,7 @@ export class NotificationsScheduler {
   }
 
   /** After a match finishes — score predictions and send result notifications */
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/10 * * * *')
   async checkFinishedMatches() {
     // Only process matches where the score is already confirmed — status can flip to
     // 'finished' before the API populates the goals, so we wait for non-null scores.

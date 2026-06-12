@@ -8,8 +8,7 @@ export class MatchesScheduler {
 
   constructor(private readonly matchesService: MatchesService) {}
 
-  // Every 2 hours between 07:00 and 23:00 Argentina time
-  @Cron('0 7-23/2 * * *', { name: 'sync-matches-active-window', timeZone: 'America/Argentina/Buenos_Aires' })
+  @Cron('*/15 * * * *', { name: 'sync-matches' })
   async syncActiveWindow() {
     this.logger.log('Running scheduled match sync (active window)...')
     try {

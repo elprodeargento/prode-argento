@@ -8,7 +8,7 @@ export class LeaderboardScheduler {
 
   constructor(private leaderboard: LeaderboardService) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron('*/10 * * * *')
   async recalculateLeaderboards() {
     this.logger.log('Recalculating leaderboards for all businesses')
     await this.leaderboard.recalculateAllLeaderboards()
