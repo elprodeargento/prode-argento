@@ -243,6 +243,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [showPointsInfo, setShowPointsInfo] = useState(false)
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
   const [exactAlert, setExactAlert] = useState(false)
+  const [predTab, setPredTab] = useState<'upcoming' | 'played'>('upcoming')
   const [referrerData, setReferrerData] = useState<{
     referral_code: string
     total_referrals: number
@@ -1053,116 +1054,95 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* PRONOSTICAR */}
         {tab === 'pronosticar' && (
           <div className="p-4">
-            {(() => {
-              const totalScheduled = scheduledMatches.length
-              const totalPredicted = scheduledMatches.filter(m => apiPreds[m.id] !== undefined).length
-              return (
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-sm font-black text-slate-900">Cargá tus pronósticos</div>
-                  <div className={`text-xs font-black px-3 py-1.5 rounded-full ${totalPredicted === totalScheduled && totalScheduled > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                    ✅ {totalPredicted} de {totalScheduled} cargados
-                  </div>
-                </div>
-              )
-            })()}
-
-            {isUpcomingDay && scheduledMatches.length > 0 && (
-              <div className="rounded-2xl mb-4 px-4 py-3 flex items-center gap-3"
-                style={{ background: `${color}15`, border: `1.5px solid ${color}40` }}>
-                <span className="text-xl">⏳</span>
-                <div>
-                  <div className="text-xs font-black" style={{ color }}>PRÓXIMAMENTE</div>
-                  <div className="text-xs font-semibold text-slate-500">
-                    Los partidos del {formatDate(scheduledMatches[0].kickoff_at).split(',')[0]} abren en {timeUntil(scheduledMatches[0].kickoff_at)}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {scheduledMatches.length === 0 && finishedMatches.length === 0 && (
-              <div className="text-center py-10 text-slate-400">
-                <div className="text-3xl mb-2">📋</div>
-                <div className="font-bold">No hay partidos disponibles</div>
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
-              {scheduledMatches.map(m => {
-                const locked = isUpcomingDay || isLocked(m, closeMin)
-                return (
-                  <div key={m.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden
-                    ${locked ? 'opacity-70 border-slate-100' : 'border-slate-200'}`}>
-                    <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-100">
-                      <span className="text-xs font-black text-slate-500">{formatDate(m.kickoff_at)}</span>
-                      {isUpcomingDay
-                        ? <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color, background: `${color}15` }}>⏳ Próximamente</span>
-                        : locked
-                          ? <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">🔒 Cerrado</span>
-                          : <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Abierto · {timeUntil(m.kickoff_at)}</span>}
-                    </div>
-                    <div className="flex items-center gap-3 px-4 py-3">
-                      <div className="flex items-center gap-2 flex-1">
-                        <Flag src={m.home_flag} className="w-7 h-7 shrink-0" />
-                        <span className="text-xs font-black text-slate-900 leading-tight">{m.home_team}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <input type="number" min={0} max={20} disabled={locked}
-                          value={preds[m.id]?.h ?? ''}
-                          onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], h: e.target.value, a: p[m.id]?.a ?? '' } })); setHasChanges(true) }}
-                          className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
-                          style={{ borderColor: preds[m.id]?.h !== undefined && preds[m.id]?.h !== '' ? color : undefined }} />
-                        <span className="font-bebas text-xl text-slate-400">:</span>
-                        <input type="number" min={0} max={20} disabled={locked}
-                          value={preds[m.id]?.a ?? ''}
-                          onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], a: e.target.value, h: p[m.id]?.h ?? '' } })); setHasChanges(true) }}
-                          className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
-                          style={{ borderColor: preds[m.id]?.a !== undefined && preds[m.id]?.a !== '' ? color : undefined }} />
-                      </div>
-                      <div className="flex items-center gap-2 flex-1 justify-end">
-                        <span className="text-xs font-black text-slate-900 leading-tight text-right">{m.away_team}</span>
-                        <Flag src={m.away_flag} className="w-7 h-7 shrink-0" />
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+            {/* Sub-tabs */}
+            <div className="flex gap-2 bg-[#F1F3F9] p-1 rounded-xl mb-4">
+              <button
+                onClick={() => setPredTab('upcoming')}
+                className={`flex-1 py-2 rounded-lg text-[13px] font-black transition-all ${predTab === 'upcoming' ? 'bg-white shadow-sm' : 'text-[#5A6480]'}`}
+                style={predTab === 'upcoming' ? { color } : {}}>
+                ⚽ Por jugar
+                {scheduledMatches.length > 0 && (
+                  <span className="ml-1.5 text-[11px] font-black opacity-60">({scheduledMatches.length})</span>
+                )}
+              </button>
+              <button
+                onClick={() => setPredTab('played')}
+                className={`flex-1 py-2 rounded-lg text-[13px] font-black transition-all ${predTab === 'played' ? 'bg-white shadow-sm' : 'text-[#5A6480]'}`}
+                style={predTab === 'played' ? { color } : {}}>
+                🏁 Jugados
+                {finishedMatches.length > 0 && (
+                  <span className="ml-1.5 text-[11px] font-black opacity-60">({finishedMatches.length})</span>
+                )}
+              </button>
             </div>
 
-            {finishedMatches.length > 0 && (
-              <div className="mt-4">
-                <div className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Partidos jugados</div>
+            {/* POR JUGAR */}
+            {predTab === 'upcoming' && (
+              <>
+                {(() => {
+                  const totalScheduled = scheduledMatches.length
+                  const totalPredicted = scheduledMatches.filter(m => apiPreds[m.id] !== undefined).length
+                  return totalScheduled > 0 ? (
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-sm font-black text-slate-900">Cargá tus pronósticos</div>
+                      <div className={`text-xs font-black px-3 py-1.5 rounded-full ${totalPredicted === totalScheduled ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                        ✅ {totalPredicted} de {totalScheduled} cargados
+                      </div>
+                    </div>
+                  ) : null
+                })()}
+
+                {isUpcomingDay && scheduledMatches.length > 0 && (
+                  <div className="rounded-2xl mb-4 px-4 py-3 flex items-center gap-3"
+                    style={{ background: `${color}15`, border: `1.5px solid ${color}40` }}>
+                    <span className="text-xl">⏳</span>
+                    <div>
+                      <div className="text-xs font-black" style={{ color }}>PRÓXIMAMENTE</div>
+                      <div className="text-xs font-semibold text-slate-500">
+                        Los partidos del {formatDate(scheduledMatches[0].kickoff_at).split(',')[0]} abren en {timeUntil(scheduledMatches[0].kickoff_at)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {scheduledMatches.length === 0 && (
+                  <div className="text-center py-10 text-slate-400">
+                    <div className="text-3xl mb-2">✅</div>
+                    <div className="font-bold">No quedan partidos por jugar</div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-3">
-                  {finishedMatches.map(m => {
-                    const pred = apiPreds[m.id]
-                    const pts = pred?.points_earned ?? null
-                    const ptsBadge = pts === 3
-                      ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">+3 🎯</span>
-                      : pts === 1
-                        ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">+1 👍</span>
-                        : pts === 0
-                          ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">0 pts</span>
-                          : <span className="text-xs font-bold text-slate-400">Sin pronóstico</span>
+                  {scheduledMatches.map(m => {
+                    const locked = isUpcomingDay || isLocked(m, closeMin)
                     return (
-                      <div key={m.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden opacity-80">
-                        <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
-                          <span className="text-xs font-bold text-slate-500">{formatDate(m.kickoff_at)}</span>
-                          {ptsBadge}
+                      <div key={m.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden
+                        ${locked ? 'opacity-70 border-slate-100' : 'border-slate-200'}`}>
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                          <span className="text-xs font-black text-slate-500">{formatDate(m.kickoff_at)}</span>
+                          {isUpcomingDay
+                            ? <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color, background: `${color}15` }}>⏳ Próximamente</span>
+                            : locked
+                              ? <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">🔒 Cerrado</span>
+                              : <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Abierto · {timeUntil(m.kickoff_at)}</span>}
                         </div>
                         <div className="flex items-center gap-3 px-4 py-3">
                           <div className="flex items-center gap-2 flex-1">
                             <Flag src={m.home_flag} className="w-7 h-7 shrink-0" />
                             <span className="text-xs font-black text-slate-900 leading-tight">{m.home_team}</span>
                           </div>
-                          <div className="flex flex-col items-center gap-1">
-                            <div className="flex items-center gap-1.5">
-                              <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.home_score ?? '?'}</span>
-                              <span className="font-bebas text-xl text-slate-400">:</span>
-                              <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.away_score ?? '?'}</span>
-                            </div>
-                            {pred && (
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                Tu pred: {pred.home_pred} - {pred.away_pred}
-                              </span>
-                            )}
+                          <div className="flex items-center gap-1.5">
+                            <input type="number" min={0} max={20} disabled={locked}
+                              value={preds[m.id]?.h ?? ''}
+                              onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], h: e.target.value, a: p[m.id]?.a ?? '' } })); setHasChanges(true) }}
+                              className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
+                              style={{ borderColor: preds[m.id]?.h !== undefined && preds[m.id]?.h !== '' ? color : undefined }} />
+                            <span className="font-bebas text-xl text-slate-400">:</span>
+                            <input type="number" min={0} max={20} disabled={locked}
+                              value={preds[m.id]?.a ?? ''}
+                              onChange={e => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], a: e.target.value, h: p[m.id]?.h ?? '' } })); setHasChanges(true) }}
+                              className="w-10 h-10 text-center border-2 border-slate-200 rounded-xl font-bebas text-xl focus:outline-none disabled:bg-slate-50"
+                              style={{ borderColor: preds[m.id]?.a !== undefined && preds[m.id]?.a !== '' ? color : undefined }} />
                           </div>
                           <div className="flex items-center gap-2 flex-1 justify-end">
                             <span className="text-xs font-black text-slate-900 leading-tight text-right">{m.away_team}</span>
@@ -1173,7 +1153,63 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     )
                   })}
                 </div>
-              </div>
+              </>
+            )}
+
+            {/* JUGADOS */}
+            {predTab === 'played' && (
+              <>
+                {finishedMatches.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400">
+                    <div className="text-3xl mb-2">⏳</div>
+                    <div className="font-bold">Todavía no se jugó ningún partido</div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {finishedMatches.map(m => {
+                      const pred = apiPreds[m.id]
+                      const pts = pred?.points_earned ?? null
+                      const ptsBadge = pts === 3
+                        ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">+3 🎯</span>
+                        : pts === 1
+                          ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">+1 👍</span>
+                          : pts === 0
+                            ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">0 pts</span>
+                            : <span className="text-xs font-bold text-slate-400">Sin pronóstico</span>
+                      return (
+                        <div key={m.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                          <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
+                            <span className="text-xs font-bold text-slate-500">{formatDate(m.kickoff_at)}</span>
+                            {ptsBadge}
+                          </div>
+                          <div className="flex items-center gap-3 px-4 py-3">
+                            <div className="flex items-center gap-2 flex-1">
+                              <Flag src={m.home_flag} className="w-7 h-7 shrink-0" />
+                              <span className="text-xs font-black text-slate-900 leading-tight">{m.home_team}</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.home_score ?? '?'}</span>
+                                <span className="font-bebas text-xl text-slate-400">:</span>
+                                <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.away_score ?? '?'}</span>
+                              </div>
+                              {pred && (
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  Tu pred: {pred.home_pred} - {pred.away_pred}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-1 justify-end">
+                              <span className="text-xs font-black text-slate-900 leading-tight text-right">{m.away_team}</span>
+                              <Flag src={m.away_flag} className="w-7 h-7 shrink-0" />
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
