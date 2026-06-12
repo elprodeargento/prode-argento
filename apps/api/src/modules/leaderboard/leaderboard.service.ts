@@ -101,6 +101,7 @@ export class LeaderboardService {
       }))
       .sort((a, b) => {
         if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
+        if (b.exact_results !== a.exact_results) return b.exact_results - a.exact_results
         return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
       })
       .slice(0, 10)
@@ -170,6 +171,7 @@ export class LeaderboardService {
       }))
       .sort((a, b) => {
         if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
+        if (b.exact_results !== a.exact_results) return b.exact_results - a.exact_results
         return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
       })
       .map((e, i) => ({ ...e, rank: i + 1 }))
