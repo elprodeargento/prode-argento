@@ -2,7 +2,7 @@ const steps = [
   { n: '1', title: 'Registrá tu negocio', desc: 'Solo el nombre. 30 segundos.' },
   { n: '2', title: 'Personalizá tu marca', desc: 'Logo, colores y premios para tus clientes.' },
   { n: '3', title: 'Compartí el link', desc: 'Tus clientes entran y empiezan a jugar.' },
-  { n: '4', title: 'Seguí en vivo', desc: 'El ranking se actualiza solo, partido a partido.' },
+  { n: '4', title: 'Seguí el ranking', desc: 'Se actualiza solo, partido a partido (puede demorar unos minutos).' },
   { n: '🎁', title: 'Notificá al ganador', desc: 'Avisale por WhatsApp y traelo al local a buscar su premio.' },
 ]
 

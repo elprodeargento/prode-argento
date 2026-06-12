@@ -813,6 +813,9 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-xs font-bold text-slate-400">Posición</div>
               </div>
             </div>
+            <p className="text-center text-xs text-slate-400 font-medium px-4 pt-1.5">
+              Los puntos pueden demorar 10-20 min en actualizarse
+            </p>
 
             {(() => {
               const isFree = empresa.plan === 'free'

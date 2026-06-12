@@ -1,8 +1,11 @@
-import { Body, Controller, Post, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Body, Controller, Post, ConflictException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiTags } from '@nestjs/swagger';
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Auth')
 @Controller({ path: 'auth', version: '1' })
@@ -10,6 +13,7 @@ export class AuthController {
   constructor(
     private readonly supabase: SupabaseService,
     private readonly referralsService: ReferralsService,
+    private readonly config: ConfigService,
   ) { }
 
   @Post('register')
@@ -89,5 +93,31 @@ export class AuthController {
     }
 
     return { userId: authData.user.id };
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    const webUrl = this.config.get<string>('app.webUrl');
+    await this.supabase.client.auth.resetPasswordForEmail(dto.email, {
+      redirectTo: `${webUrl}/empresa/reset-password`,
+    });
+    // Siempre devolvemos ok, exista o no la cuenta, para no filtrar emails registrados
+    return { ok: true };
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    const { data, error } = await this.supabase.client.auth.getUser(dto.token);
+    if (error || !data?.user) {
+      throw new UnauthorizedException('El link de recuperación es inválido o expiró');
+    }
+
+    const { error: updateError } = await this.supabase.client.auth.admin.updateUserById(
+      data.user.id,
+      { password: dto.password },
+    );
+    if (updateError) throw new InternalServerErrorException(updateError.message);
+
+    return { ok: true };
   }
 }

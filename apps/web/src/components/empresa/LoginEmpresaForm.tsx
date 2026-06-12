@@ -86,6 +86,9 @@ export function LoginEmpresaForm() {
             value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required autoComplete="off" />
           <Input label="Contraseña" type="password" placeholder="Tu contraseña"
             value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required autoComplete="new-password" />
+          <a href="/empresa/recuperar-password" className="text-xs text-[#002B72] font-bold hover:underline self-end -mt-1">
+            ¿Olvidaste tu contraseña?
+          </a>
           {error && (
             <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 font-semibold">
               {error}
