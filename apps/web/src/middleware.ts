@@ -9,7 +9,7 @@ const RESERVED_SLUGS = new Set([
   'blog', 'docs', 'help', 'support', 'status', 'auth', 'ref',
 ])
 
-const EMPRESA_PUBLIC_PATHS = ['/empresa/login', '/empresa/registro']
+const EMPRESA_PUBLIC_PATHS = ['/empresa/login', '/empresa/registro', '/empresa/recuperar-password', '/empresa/reset-password']
 
 function getSlug(host: string): string | null {
   const bare = host.split(':')[0]
@@ -113,7 +113,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isEmpresaPublic && user) {
+  if (isEmpresaPublic && user && pathname !== '/empresa/reset-password') {
     const dashUrl = request.nextUrl.clone()
     dashUrl.pathname = '/empresa/dashboard'
     console.log(`[MW] REDIRECT authenticated user away from public empresa page`)
