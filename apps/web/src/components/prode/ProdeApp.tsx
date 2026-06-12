@@ -468,7 +468,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   }
 
   const myEntry = leaderboard.find(e => e.participant_id === participant.id)
-  const scheduledMatches = matches.filter(m => m.status === 'scheduled')
+  const scheduledMatches = matches.filter(m => m.status === 'scheduled' || m.status === 'live')
   const finishedMatches = matches.filter(m => m.status === 'finished')
   const closeMin = empresa.close_minutes ?? 5
   const nextMatch = scheduledMatches.find(m => !isLocked(m, closeMin))
@@ -1120,11 +1120,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                         ${locked ? 'opacity-70 border-slate-100' : 'border-slate-200'}`}>
                         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-b border-slate-100">
                           <span className="text-xs font-black text-slate-500">{formatDate(m.kickoff_at)}</span>
-                          {isUpcomingDay
-                            ? <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color, background: `${color}15` }}>⏳ Próximamente</span>
-                            : locked
-                              ? <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">🔒 Cerrado</span>
-                              : <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Abierto · {timeUntil(m.kickoff_at)}</span>}
+                          {m.status === 'live'
+                            ? <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-500 text-white animate-pulse">🔴 En curso</span>
+                            : isUpcomingDay
+                              ? <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color, background: `${color}15` }}>⏳ Próximamente</span>
+                              : locked
+                                ? <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">🔒 Cerrado</span>
+                                : <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Abierto · {timeUntil(m.kickoff_at)}</span>}
                         </div>
                         <div className="flex items-center gap-3 px-4 py-3">
                           <div className="flex items-center gap-2 flex-1">
