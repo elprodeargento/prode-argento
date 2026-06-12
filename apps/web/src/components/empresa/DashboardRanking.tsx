@@ -46,7 +46,7 @@ export function DashboardRanking() {
           .from('participants')
           .select('id, name')
           .eq('business_id', business.id)
-          .order('name', { ascending: true })
+          .order('registered_at', { ascending: true })
           .limit(5)
 
         setRanking((parts ?? []).map((p, i) => ({

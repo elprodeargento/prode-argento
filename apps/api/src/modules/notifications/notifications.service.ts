@@ -170,12 +170,14 @@ export class NotificationsService {
         .from('participants')
         .select('id, phone, name, last_wa_sent_at')
         .eq('business_id', businessId)
+        .limit(10000)
       participants = data ?? []
     } else if (dto.recipients === 'no_pred') {
       const { data: withPred } = await this.supabase.client
         .from('predictions')
         .select('participant_id')
         .eq('business_id', businessId)
+        .limit(10000)
 
       const predIds = [...new Set((withPred ?? []).map((p: any) => p.participant_id))]
 
@@ -183,6 +185,7 @@ export class NotificationsService {
         .from('participants')
         .select('id, phone, name, last_wa_sent_at')
         .eq('business_id', businessId)
+        .limit(10000)
 
       if (predIds.length > 0) {
         query = query.not('id', 'in', `(${predIds.join(',')})`)
@@ -277,6 +280,7 @@ export class NotificationsService {
         .from('predictions')
         .select('participant_id')
         .eq('business_id', businessId)
+        .limit(10000)
 
       const predIds = (withPreds ?? []).map((p: any) => p.participant_id)
 
@@ -284,6 +288,7 @@ export class NotificationsService {
         .from('participants')
         .select('id, phone, name, last_wa_sent_at')
         .eq('business_id', businessId)
+        .limit(10000)
 
       if (predIds.length > 0) {
         query = query.not('id', 'in', `(${predIds.join(',')})`)
@@ -368,6 +373,7 @@ export class NotificationsService {
         .from('participants')
         .select('id')
         .eq('business_id', businessId)
+        .limit(10000)
       return (data ?? []).map((p: any) => p.id)
     }
 
@@ -376,12 +382,14 @@ export class NotificationsService {
         .from('predictions')
         .select('participant_id')
         .eq('business_id', businessId)
+        .limit(10000)
       const predIds = [...new Set((withPred ?? []).map((p: any) => p.participant_id))]
 
       let query = this.supabase.client
         .from('participants')
         .select('id')
         .eq('business_id', businessId)
+        .limit(10000)
       if (predIds.length > 0) {
         query = query.not('id', 'in', `(${predIds.join(',')})`)
       }
@@ -397,6 +405,7 @@ export class NotificationsService {
       .eq('business_id', businessId)
       .order('rank', { ascending: true })
       .lte('rank', 10)
+      .limit(10)
     return (data ?? []).map((r: any) => r.participant_id)
   }
 

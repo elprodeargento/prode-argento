@@ -45,73 +45,14 @@ export class LeaderboardService {
       .single()
     if (!business) return []
 
-    // Compute Monday–Sunday for the requested week
-    const now = new Date()
-    const daysFromMonday = (now.getDay() + 6) % 7
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - daysFromMonday + weekOffset * 7)
-    monday.setHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    sunday.setHours(23, 59, 59, 999)
-
-    // Matches played in this week
-    const { data: weekMatches } = await this.supabase.client
-      .from('matches')
-      .select('id')
-      .gte('kickoff_at', monday.toISOString())
-      .lte('kickoff_at', sunday.toISOString())
-
-    const matchIds = (weekMatches ?? []).map((m) => m.id)
-    if (!matchIds.length) return { entries: [], weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
-
-    // Participants for this business
-    const { data: participants } = await this.supabase.client
-      .from('participants')
-      .select('id, name, email, registered_at')
-      .eq('business_id', business.id)
-
-    const participantIds = (participants ?? []).map((p) => p.id)
-    const participantMap = Object.fromEntries((participants ?? []).map((p) => [p.id, p]))
-
-    // Predictions for those matches + those participants
-    const { data: preds } = await this.supabase.client
-      .from('predictions')
-      .select('participant_id, points_earned')
-      .in('match_id', matchIds)
-      .in('participant_id', participantIds)
-      .not('points_earned', 'is', null)
-
-    // Aggregate
-    const totals: Record<string, { points: number; exact: number }> = {}
-    for (const pred of preds ?? []) {
-      if (!totals[pred.participant_id]) totals[pred.participant_id] = { points: 0, exact: 0 }
-      totals[pred.participant_id].points += pred.points_earned ?? 0
-      if (pred.points_earned === 3) totals[pred.participant_id].exact++
+    const result = await this.getWeeklyLeaderboardByBusinessId(business.id, weekOffset)
+    return {
+      ...result,
+      entries: result.entries.slice(0, 10),
     }
-
-    const entries = Object.entries(totals)
-      .map(([id, data]) => ({
-        participant_id: id,
-        name: participantMap[id]?.name ?? 'Desconocido',
-        email: participantMap[id]?.email ?? '',
-        registered_at: participantMap[id]?.registered_at ?? null,
-        weekly_points: data.points,
-        exact_results: data.exact,
-      }))
-      .sort((a, b) => {
-        if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
-        if (b.exact_results !== a.exact_results) return b.exact_results - a.exact_results
-        return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
-      })
-      .slice(0, 10)
-      .map((entry, i) => ({ ...entry, rank: i + 1 }))
-
-    return { entries, weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
   }
 
   async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
-    // Compute Monday–Sunday window for the requested week
     const now = new Date()
     const daysFromMonday = (now.getDay() + 6) % 7
     const monday = new Date(now)
@@ -121,60 +62,24 @@ export class LeaderboardService {
     sunday.setDate(monday.getDate() + 6)
     sunday.setHours(23, 59, 59, 999)
 
-    // Matches played in this week
-    const { data: weekMatches } = await this.supabase.client
-      .from('matches')
-      .select('id')
-      .gte('kickoff_at', monday.toISOString())
-      .lte('kickoff_at', sunday.toISOString())
-
-    const matchIds = (weekMatches ?? []).map((m) => m.id)
-
-    const { data: participants, error: pErr } = await this.supabase.client
-      .from('participants')
-      .select('id, name, registered_at')
-      .eq('business_id', businessId)
-
-    if (pErr) throw new Error(pErr.message)
-    if (!participants?.length) return { entries: [], weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
-
-    const participantIds = participants.map((p) => p.id)
-    const participantMap = Object.fromEntries(participants.map((p) => [p.id, p]))
-
-    const map: Record<string, { points: number; exact: number }> = {}
-    for (const p of participants) map[p.id] = { points: 0, exact: 0 }
-
-    if (matchIds.length > 0) {
-      const { data: predictions, error: predErr } = await this.supabase.client
-        .from('predictions')
-        .select('participant_id, points_earned')
-        .in('match_id', matchIds)
-        .in('participant_id', participantIds)
-
-      if (predErr) throw new Error(predErr.message)
-
-      for (const pred of predictions ?? []) {
-        if (map[pred.participant_id] && pred.points_earned != null) {
-          map[pred.participant_id].points += pred.points_earned
-          if (pred.points_earned === 3) map[pred.participant_id].exact++
-        }
-      }
-    }
-
-    const entries = Object.entries(map)
-      .map(([id, v]) => ({
-        participant_id: id,
-        name: participantMap[id]?.name ?? 'Desconocido',
-        registered_at: participantMap[id]?.registered_at ?? null,
-        weekly_points: v.points,
-        exact_results: v.exact,
-      }))
-      .sort((a, b) => {
-        if (b.weekly_points !== a.weekly_points) return b.weekly_points - a.weekly_points
-        if (b.exact_results !== a.exact_results) return b.exact_results - a.exact_results
-        return new Date(a.registered_at ?? 0).getTime() - new Date(b.registered_at ?? 0).getTime()
+    const { data, error } = await this.supabase.client
+      .rpc('get_weekly_leaderboard', {
+        p_business_id: businessId,
+        p_week_start:  monday.toISOString(),
+        p_week_end:    sunday.toISOString(),
       })
-      .map((e, i) => ({ ...e, rank: i + 1 }))
+
+    if (error) throw new Error(error.message)
+
+    const entries = (data ?? []).map((r: any) => ({
+      participant_id: r.participant_id,
+      name:           r.name,
+      email:          r.email,
+      registered_at:  r.registered_at,
+      weekly_points:  Number(r.weekly_points),
+      exact_results:  Number(r.exact_results),
+      rank:           Number(r.rank),
+    }))
 
     return { entries, weekStart: monday.toISOString(), weekEnd: sunday.toISOString() }
   }
