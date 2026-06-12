@@ -15,38 +15,26 @@ export class LeaderboardService {
 
   /** Called after a match finishes — scores all predictions for that match */
   async scoreMatch(matchId: number, homeScore: number, awayScore: number): Promise<ScoringResult[]> {
-    const { data: predictions } = await this.supabase.client
-      .from('predictions')
-      .select('id, participant_id, home_pred, away_pred')
-      .eq('match_id', matchId)
+    const { data, error } = await this.supabase.client
+      .rpc('score_match_predictions', {
+        p_match_id:   matchId,
+        p_home_score: homeScore,
+        p_away_score: awayScore,
+      })
 
-    if (!predictions?.length) return []
+    if (error) {
+      this.logger.error(`Error scoring match ${matchId}`, error.message)
+      throw new Error(error.message)
+    }
 
-    const results: ScoringResult[] = predictions.map((p) => {
-      let pts = 0
-      if (p.home_pred === homeScore && p.away_pred === awayScore) {
-        pts = 3 // exact
-      } else {
-        const realWinner = Math.sign(homeScore - awayScore)
-        const predWinner = Math.sign(p.home_pred - p.away_pred)
-        if (realWinner === predWinner) pts = 1 // correct winner
-      }
-      return { participantId: p.participant_id, matchId, pointsEarned: pts }
-    })
-
-    // Update points on each prediction
-    await Promise.all(
-      results.map((r) =>
-        this.supabase.client
-          .from('predictions')
-          .update({ points_earned: r.pointsEarned })
-          .eq('participant_id', r.participantId)
-          .eq('match_id', matchId),
-      ),
-    )
+    if (!data?.length) return []
 
     // Leaderboard recalculation is handled by the dedicated scheduler — decoupled from scoring
-    return results
+    return (data as Array<{ participant_id: string; points_earned: number }>).map((r) => ({
+      participantId: r.participant_id,
+      matchId,
+      pointsEarned: r.points_earned,
+    }))
   }
 
   async getWeeklyLeaderboard(adminUserId: string, weekOffset = 0) {
