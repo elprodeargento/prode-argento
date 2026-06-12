@@ -1079,7 +1079,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               </div>
             )}
 
-            {scheduledMatches.length === 0 && (
+            {scheduledMatches.length === 0 && finishedMatches.length === 0 && (
               <div className="text-center py-10 text-slate-400">
                 <div className="text-3xl mb-2">📋</div>
                 <div className="font-bold">No hay partidos disponibles</div>
@@ -1126,6 +1126,55 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 )
               })}
             </div>
+
+            {finishedMatches.length > 0 && (
+              <div className="mt-4">
+                <div className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3">Partidos jugados</div>
+                <div className="flex flex-col gap-3">
+                  {finishedMatches.map(m => {
+                    const pred = apiPreds[m.id]
+                    const pts = pred?.points_earned ?? null
+                    const ptsBadge = pts === 3
+                      ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">+3 🎯</span>
+                      : pts === 1
+                        ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">+1 👍</span>
+                        : pts === 0
+                          ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">0 pts</span>
+                          : <span className="text-xs font-bold text-slate-400">Sin pronóstico</span>
+                    return (
+                      <div key={m.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden opacity-80">
+                        <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
+                          <span className="text-xs font-bold text-slate-500">{formatDate(m.kickoff_at)}</span>
+                          {ptsBadge}
+                        </div>
+                        <div className="flex items-center gap-3 px-4 py-3">
+                          <div className="flex items-center gap-2 flex-1">
+                            <Flag src={m.home_flag} className="w-7 h-7 shrink-0" />
+                            <span className="text-xs font-black text-slate-900 leading-tight">{m.home_team}</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.home_score ?? '?'}</span>
+                              <span className="font-bebas text-xl text-slate-400">:</span>
+                              <span className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-bebas text-xl text-slate-700">{m.away_score ?? '?'}</span>
+                            </div>
+                            {pred && (
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                Tu pred: {pred.home_pred} - {pred.away_pred}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 flex-1 justify-end">
+                            <span className="text-xs font-black text-slate-900 leading-tight text-right">{m.away_team}</span>
+                            <Flag src={m.away_flag} className="w-7 h-7 shrink-0" />
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
