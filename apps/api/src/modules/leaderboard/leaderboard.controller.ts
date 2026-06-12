@@ -20,7 +20,7 @@ export class LeaderboardController {
   @UseGuards(SupabaseAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get leaderboard for the current business' })
-  getMyLeaderboard(@Req() req: any, @Query('limit') limit = 50) {
+  getMyLeaderboard(@Req() req: any, @Query('limit') limit = 1000) {
     return this.leaderboardService.getLeaderboardByAdminId(req.user.id, Number(limit))
   }
 
@@ -37,7 +37,7 @@ export class LeaderboardController {
   @ApiOperation({ summary: 'Get leaderboard for a business' })
   getLeaderboard(
     @Param('businessId') businessId: string,
-    @Query('limit') limit = 50,
+    @Query('limit') limit = 1000,
   ) {
     return this.leaderboardService.getLeaderboard(businessId, Number(limit))
   }

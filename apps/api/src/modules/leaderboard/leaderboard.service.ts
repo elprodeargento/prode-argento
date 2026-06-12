@@ -94,7 +94,7 @@ export class LeaderboardService {
     return this.getLeaderboard(business.id, limit)
   }
 
-  async getLeaderboard(businessId: string, limit = 50) {
+  async getLeaderboard(businessId: string, limit = 1000) {
     const { data: cached } = await this.supabase.client
       .from('leaderboard_cache')
       .select('*, participants(name, email, phone)')
