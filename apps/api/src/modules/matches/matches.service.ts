@@ -150,6 +150,8 @@ export class MatchesService {
             status:      row.status,
             home_score:  row.home_score,
             away_score:  row.away_score,
+            // Si la API devuelve scores nulos, resetear scored_at para que el cron los reprocese
+            ...(row.home_score === null || row.away_score === null ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
       } else {
