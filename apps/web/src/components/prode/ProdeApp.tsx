@@ -755,13 +755,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-3xl mb-1">🎯</div>
                 <div className="font-black text-[#002B72] text-base">¡Resultado exacto!</div>
                 <div className="text-[#002B72]/70 text-xs mt-0.5 font-bold">Acertaste el marcador exacto · +3 puntos</div>
-                {referrerData !== null && !(referrerData.total_referrals > 0 && referrerData.total_referrals % 3 === 0) && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setTab('referidos') }}
-                    className="mt-2 text-[11px] font-black text-[#002B72]/60 underline underline-offset-2">
-                    ¿Sabías que podés ganar $12.000 invitando comercios? →
-                  </button>
-                )}
               </div>
             )}
 
@@ -776,17 +769,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 <div className="text-white/70 text-xs mt-0.5">
                   Ahora estás {myEntry ? `${myEntry.rank}°` : ''} en el ranking
                 </div>
-                {referrerData !== null && !(referrerData.total_referrals > 0 && referrerData.total_referrals % 3 === 0) && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setTab('referidos') }}
-                    className="mt-2 text-[11px] font-black text-[#002B72]/60 underline underline-offset-2">
-                    ¿Sabías que podés ganar $12.000 invitando comercios? →
-                  </button>
-                )}
               </div>
             )}
 
-            {participantCampaign?.invite_message ? (
+            {participantCampaign?.invite_message && (
               <button
                 onClick={() => setTab('referidos')}
                 className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all text-left"
@@ -797,28 +783,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                 </span>
                 <span className="text-[12px] font-black shrink-0" style={{ color }}>→</span>
               </button>
-            ) : referrerData !== null && !(referrerData.total_referrals > 0 && referrerData.total_referrals % 3 === 0) && (
-              (() => {
-                const enGrupo = referrerData.total_referrals % 3
-                const falta = 3 - enGrupo
-                const mensaje = enGrupo === 0
-                  ? { icon: '💰', text: '¿Tenés amigos con comercios? Cada 3 comercios ganá $12.000' }
-                  : falta === 1
-                    ? { icon: '⚡', text: `¡Casi! Te falta 1 solo para ganar $12.000` }
-                    : { icon: '🔥', text: `¡Ya tenés ${enGrupo}! Te faltan ${falta} para ganar $12.000` }
-                return (
-                  <button
-                    onClick={() => setTab('referidos')}
-                    className="mx-4 mt-3 w-[calc(100%-2rem)] flex items-center gap-3 px-4 py-3 rounded-2xl border-2 font-bold text-sm transition-all text-left"
-                    style={{ borderColor: color, background: `${color}10` }}>
-                    <span className="text-xl shrink-0">{mensaje.icon}</span>
-                    <span className="flex-1 font-black text-[13px]" style={{ color }}>
-                      {mensaje.text}
-                    </span>
-                    <span className="text-[12px] font-black shrink-0" style={{ color }}>→</span>
-                  </button>
-                )
-              })()
             )}
 
             <div className="grid grid-cols-2 gap-3 px-4 pt-4">
