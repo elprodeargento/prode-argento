@@ -408,14 +408,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           })
           .catch(() => { })
 
-        // Leaderboard semanal (semana actual)
-        publicFetch(`/leaderboard/${empresa.id}/weekly?offset=0`)
-          .then((data: any) => {
-            setWeeklyLeaderboard(data?.entries ?? [])
-            if (data?.weekStart && data?.weekEnd) setWeekRange({ start: data.weekStart, end: data.weekEnd })
-          })
-          .catch(() => { })
-
         // Detectar resultado exacto nuevo
         const exactKey = `prode:${empresa.slug}:exactAlerted`
         const hasNewExact = (predData as RawPrediction[]).some(p => p.points_earned === 3)
@@ -453,7 +445,6 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   }, [empresa.slug])
 
   useEffect(() => {
-    if (weekOffset === 0) return // la semana actual ya se carga en el efecto principal
     setWeeklyLoading(true)
     publicFetch(`/leaderboard/${empresa.id}/weekly?offset=${weekOffset}`)
       .then((data: any) => {
@@ -974,28 +965,32 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                   </button>
                   </div>
                   {/* Navegación de semanas */}
-                  <div className="flex items-center justify-between">
-                    <button
-                      onClick={() => setWeekOffset(o => o - 1)}
-                      className="flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-slate-600 transition-colors py-1">
-                      ‹ Anterior
-                    </button>
-                    <span className="text-[11px] font-bold text-slate-400">
-                      {weekRange
-                        ? (() => {
-                            const TZ = 'America/Argentina/Buenos_Aires'
-                            const fmt = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: TZ })
-                            return `${fmt(weekRange.start)} – ${fmt(weekRange.end)}`
-                          })()
-                        : weekOffset === 0 ? 'Esta semana' : `Semana ${weekOffset}`}
-                    </span>
-                    <button
-                      onClick={() => setWeekOffset(o => o + 1)}
-                      disabled={weekOffset >= 0}
-                      className={`flex items-center gap-1 text-[11px] font-black transition-colors py-1 ${weekOffset >= 0 ? 'text-slate-200 cursor-default' : 'text-slate-400 hover:text-slate-600'}`}>
-                      Siguiente ›
-                    </button>
-                  </div>
+                  {(() => {
+                    // Primera semana del Mundial: lunes 9 jun 2026 00:00 ART = 03:00 UTC
+                    const WC_FIRST_WEEK_START = new Date('2026-06-09T03:00:00Z')
+                    const isFirstWeek = weekRange ? new Date(weekRange.start) <= WC_FIRST_WEEK_START : false
+                    const TZ = 'America/Argentina/Buenos_Aires'
+                    const fmt = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: TZ })
+                    return (
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={() => setWeekOffset(o => o - 1)}
+                          disabled={isFirstWeek}
+                          className={`flex items-center gap-1 text-[11px] font-black transition-colors py-1 ${isFirstWeek ? 'text-slate-200 cursor-default' : 'text-slate-400 hover:text-slate-600'}`}>
+                          ‹ Anterior
+                        </button>
+                        <span className="text-[11px] font-bold text-slate-400">
+                          {weekRange ? `${fmt(weekRange.start)} – ${fmt(weekRange.end)}` : 'Esta semana'}
+                        </span>
+                        <button
+                          onClick={() => setWeekOffset(o => o + 1)}
+                          disabled={weekOffset >= 0}
+                          className={`flex items-center gap-1 text-[11px] font-black transition-colors py-1 ${weekOffset >= 0 ? 'text-slate-200 cursor-default' : 'text-slate-400 hover:text-slate-600'}`}>
+                          Siguiente ›
+                        </button>
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div className="divide-y divide-slate-50">
                   {weeklyLoading && (
