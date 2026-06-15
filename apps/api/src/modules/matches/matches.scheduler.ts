@@ -8,7 +8,7 @@ export class MatchesScheduler {
 
   constructor(private readonly matchesService: MatchesService) {}
 
-  @Cron('*/15 * * * *', { name: 'sync-matches' })
+  @Cron('*/8 * * * *', { name: 'sync-matches' })
   async syncActiveWindow() {
     this.logger.log('Running scheduled match sync (active window)...')
     try {
