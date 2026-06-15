@@ -150,8 +150,9 @@ export class MatchesService {
             status:      row.status,
             home_score:  row.home_score,
             away_score:  row.away_score,
-            // Si la API devuelve scores nulos, resetear scored_at para que el cron los reprocese
-            ...(row.home_score === null || row.away_score === null ? { scored_at: null } : {}),
+            // Resetear scored_at si los scores son nulos O si el partido volvió a live/scheduled
+            // (la API a veces reabre un partido que ya fue marcado finished)
+            ...((row.home_score === null || row.away_score === null || row.status !== 'finished') ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
       } else {
