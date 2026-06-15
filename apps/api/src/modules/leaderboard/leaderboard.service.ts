@@ -58,8 +58,12 @@ export class LeaderboardService {
     // Calculamos la ventana lunes-domingo en timezone Argentina (ART = UTC-3, sin DST).
     // Restamos 3h para trabajar con los números de wall-clock ART como si fueran UTC,
     // calculamos inicio/fin de semana, y luego sumamos 3h para convertir de vuelta a UTC real.
+    // Agregamos 3h extra de gracia al rollover: la semana no cambia a las 00:00 ART del lunes
+    // sino a las 03:00 ART, para que partidos del domingo a la noche (que terminan ~01:00 ART)
+    // siempre queden en la semana correcta.
     const ART_OFFSET_MS = 3 * 60 * 60 * 1000
-    const nowAsART = new Date(now.getTime() - ART_OFFSET_MS)
+    const ROLLOVER_GRACE_MS = 3 * 60 * 60 * 1000
+    const nowAsART = new Date(now.getTime() - ART_OFFSET_MS - ROLLOVER_GRACE_MS)
     const daysFromMonday = (nowAsART.getUTCDay() + 6) % 7
 
     const mondayART = new Date(nowAsART)
