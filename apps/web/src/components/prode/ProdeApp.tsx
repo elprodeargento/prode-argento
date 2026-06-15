@@ -242,6 +242,9 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [editSaving, setEditSaving] = useState(false)
   const [showPointsInfo, setShowPointsInfo] = useState(false)
   const [weeklyLeaderboard, setWeeklyLeaderboard] = useState<Array<{ participant_id: string; name: string; weekly_points: number; exact_results: number; rank: number }>>([])
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [weeklyLoading, setWeeklyLoading] = useState(false)
+  const [weekRange, setWeekRange] = useState<{ start: string; end: string } | null>(null)
   const [exactAlert, setExactAlert] = useState(false)
   const [predTab, setPredTab] = useState<'upcoming' | 'played'>('upcoming')
   const [referrerData, setReferrerData] = useState<{
@@ -405,9 +408,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           })
           .catch(() => { })
 
-        // Leaderboard semanal
-        publicFetch(`/leaderboard/${empresa.id}/weekly`)
-          .then((data: any) => setWeeklyLeaderboard(data?.entries ?? []))
+        // Leaderboard semanal (semana actual)
+        publicFetch(`/leaderboard/${empresa.id}/weekly?offset=0`)
+          .then((data: any) => {
+            setWeeklyLeaderboard(data?.entries ?? [])
+            if (data?.weekStart && data?.weekEnd) setWeekRange({ start: data.weekStart, end: data.weekEnd })
+          })
           .catch(() => { })
 
         // Detectar resultado exacto nuevo
@@ -445,6 +451,18 @@ export function ProdeApp({ empresa, participant, onLogout }: {
       .then((data: any) => setParticipantCampaign(data))
       .catch(() => {})
   }, [empresa.slug])
+
+  useEffect(() => {
+    if (weekOffset === 0) return // la semana actual ya se carga en el efecto principal
+    setWeeklyLoading(true)
+    publicFetch(`/leaderboard/${empresa.id}/weekly?offset=${weekOffset}`)
+      .then((data: any) => {
+        setWeeklyLeaderboard(data?.entries ?? [])
+        if (data?.weekStart && data?.weekEnd) setWeekRange({ start: data.weekStart, end: data.weekEnd })
+      })
+      .catch(() => {})
+      .finally(() => setWeeklyLoading(false))
+  }, [weekOffset, empresa.id])
 
   useEffect(() => {
     if (!participantCampaign) return
@@ -934,9 +952,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
 
             {leaderboard.length > 0 && (
               <div className="mx-4 mt-3 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                  <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
-                  <button
+                <div className="px-4 py-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-[11px] font-black text-slate-400 uppercase tracking-wider">🏅 Ranking de la semana</div>
+                    <button
                     onClick={async () => {
                       const source = weeklyLeaderboard.length > 0
                         ? weeklyLeaderboard
@@ -975,9 +994,36 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     style={{ background: color }}>
                     📤 Compartir
                   </button>
+                  </div>
+                  {/* Navegación de semanas */}
+                  <div className="flex items-center justify-between">
+                    <button
+                      onClick={() => setWeekOffset(o => o - 1)}
+                      className="flex items-center gap-1 text-[11px] font-black text-slate-400 hover:text-slate-600 transition-colors py-1">
+                      ‹ Anterior
+                    </button>
+                    <span className="text-[11px] font-bold text-slate-400">
+                      {weekRange
+                        ? (() => {
+                            const TZ = 'America/Argentina/Buenos_Aires'
+                            const fmt = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', timeZone: TZ })
+                            return `${fmt(weekRange.start)} – ${fmt(weekRange.end)}`
+                          })()
+                        : weekOffset === 0 ? 'Esta semana' : `Semana ${weekOffset}`}
+                    </span>
+                    <button
+                      onClick={() => setWeekOffset(o => o + 1)}
+                      disabled={weekOffset >= 0}
+                      className={`flex items-center gap-1 text-[11px] font-black transition-colors py-1 ${weekOffset >= 0 ? 'text-slate-200 cursor-default' : 'text-slate-400 hover:text-slate-600'}`}>
+                      Siguiente ›
+                    </button>
+                  </div>
                 </div>
                 <div className="divide-y divide-slate-50">
-                  {(weeklyLeaderboard.length > 0
+                  {weeklyLoading && (
+                    <div className="px-4 py-6 text-center text-sm text-slate-400">Cargando...</div>
+                  )}
+                  {!weeklyLoading && (weeklyLeaderboard.length > 0
                     ? weeklyLeaderboard
                     : leaderboard.slice(0, 5).map(e => ({
                       participant_id: e.participant_id,
