@@ -54,13 +54,24 @@ export class LeaderboardService {
 
   async getWeeklyLeaderboardByBusinessId(businessId: string, offset: number) {
     const now = new Date()
-    const daysFromMonday = (now.getDay() + 6) % 7
-    const monday = new Date(now)
-    monday.setDate(now.getDate() - daysFromMonday + offset * 7)
-    monday.setHours(0, 0, 0, 0)
-    const sunday = new Date(monday)
-    sunday.setDate(monday.getDate() + 6)
-    sunday.setHours(23, 59, 59, 999)
+
+    // Calculamos la ventana lunes-domingo en timezone Argentina (ART = UTC-3, sin DST).
+    // Restamos 3h para trabajar con los números de wall-clock ART como si fueran UTC,
+    // calculamos inicio/fin de semana, y luego sumamos 3h para convertir de vuelta a UTC real.
+    const ART_OFFSET_MS = 3 * 60 * 60 * 1000
+    const nowAsART = new Date(now.getTime() - ART_OFFSET_MS)
+    const daysFromMonday = (nowAsART.getUTCDay() + 6) % 7
+
+    const mondayART = new Date(nowAsART)
+    mondayART.setUTCDate(nowAsART.getUTCDate() - daysFromMonday + offset * 7)
+    mondayART.setUTCHours(0, 0, 0, 0)
+
+    const sundayART = new Date(mondayART)
+    sundayART.setUTCDate(mondayART.getUTCDate() + 6)
+    sundayART.setUTCHours(23, 59, 59, 999)
+
+    const monday = new Date(mondayART.getTime() + ART_OFFSET_MS) // lunes 00:00 ART → UTC
+    const sunday = new Date(sundayART.getTime() + ART_OFFSET_MS) // domingo 23:59:59 ART → UTC
 
     const { data, error } = await this.supabase.client
       .rpc('get_weekly_leaderboard', {
