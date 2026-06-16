@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { apiGet } from '@/lib/api'
+import { WC_WEEKS, formatWCWeekLabel, getCurrentWCWeekIdx } from '@/lib/wcWeeks'
 import { RankingPodium } from '@/components/empresa/RankingPodio'
 import { RankingTable } from '@/components/empresa/RankingTable'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
@@ -130,22 +131,6 @@ function DistributionCard({ items }: { items: RankingItem[] }) {
   )
 }
 
-function getCurrentWCWeekLabel(): string {
-  const wcStart = new Date('2026-06-11')
-  const now = new Date()
-  const diffMs = now.getTime() - wcStart.getTime()
-  if (diffMs < 0) return 'Semana 1 · 11 - 17 jun'
-  const weekIdx = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
-  const weeks = [
-    'Semana 1 · 11 - 17 jun',
-    'Semana 2 · 18 - 24 jun',
-    'Semana 3 · 25 jun - 1 jul',
-    'Semana 4 · 2 - 8 jul',
-    'Semana 5 · 9 - 15 jul',
-    'Semana 6 · 16 - 19 jul',
-  ]
-  return weeks[weekIdx] ?? weeks[weeks.length - 1]
-}
 
 export function RankingClient() {
   const [items, setItems] = useState<RankingItem[]>([])
@@ -161,8 +146,10 @@ export function RankingClient() {
     rank: number
   }>>([])
   const [weeklyLoading, setWeeklyLoading] = useState(false)
-  const [weeklyPrizes, setWeeklyPrizes] = useState<Array<{rank: number, description: string}>>([])
+  const [weeklyPrizesMap, setWeeklyPrizesMap] = useState<Record<string, Array<{rank: number, description: string}>>>({})
   const [business, setBusiness] = useState<{ id: string, name: string, primary_color: string, logo_url?: string } | null>(null)
+  const currentWeekIdx = Math.max(0, getCurrentWCWeekIdx(WC_WEEKS))
+  const [selectedWeekIdx, setSelectedWeekIdx] = useState(currentWeekIdx)
 
   useEffect(() => {
     Promise.all([
@@ -183,24 +170,19 @@ export function RankingClient() {
       .catch(() => {})
 
     apiGet<Record<string, Array<{rank: number, description: string}>>>('/prizes/weekly/me')
-      .then(data => {
-        const wcStart = new Date('2026-06-11')
-        const now = new Date()
-        const diffMs = now.getTime() - wcStart.getTime()
-        const weekIdx = diffMs < 0 ? 0 : Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
-        setWeeklyPrizes(data[String(weekIdx)] ?? [])
-      })
+      .then(data => setWeeklyPrizesMap(data ?? {}))
       .catch(() => {})
   }, [])
 
   useEffect(() => {
     if (tab !== 'semanal' || !business?.id) return
     setWeeklyLoading(true)
-    apiGet<{ entries: Array<any> }>(`/leaderboard/${business.id}/weekly`)
+    const offset = selectedWeekIdx - currentWeekIdx
+    apiGet<{ entries: Array<any> }>(`/leaderboard/${business.id}/weekly?offset=${offset}`)
       .then(data => setWeeklyEntries(data?.entries ?? []))
       .catch(() => setWeeklyEntries([]))
       .finally(() => setWeeklyLoading(false))
-  }, [tab, business?.id])
+  }, [tab, business?.id, selectedWeekIdx])
 
   if (loading) {
     return (
@@ -266,22 +248,40 @@ export function RankingClient() {
       {tab === 'semanal' && (
         <div className="space-y-4">
 
-          {/* Semana actual */}
-          <div className="flex items-center justify-between px-1">
-            <span className="text-[13px] font-black text-[#0D1A3A]">
-              {getCurrentWCWeekLabel()}
-            </span>
-            <span className="text-[11px] font-black text-green-600 bg-green-100 px-2.5 py-1 rounded-full">
-              {new Date() < new Date('2026-06-11') ? 'Próxima' : 'En curso'}
-            </span>
+          {/* Navegación de semana */}
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={() => setSelectedWeekIdx(i => Math.max(0, i - 1))}
+              disabled={selectedWeekIdx === 0}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-black text-[#5A6480] hover:text-[#002B72] hover:bg-[#F1F3F9] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronLeft className="h-4 w-4" /> Anterior
+            </button>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-[13px] font-black text-[#0D1A3A]">
+                {WC_WEEKS[selectedWeekIdx]?.label} · {WC_WEEKS[selectedWeekIdx] ? formatWCWeekLabel(WC_WEEKS[selectedWeekIdx]) : '—'}
+              </span>
+              {selectedWeekIdx === currentWeekIdx && (
+                <span className="text-[10px] font-black text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+                  En curso
+                </span>
+              )}
+            </div>
+            <button
+              onClick={() => setSelectedWeekIdx(i => Math.min(WC_WEEKS.length - 1, i + 1))}
+              disabled={selectedWeekIdx >= currentWeekIdx}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-black text-[#5A6480] hover:text-[#002B72] hover:bg-[#F1F3F9] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              Siguiente <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
 
           {/* Banner premio semanal */}
-          {weeklyPrizes.length > 0 ? (
+          {(weeklyPrizesMap[String(selectedWeekIdx)] ?? []).length > 0 ? (
             <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4">
-              <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de esta semana</div>
+              <div className="text-[11px] font-black text-amber-600 uppercase tracking-widest mb-2">🎁 Premio de la semana</div>
               <div className="flex flex-col gap-1">
-                {weeklyPrizes.map((p, i) => (
+                {(weeklyPrizesMap[String(selectedWeekIdx)] ?? []).map((p, i) => (
                   <div key={i} className="text-[13px] font-black text-slate-900">
                     {i===0?'🥇':i===1?'🥈':'🥉'} {p.description}
                   </div>
