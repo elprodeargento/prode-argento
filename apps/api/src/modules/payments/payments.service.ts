@@ -6,7 +6,7 @@ import { ReferralsService } from '../referrals/referrals.service'
 import { PlayerReferralsService } from '../player-referrals/player-referrals.service'
 
 export const PLANS = {
-  pro: { label: 'Plan Pro', price: 48400, max_participants: null },
+  pro: { label: 'Plan Pro', price: 33880, max_participants: null },
   premium: { label: 'Plan Premium', price: 96800, max_participants: null },
 } as const
 

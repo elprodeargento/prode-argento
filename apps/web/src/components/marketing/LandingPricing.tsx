@@ -30,13 +30,14 @@ export function LandingPricing() {
 
         {/* PRO */}
         <div className="bg-[#002B72] rounded-2xl p-5 shadow-lg relative">
-          <div className="inline-block bg-[#F5C518] text-[#002B72] text-[10px] font-black px-3 py-1 rounded-full mb-3">
-            MÁS POPULAR
+          <div className="inline-block bg-[#E34646] text-white text-[10px] font-black px-3 py-1 rounded-full mb-3">
+            🔥 OFERTA
           </div>
           <div className="text-[11px] font-black text-white/60 uppercase tracking-widest">Pro</div>
-          <div className="font-bebas text-[42px] text-white">$40.000</div>
+          <div className="text-[16px] font-black text-white/40 line-through leading-none">$40.000</div>
+          <div className="font-bebas text-[42px] text-white leading-none">$28.000</div>
           <div className="text-[12px] font-black text-[#F5C518] mt-0.5">🔒 Pago único · Todo el Mundial 2026</div>
-          <p className="text-[11px] text-white/50 font-medium mt-0.5">No incluye IVA</p>
+          <p className="text-[11px] text-white/50 font-medium mt-0.5">+ IVA</p>
           <ul className="flex flex-col gap-2 mt-3">
             {[
               'Participantes ilimitados',

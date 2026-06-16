@@ -29,8 +29,9 @@ const PLANS = [
   {
     id: 'pro' as Plan,
     name: 'Pro',
-    price: 40000,
-    priceLabel: '$40.000',
+    price: 28000,
+    priceLabel: '$28.000',
+    originalPriceLabel: '$40.000',
     color: '#002B72',
     features: [
       'Participantes ilimitados',
@@ -134,8 +135,8 @@ export function PlanesClient() {
               )}
 
               {!isCurrent && plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#002B72] text-white text-[10px] font-black px-4 py-1 rounded-full">
-                  MÁS POPULAR
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#E34646] text-white text-[10px] font-black px-4 py-1 rounded-full">
+                  🔥 OFERTA
                 </div>
               )}
 
@@ -143,6 +144,11 @@ export function PlanesClient() {
                 <div className="text-[11px] font-black uppercase tracking-widest mb-1" style={{ color: isCurrent ? '#002B72' : plan.color }}>
                   {plan.name}
                 </div>
+                {'originalPriceLabel' in plan && (
+                  <div className="text-[16px] font-black text-[#8E96AE] line-through leading-none mb-0.5">
+                    {(plan as any).originalPriceLabel}
+                  </div>
+                )}
                 <div className="font-bebas text-[42px] text-[#0D1A3A] leading-none">{plan.priceLabel}</div>
                 {plan.price > 0 && (
                   <div className="flex flex-col gap-0.5 mt-1">
@@ -150,7 +156,7 @@ export function PlanesClient() {
                       🔒 Pago único · Todo el Mundial 2026
                     </span>
                     <span className="text-[11px] font-medium text-[#8E96AE]">
-                      No incluye IVA
+                      + IVA
                     </span>
                   </div>
                 )}
