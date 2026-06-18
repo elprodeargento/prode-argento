@@ -297,67 +297,54 @@ export class NotificationsService {
     return { count }
   }
 
-  async sendReminderForFecha(businessId: string, fechaLabel: string, notifyWhatsapp: boolean) {
-    const { data: business } = await this.supabase.client
-      .from('businesses')
-      .select('name, slug')
-      .eq('id', businessId)
-      .single()
+  private async getParticipantsMissingMatches(businessId: string, matchIds: number[]): Promise<string[]> {
+    if (!matchIds.length) return []
 
-    if (!business) return
+    const { data: participants } = await this.supabase.client
+      .from('participants')
+      .select('id')
+      .eq('business_id', businessId)
+      .limit(10000)
+    const allIds = (participants ?? []).map((p: any) => p.id)
+    if (!allIds.length) return []
 
-    if (notifyWhatsapp) {
-      const { data: withPreds } = await this.supabase.client
-        .from('predictions')
-        .select('participant_id')
-        .eq('business_id', businessId)
-        .limit(10000)
+    const { data: preds } = await this.supabase.client
+      .from('predictions')
+      .select('participant_id, match_id')
+      .eq('business_id', businessId)
+      .in('match_id', matchIds)
 
-      const predIds = (withPreds ?? []).map((p: any) => p.participant_id)
-
-      let query = this.supabase.client
-        .from('participants')
-        .select('id, phone, name, last_wa_sent_at')
-        .eq('business_id', businessId)
-        .limit(10000)
-
-      if (predIds.length > 0) {
-        query = query.not('id', 'in', `(${predIds.join(',')})`)
-      }
-
-      const { data: participants } = await query
-
-      if (participants?.length) {
-        const message =
-          `⚽ Los partidos de la ${fechaLabel} arrancan pronto.\n` +
-          `Entrá a cargar tus pronósticos antes de que cierre ⏰`
-
-        const results = await Promise.allSettled(
-          participants.map((p) => {
-            const phone = normalizeE164AR(p.phone)
-            if (!phone) return Promise.resolve(false)
-            return this.sendWAToParticipant(
-              p.id,
-              phone,
-              p.name,
-              business.name,
-              business.slug,
-              message,
-              p.last_wa_sent_at,
-            )
-          }),
-        )
-
-        const sent = results.filter((r) => r.status === 'fulfilled' && r.value === true).length
-        this.logger.log(`WA Reminders sent: ${sent}/${participants.length} for business ${businessId}`)
-      }
+    const predictedByParticipant = new Map<string, Set<number>>()
+    for (const p of preds ?? []) {
+      const set = predictedByParticipant.get(p.participant_id) ?? new Set()
+      set.add(p.match_id)
+      predictedByParticipant.set(p.participant_id, set)
     }
 
-    // Also send push reminders
-    await this.sendPushReminderForBusiness(
-      businessId,
+    return allIds.filter((id) => (predictedByParticipant.get(id)?.size ?? 0) < matchIds.length)
+  }
+
+  async sendReminderForFecha(businessId: string, matchIds: number[]) {
+    const participantIds = await this.getParticipantsMissingMatches(businessId, matchIds)
+    if (!participantIds.length) return
+
+    const { data: subs } = await this.supabase.client
+      .from('push_subscriptions')
+      .select('fcm_token')
+      .in('participant_id', participantIds)
+
+    const tokens = (subs ?? []).map((s: any) => s.fcm_token)
+    if (!tokens.length) return
+
+    const { icon, link } = await this.getBusinessInfo(businessId)
+    await this.firebase.sendPush(
+      tokens,
       '⚽ Recordatorio de pronósticos',
-      `La ${fechaLabel} arranca pronto. ¡Cargá tus predicciones!`,
+      'El partido arranca pronto. ¡Cargá tu predicción antes de que cierre!',
+      undefined,
+      'push_subscriptions',
+      icon,
+      link,
     )
   }
 
@@ -395,10 +382,31 @@ export class NotificationsService {
 
   // ─── Push Notifications ────────────────────────────────────────────────────
 
+  private getArgentinaTodayRange(): { start: string; end: string } {
+    const ART_OFFSET_MS = 3 * 60 * 60 * 1000 // Argentina is UTC-3 year-round
+    const argNow = new Date(Date.now() - ART_OFFSET_MS)
+    const startArt = Date.UTC(argNow.getUTCFullYear(), argNow.getUTCMonth(), argNow.getUTCDate())
+    const start = new Date(startArt + ART_OFFSET_MS)
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
+    return { start: start.toISOString(), end: end.toISOString() }
+  }
+
   private async getFilteredParticipantIds(
     businessId: string,
-    recipients: 'all' | 'no_pred' | 'top10',
+    recipients: 'all' | 'no_pred' | 'no_pred_today' | 'top10',
   ): Promise<string[]> {
+    if (recipients === 'no_pred_today') {
+      const { start, end } = this.getArgentinaTodayRange()
+      const { data: matches } = await this.supabase.client
+        .from('matches')
+        .select('id')
+        .eq('status', 'scheduled')
+        .gte('kickoff_at', start)
+        .lt('kickoff_at', end)
+      const matchIds = (matches ?? []).map((m: any) => m.id)
+      return this.getParticipantsMissingMatches(businessId, matchIds)
+    }
+
     if (recipients === 'all') {
       const { data } = await this.supabase.client
         .from('participants')
@@ -453,23 +461,48 @@ export class NotificationsService {
     }
   }
 
-  async sendPushBlast(
+  private async sendPushReminderForBusiness(
     businessId: string,
-    dto: SendPushDto,
+    title: string,
+    body: string,
+    imageUrl?: string,
   ): Promise<{ sent: number; failed: number }> {
-    const participantIds = await this.getFilteredParticipantIds(businessId, dto.recipients)
-    if (!participantIds.length) return { sent: 0, failed: 0 }
-
     const { data } = await this.supabase.client
       .from('push_subscriptions')
-      .select('fcm_token')
-      .in('participant_id', participantIds)
+      .select('fcm_token, participants!inner(business_id)')
+      .eq('participants.business_id', businessId)
 
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
     if (!tokens.length) return { sent: 0, failed: 0 }
 
     const { icon, link } = await this.getBusinessInfo(businessId)
-    const result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon, link)
+    return this.firebase.sendPush(tokens, title, body, imageUrl, 'push_subscriptions', icon, link)
+  }
+
+  async sendPushBlast(
+    businessId: string,
+    dto: SendPushDto,
+  ): Promise<{ sent: number; failed: number }> {
+    let result: { sent: number; failed: number }
+
+    if (dto.recipients === 'all') {
+      result = await this.sendPushReminderForBusiness(businessId, dto.title, dto.body, dto.imageUrl)
+    } else {
+      const participantIds = await this.getFilteredParticipantIds(businessId, dto.recipients)
+      if (!participantIds.length) return { sent: 0, failed: 0 }
+
+      const { data } = await this.supabase.client
+        .from('push_subscriptions')
+        .select('fcm_token')
+        .in('participant_id', participantIds)
+
+      const tokens = (data ?? []).map((r: any) => r.fcm_token)
+      if (!tokens.length) return { sent: 0, failed: 0 }
+
+      const { icon, link } = await this.getBusinessInfo(businessId)
+      result = await this.firebase.sendPush(tokens, dto.title, dto.body, dto.imageUrl, 'push_subscriptions', icon, link)
+    }
+
     this.logger.log(`Push blast: ${result.sent} sent, ${result.failed} failed for business ${businessId}`)
     await this.logNotification(businessId, 'push', dto.recipients, dto.body, result.sent, result.failed)
     return result
@@ -505,23 +538,6 @@ export class NotificationsService {
 
     const { icon } = await this.getBusinessInfo(businessId)
     await this.firebase.sendPush(tokens, title, body, undefined, 'admin_push_subscriptions', icon)
-  }
-
-  private async sendPushReminderForBusiness(
-    businessId: string,
-    title: string,
-    body: string,
-  ): Promise<void> {
-    const { data } = await this.supabase.client
-      .from('push_subscriptions')
-      .select('fcm_token, participants!inner(business_id)')
-      .eq('participants.business_id', businessId)
-
-    const tokens = (data ?? []).map((r: any) => r.fcm_token)
-    if (!tokens.length) return
-
-    const { icon, link } = await this.getBusinessInfo(businessId)
-    await this.firebase.sendPush(tokens, title, body, undefined, 'push_subscriptions', icon, link)
   }
 
   async registerParticipantToken(participantId: string, token: string): Promise<void> {

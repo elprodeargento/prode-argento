@@ -8,9 +8,10 @@ import { apiGet, apiPost } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
 
 const RECIPIENTS = [
-  { value: 'all',     label: 'Todos los participantes' },
-  { value: 'no_pred', label: 'Solo los que no cargaron pronósticos' },
-  { value: 'top10',   label: 'Top 10 del ranking' },
+  { value: 'all',            label: 'Todos los participantes' },
+  { value: 'no_pred',        label: 'Solo los que no cargaron pronósticos' },
+  { value: 'no_pred_today',  label: 'Solo los que no cargaron el pronóstico de HOY' },
+  { value: 'top10',          label: 'Top 10 del ranking' },
 ] as const
 
 type Recipient = typeof RECIPIENTS[number]['value']
@@ -104,6 +105,12 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
     finally { setPushUploading(false) }
   }
 
+  const applyTodayReminderTemplate = () => {
+    setPushRecipients('no_pred_today')
+    setPushTitle('⚽ Recordatorio de pronósticos')
+    setPushBody('Todavía no cargaste tu pronóstico para los partidos de hoy. ¡Hacelo antes de que arranquen!')
+  }
+
   const handleSendPush = async () => {
     if (!pushTitle.trim() || !pushBody.trim()) return
     setPushSending(true)
@@ -187,6 +194,11 @@ function NotifFormInner({ onSent }: { onSent?: () => void }) {
               </p>
             </div>
           </div>
+
+          <button onClick={applyTodayReminderTemplate}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-[#002B72]/30 text-[13px] font-bold text-[#002B72] hover:border-[#002B72] hover:bg-[#F1F3F9] transition-all">
+            📅 Usar template: Recordatorio de fecha
+          </button>
 
           <div className="field">
             <div className="field-label">¿A quién enviás?</div>

@@ -22,22 +22,23 @@ export class NotificationsScheduler {
 
     const { data: matches } = await this.supabase.client
       .from('matches')
-      .select('id, stage, group')
+      .select('id')
       .eq('status', 'scheduled')
       .gte('kickoff_at', in23h)
       .lte('kickoff_at', in24h)
 
     if (!matches?.length) return
-    this.logger.log(`Found ${matches.length} matches in ~24h — sending reminders`)
+    const matchIds = matches.map((m) => m.id)
+    this.logger.log(`Found ${matchIds.length} matches in ~24h — sending reminders`)
 
     const { data: businesses } = await this.supabase.client
       .from('businesses')
-      .select('id, name, plan, notify_whatsapp')
+      .select('id, name, plan')
       .eq('active', true)
       .in('plan', ['premium', 'pro'])
 
     for (const biz of businesses ?? []) {
-      await this.notifications.sendReminderForFecha(biz.id, `Fecha de grupos`, biz.notify_whatsapp)
+      await this.notifications.sendReminderForFecha(biz.id, matchIds)
     }
   }
 
