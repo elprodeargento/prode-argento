@@ -18,6 +18,7 @@ interface NotifLog {
 const RECIPIENT_LABEL: Record<string, string> = {
   all: 'Todos',
   no_pred: 'Sin pronósticos',
+  no_pred_today: 'Sin pronósticos hoy',
   top10: 'Top 10',
 }
 
