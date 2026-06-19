@@ -12,13 +12,16 @@ export class NotificationsScheduler {
     private notifications: NotificationsService,
     private supabase: SupabaseService,
     private leaderboard: LeaderboardService,
-  ) {}
+  ) { }
 
   /** Check every hour for upcoming matches — send reminder 24h before kickoff */
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR, { name: 'check-upcoming-matches' })
   async checkUpcomingMatches() {
+    this.logger.log('checkUpcomingMatches: tick')
     const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
     const in23h = new Date(Date.now() + 23 * 60 * 60 * 1000).toISOString()
+
+    this.logger.log(`${in23h} - ${in24h}`)
 
     const { data: matches } = await this.supabase.client
       .from('matches')
@@ -27,9 +30,11 @@ export class NotificationsScheduler {
       .gte('kickoff_at', in23h)
       .lte('kickoff_at', in24h)
 
-    if (!matches?.length) return
+    if (!matches?.length) {
+      this.logger.log('checkUpcomingMatches: 0 matches en ventana 23-24h')
+      return
+    }
     const matchIds = matches.map((m) => m.id)
-    this.logger.log(`Found ${matchIds.length} matches in ~24h — sending reminders`)
 
     const { data: businesses } = await this.supabase.client
       .from('businesses')
@@ -37,14 +42,17 @@ export class NotificationsScheduler {
       .eq('active', true)
       .in('plan', ['premium', 'pro'])
 
+    this.logger.log(`checkUpcomingMatches: ${matchIds} matches en ventana, ${businesses?.length ?? 0} negocios elegibles`)
+
     for (const biz of businesses ?? []) {
       await this.notifications.sendReminderForFecha(biz.id, matchIds)
     }
   }
 
   /** After a match finishes — score predictions and send result notifications */
-  @Cron('*/10 * * * *')
+  @Cron('*/10 * * * *', { name: 'check-finished-matches' })
   async checkFinishedMatches() {
+    this.logger.log('checkFinishedMatches: tick')
     // Only process matches where the score is already confirmed — status can flip to
     // 'finished' before the API populates the goals, so we wait for non-null scores.
     const { data: matches } = await this.supabase.client
@@ -55,8 +63,11 @@ export class NotificationsScheduler {
       .not('away_score', 'is', null)
       .is('scored_at', null)
 
-    if (!matches?.length) return
-    this.logger.log(`Scoring ${matches.length} finished matches`)
+    if (!matches?.length) {
+      this.logger.log('checkFinishedMatches: 0 matches finalizados pendientes de puntuar')
+      return
+    }
+    this.logger.log(`checkFinishedMatches: puntuando ${matches.length} partidos`)
 
     for (const match of matches) {
       // Score all predictions for this match and update leaderboard cache

@@ -326,7 +326,10 @@ export class NotificationsService {
 
   async sendReminderForFecha(businessId: string, matchIds: number[]) {
     const participantIds = await this.getParticipantsMissingMatches(businessId, matchIds)
-    if (!participantIds.length) return
+    if (!participantIds.length) {
+      this.logger.log(`sendReminderForFecha: nadie le falta pronosticar en business ${businessId}`)
+      return
+    }
 
     const { data: subs } = await this.supabase.client
       .from('push_subscriptions')
@@ -334,10 +337,13 @@ export class NotificationsService {
       .in('participant_id', participantIds)
 
     const tokens = (subs ?? []).map((s: any) => s.fcm_token)
-    if (!tokens.length) return
+    if (!tokens.length) {
+      this.logger.log(`sendReminderForFecha: ${participantIds.length} sin pronóstico pero 0 tokens push en business ${businessId}`)
+      return
+    }
 
     const { icon, link } = await this.getBusinessInfo(businessId)
-    await this.firebase.sendPush(
+    const result = await this.firebase.sendPush(
       tokens,
       '⚽ Recordatorio de pronósticos',
       'El partido arranca pronto. ¡Cargá tu predicción antes de que cierre!',
@@ -346,6 +352,7 @@ export class NotificationsService {
       icon,
       link,
     )
+    this.logger.log(`sendReminderForFecha: ${result.sent} enviados, ${result.failed} fallidos en business ${businessId}`)
   }
 
   async sendResultNotification(
@@ -521,7 +528,10 @@ export class NotificationsService {
       .eq('participant_id', participantId)
 
     const tokens = (data ?? []).map((r: any) => r.fcm_token)
-    if (!tokens.length) return
+    if (!tokens.length) {
+      this.logger.log(`sendPushToParticipant: 0 tokens push para participant ${participantId}`)
+      return
+    }
 
     const { icon, link } = businessId ? await this.getBusinessInfo(businessId) : {}
     await this.firebase.sendPush(tokens, title, body, imageUrl, 'push_subscriptions', icon, link)

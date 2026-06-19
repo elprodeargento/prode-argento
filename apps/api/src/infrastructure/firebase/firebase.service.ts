@@ -49,7 +49,11 @@ export class FirebaseService implements OnModuleInit {
     icon?: string,
     link?: string,
   ): Promise<{ sent: number; failed: number }> {
-    if (!this.isReady || !tokens.length) return { sent: 0, failed: 0 }
+    if (!this.isReady) {
+      this.logger.warn('sendPush llamado pero Firebase no está inicializado — push omitido')
+      return { sent: 0, failed: 0 }
+    }
+    if (!tokens.length) return { sent: 0, failed: 0 }
 
     const BATCH = 500
     let sent = 0
