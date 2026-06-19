@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { SupabaseService } from '../../infrastructure/supabase/supabase.service'
 import { LeaderboardService } from '../leaderboard/leaderboard.service'
@@ -78,6 +78,8 @@ const SEED_MATCHES = [
 
 @Injectable()
 export class MatchesService {
+  private readonly logger = new Logger(MatchesService.name)
+
   constructor(
     private supabase: SupabaseService,
     private config: ConfigService,
@@ -106,6 +108,7 @@ export class MatchesService {
       throw new Error(`football-data.org respondió ${res.status}: ${body}`)
     }
     const { matches } = await res.json() as { matches: FdMatch[] }
+    this.logger.log(`football-data.org: ${matches.length} partidos recibidos`)
 
     const rows = matches
       .filter(m => m.homeTeam.name !== null && m.awayTeam.name !== null)
@@ -122,10 +125,13 @@ export class MatchesService {
         away_score:  m.score.fullTime.away,
         status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
       }))
+    this.logger.log(`${rows.length} filas a sincronizar (${matches.length - rows.length} descartadas sin equipo)`)
 
     // For each FD match, prefer updating an existing seed row (fd_match_id = NULL)
     // matched by kickoff_at rather than inserting a duplicate row.
     // Seed rows hold the predictions, so they must be the ones that get updated.
+    let updatedSeed = 0
+    let upserted = 0
     for (const row of rows) {
       const { data: seedMatch } = await this.supabase.client
         .from('matches')
@@ -155,13 +161,16 @@ export class MatchesService {
             ...((row.home_score === null || row.away_score === null || row.status !== 'finished') ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
+        updatedSeed++
       } else {
         // No seed row matched — upsert by fd_match_id (handles re-runs and knockout rounds)
         await this.supabase.client
           .from('matches')
           .upsert(row, { onConflict: 'fd_match_id' })
+        upserted++
       }
     }
+    this.logger.log(`${updatedSeed} filas seed actualizadas, ${upserted} upsertadas por fd_match_id`)
 
     // Score finished matches that already have both goals confirmed.
     // scored_at is only set once we have the result — no score = no scoring.
@@ -186,11 +195,12 @@ export class MatchesService {
             .eq('id', match.id)
           markedFinished++
         } catch (err) {
-          console.error(`Error scoring match ${match.id}:`, err)
+          this.logger.error(`Error scoring match ${match.id}`, err)
         }
       }
     }
 
+    this.logger.log(`Sync completo: ${rows.length} sincronizados, ${markedFinished} marcados finished`)
     return { synced: rows.length, markedFinished }
   }
 

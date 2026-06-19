@@ -17,7 +17,7 @@ export class NotificationsService {
     private supabase: SupabaseService,
     private config: ConfigService,
     private firebase: FirebaseService,
-  ) {}
+  ) { }
 
   // ─── WhatsApp ──────────────────────────────────────────────────────────────
 
@@ -304,7 +304,7 @@ export class NotificationsService {
       .from('participants')
       .select('id')
       .eq('business_id', businessId)
-      .limit(10000)
+      .limit(100000)
     const allIds = (participants ?? []).map((p: any) => p.id)
     if (!allIds.length) return []
 

@@ -8,9 +8,10 @@ export class LeaderboardScheduler {
 
   constructor(private leaderboard: LeaderboardService) {}
 
-  @Cron('*/10 * * * *')
+  @Cron('*/10 * * * *', { name: 'recalculate-leaderboards' })
   async recalculateLeaderboards() {
-    this.logger.log('Recalculating leaderboards for all businesses')
-    await this.leaderboard.recalculateAllLeaderboards()
+    this.logger.log('recalculateLeaderboards: tick')
+    const { processed, failed } = await this.leaderboard.recalculateAllLeaderboards()
+    this.logger.log(`recalculateLeaderboards: ${processed} negocios OK, ${failed} fallidos`)
   }
 }

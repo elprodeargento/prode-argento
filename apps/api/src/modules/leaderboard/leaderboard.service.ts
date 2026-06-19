@@ -137,7 +137,7 @@ export class LeaderboardService {
     }))
   }
 
-  async recalculateAllLeaderboards() {
+  async recalculateAllLeaderboards(): Promise<{ processed: number; failed: number }> {
     const { data: businesses, error } = await this.supabase.client
       .from('businesses')
       .select('id')
@@ -145,15 +145,21 @@ export class LeaderboardService {
 
     if (error) {
       this.logger.error('Error fetching businesses for leaderboard recalc', error.message)
-      return
+      return { processed: 0, failed: 0 }
     }
 
+    let processed = 0
+    let failed = 0
     for (const biz of businesses ?? []) {
       const { error: rpcErr } = await this.supabase.client
         .rpc('recalculate_leaderboard', { p_business_id: biz.id })
       if (rpcErr) {
         this.logger.error(`Error recalculating leaderboard for business ${biz.id}`, rpcErr.message)
+        failed++
+      } else {
+        processed++
       }
     }
+    return { processed, failed }
   }
 }
