@@ -135,7 +135,7 @@ export class MatchesService {
     for (const row of rows) {
       const { data: seedMatch } = await this.supabase.client
         .from('matches')
-        .select('id')
+        .select('id, home_score, away_score')
         .is('fd_match_id', null)
         .eq('kickoff_at', row.kickoff_at)
         .maybeSingle()
@@ -147,6 +147,14 @@ export class MatchesService {
           .delete()
           .eq('fd_match_id', row.fd_match_id)
 
+        // Resetear scored_at si: los scores son nulos, el partido volvió a live/scheduled
+        // (la API a veces reabre un partido que ya fue marcado finished), o si el score
+        // final cambió respecto al que ya estaba guardado (la API a veces corrige el
+        // resultado después de marcarlo finished, dejando puntos viejos sin recalcular).
+        const scoreChanged = row.home_score !== seedMatch.home_score || row.away_score !== seedMatch.away_score
+        const shouldResetScoredAt =
+          row.home_score === null || row.away_score === null || row.status !== 'finished' || scoreChanged
+
         // Update the seed row: link it to the real FD match and set live data.
         // team names and flags are kept from the seed (Spanish names + emoji flags).
         await this.supabase.client
@@ -156,9 +164,7 @@ export class MatchesService {
             status:      row.status,
             home_score:  row.home_score,
             away_score:  row.away_score,
-            // Resetear scored_at si los scores son nulos O si el partido volvió a live/scheduled
-            // (la API a veces reabre un partido que ya fue marcado finished)
-            ...((row.home_score === null || row.away_score === null || row.status !== 'finished') ? { scored_at: null } : {}),
+            ...(shouldResetScoredAt ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
         updatedSeed++
