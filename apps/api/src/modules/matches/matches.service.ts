@@ -163,7 +163,7 @@ export class MatchesService {
     for (const row of rows) {
       const { data: seedMatch } = await this.supabase.client
         .from('matches')
-        .select('id, winner')
+        .select('id, home_score, away_score, winner')
         .is('fd_match_id', null)
         .eq('kickoff_at', row.kickoff_at)
         .maybeSingle()
@@ -174,6 +174,16 @@ export class MatchesService {
           .from('matches')
           .delete()
           .eq('fd_match_id', row.fd_match_id)
+
+        // Resetear scored_at si: los scores son nulos, el partido volvió a live/scheduled
+        // (la API a veces reabre un partido que ya fue marcado finished), el score final
+        // cambió respecto al que ya estaba guardado (la API a veces corrige el resultado
+        // después de marcarlo finished), o si winner cambió (necesario para recalcular el
+        // bono de penales una vez que se resuelve la tanda).
+        const scoreChanged = row.home_score !== seedMatch.home_score || row.away_score !== seedMatch.away_score
+        const winnerChanged = row.winner !== seedMatch.winner
+        const shouldResetScoredAt =
+          row.home_score === null || row.away_score === null || row.status !== 'finished' || scoreChanged || winnerChanged
 
         // Update the seed row: link it to the real FD match and set live data.
         // team names and flags are kept from the seed (Spanish names + emoji flags).
@@ -186,10 +196,7 @@ export class MatchesService {
             away_score:  row.away_score,
             winner:      row.winner,
             duration:    row.duration,
-            // Resetear scored_at si los scores son nulos, si el partido volvió a live/scheduled
-            // (la API a veces reabre un partido que ya fue marcado finished), o si winner
-            // cambió respecto a lo que ya teníamos (para recalcular el bono de penales una vez).
-            ...((row.home_score === null || row.away_score === null || row.status !== 'finished' || row.winner !== seedMatch.winner) ? { scored_at: null } : {}),
+            ...(shouldResetScoredAt ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
         updatedSeed++
@@ -197,17 +204,21 @@ export class MatchesService {
         // No seed row matched — upsert by fd_match_id (handles re-runs and knockout rounds)
         const { data: existing } = await this.supabase.client
           .from('matches')
-          .select('winner')
+          .select('home_score, away_score, winner')
           .eq('fd_match_id', row.fd_match_id)
           .maybeSingle()
+
+        const scoreChanged = existing && (row.home_score !== existing.home_score || row.away_score !== existing.away_score)
+        const winnerChanged = row.winner !== (existing?.winner ?? null)
 
         await this.supabase.client
           .from('matches')
           .upsert({
             ...row,
-            // Mismo criterio que la rama de seed row: si winner cambió, forzar re-scoring
-            // (necesario para que el bono de penales se calcule cuando la tanda se resuelve).
-            ...(row.winner !== (existing?.winner ?? null) ? { scored_at: null } : {}),
+            // Mismo criterio que la rama de seed row: si cambió el score o el winner, forzar
+            // re-scoring (necesario tanto para correcciones de resultado como para el bono
+            // de penales cuando se resuelve la tanda).
+            ...((scoreChanged || winnerChanged) ? { scored_at: null } : {}),
           }, { onConflict: 'fd_match_id' })
         upserted++
       }

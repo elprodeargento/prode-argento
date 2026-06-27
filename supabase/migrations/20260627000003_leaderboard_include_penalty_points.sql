@@ -1,5 +1,6 @@
 -- Suma penalty_points al total, sin tocar exact_results/correct_winners
 -- (que siguen midiendo solo aciertos de marcador, vía points_earned).
+-- Mantiene el tiebreaker unificado: puntos desc → resultados exactos desc → registered_at asc.
 create or replace function recalculate_leaderboard(p_business_id uuid)
 returns void language plpgsql security definer as $$
 begin
@@ -10,7 +11,12 @@ begin
     coalesce(sum(pred.points_earned), 0) + coalesce(sum(pred.penalty_points), 0),
     coalesce(sum(case when pred.points_earned = 3 then 1 else 0 end), 0),
     coalesce(sum(case when pred.points_earned = 1 then 1 else 0 end), 0),
-    row_number() over (order by coalesce(sum(pred.points_earned), 0) + coalesce(sum(pred.penalty_points), 0) desc),
+    row_number() over (
+      order by
+        coalesce(sum(pred.points_earned), 0) + coalesce(sum(pred.penalty_points), 0) desc,
+        coalesce(sum(case when pred.points_earned = 3 then 1 else 0 end), 0) desc,
+        p.registered_at asc
+    ),
     now()
   from participants p
   left join predictions pred on pred.participant_id = p.id
