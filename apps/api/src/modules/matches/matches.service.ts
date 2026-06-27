@@ -15,7 +15,8 @@ interface FdMatch {
   homeTeam:    FdTeam
   awayTeam:    FdTeam
   score: {
-    winner: string | null
+    winner:   string | null
+    duration: string
     fullTime: { home: number | null; away: number | null }
   }
 }
@@ -40,6 +41,12 @@ const FD_STAGE_MAP: Record<string, 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'fina
   SEMI_FINALS:    'sf',
   THIRD_PLACE:    'sf',
   FINAL:          'final',
+}
+
+const FD_WINNER_MAP: Record<string, 'HOME' | 'AWAY' | 'DRAW'> = {
+  HOME_TEAM: 'HOME',
+  AWAY_TEAM: 'AWAY',
+  DRAW:      'DRAW',
 }
 
 const SEED_MATCHES = [
@@ -124,6 +131,8 @@ export class MatchesService {
         home_score:  m.score.fullTime.home,
         away_score:  m.score.fullTime.away,
         status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
+        winner:      m.score.winner ? FD_WINNER_MAP[m.score.winner] ?? null : null,
+        duration:    m.score.duration ?? null,
       }))
     this.logger.log(`${rows.length} filas a sincronizar (${matches.length - rows.length} descartadas sin equipo)`)
 
@@ -135,7 +144,7 @@ export class MatchesService {
     for (const row of rows) {
       const { data: seedMatch } = await this.supabase.client
         .from('matches')
-        .select('id')
+        .select('id, winner')
         .is('fd_match_id', null)
         .eq('kickoff_at', row.kickoff_at)
         .maybeSingle()
@@ -156,17 +165,31 @@ export class MatchesService {
             status:      row.status,
             home_score:  row.home_score,
             away_score:  row.away_score,
-            // Resetear scored_at si los scores son nulos O si el partido volvió a live/scheduled
-            // (la API a veces reabre un partido que ya fue marcado finished)
-            ...((row.home_score === null || row.away_score === null || row.status !== 'finished') ? { scored_at: null } : {}),
+            winner:      row.winner,
+            duration:    row.duration,
+            // Resetear scored_at si los scores son nulos, si el partido volvió a live/scheduled
+            // (la API a veces reabre un partido que ya fue marcado finished), o si winner
+            // cambió respecto a lo que ya teníamos (para recalcular el bono de penales una vez).
+            ...((row.home_score === null || row.away_score === null || row.status !== 'finished' || row.winner !== seedMatch.winner) ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
         updatedSeed++
       } else {
         // No seed row matched — upsert by fd_match_id (handles re-runs and knockout rounds)
+        const { data: existing } = await this.supabase.client
+          .from('matches')
+          .select('winner')
+          .eq('fd_match_id', row.fd_match_id)
+          .maybeSingle()
+
         await this.supabase.client
           .from('matches')
-          .upsert(row, { onConflict: 'fd_match_id' })
+          .upsert({
+            ...row,
+            // Mismo criterio que la rama de seed row: si winner cambió, forzar re-scoring
+            // (necesario para que el bono de penales se calcule cuando la tanda se resuelve).
+            ...(row.winner !== (existing?.winner ?? null) ? { scored_at: null } : {}),
+          }, { onConflict: 'fd_match_id' })
         upserted++
       }
     }

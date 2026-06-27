@@ -27,6 +27,7 @@ type Tab = 'home' | 'pronosticar' | 'ranking' | 'resultados' | 'perfil' | 'refer
 
 interface Match {
   id: number
+  stage: 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
   home_team: string
   home_flag: string
   away_team: string
@@ -36,6 +37,8 @@ interface Match {
   home_score: number | null
   away_score: number | null
   group: string
+  winner: 'HOME' | 'AWAY' | 'DRAW' | null
+  duration: string | null
 }
 
 interface RawPrediction {
@@ -43,6 +46,8 @@ interface RawPrediction {
   home_pred: number
   away_pred: number
   points_earned: number | null
+  penalty_pred: 'HOME' | 'AWAY' | null
+  penalty_points: number | null
 }
 
 interface LeaderboardEntry {
@@ -226,7 +231,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [tab, setTab] = useState<Tab>('home')
   const [matches, setMatches] = useState<Match[]>([])
   const [apiPreds, setApiPreds] = useState<Record<number, RawPrediction>>({})
-  const [preds, setPreds] = useState<Record<number, { h: string; a: string }>>({})
+  const [preds, setPreds] = useState<Record<number, { h: string; a: string; penalty?: 'HOME' | 'AWAY' }>>({})
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -381,10 +386,10 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         }
 
         const predMap: Record<number, RawPrediction> = {}
-        const editMap: Record<number, { h: string; a: string }> = {}
+        const editMap: Record<number, { h: string; a: string; penalty?: 'HOME' | 'AWAY' }> = {}
         for (const p of (predData as RawPrediction[])) {
           predMap[p.match_id] = p
-          editMap[p.match_id] = { h: String(p.home_pred), a: String(p.away_pred) }
+          editMap[p.match_id] = { h: String(p.home_pred), a: String(p.away_pred), penalty: p.penalty_pred ?? undefined }
         }
         setApiPreds(predMap)
         setPreds(editMap)
@@ -495,8 +500,27 @@ export function ProdeApp({ empresa, participant, onLogout }: {
           const match = matches.find(m => m.id === Number(matchId))
           return match && !isLocked(match, closeMin)
         })
-        .map(([matchId, v]) => ({ matchId: Number(matchId), homeScore: Number(v.h), awayScore: Number(v.a) }))
+        .map(([matchId, v]) => {
+          const match = matches.find(m => m.id === Number(matchId))!
+          const isTie = v.h === v.a
+          const needsPenalty = match.stage !== 'group' && isTie
+          return {
+            matchId: Number(matchId),
+            homeScore: Number(v.h),
+            awayScore: Number(v.a),
+            ...(needsPenalty && v.penalty ? { penaltyPred: v.penalty } : {}),
+          }
+        })
       if (!items.length) { setSavedMsg('Nada para guardar'); setSaving(false); return }
+      const missingPenalty = items.some(it => {
+        const match = matches.find(m => m.id === it.matchId)!
+        return match.stage !== 'group' && it.homeScore === it.awayScore && !('penaltyPred' in it)
+      })
+      if (missingPenalty) {
+        setSavedMsg('Elegí quién pasa por penales en los partidos de mata-mata empatados')
+        setSaving(false)
+        return
+      }
       await publicFetch('/predictions', {
         method: 'POST',
         body: JSON.stringify({ participantId: participant.id, predictions: items }),
@@ -1173,6 +1197,28 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                             <Flag src={m.away_flag} className="w-7 h-7 shrink-0" />
                           </div>
                         </div>
+                        {m.stage !== 'group' && preds[m.id]?.h !== undefined && preds[m.id]?.h !== '' &&
+                          preds[m.id]?.h === preds[m.id]?.a && (
+                          <div className="px-4 pb-3 -mt-1">
+                            <div className="text-[11px] font-black text-slate-500 mb-1.5">¿Quién pasa por penales? <span className="text-slate-400 font-bold">(+2 pts si acertás)</span></div>
+                            <div className="flex gap-2">
+                              <button type="button" disabled={locked}
+                                onClick={() => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], penalty: 'HOME' } })); setHasChanges(true) }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-black transition-all
+                                  ${preds[m.id]?.penalty === 'HOME' ? 'border-transparent text-white' : 'border-slate-200 text-slate-600'}`}
+                                style={preds[m.id]?.penalty === 'HOME' ? { background: color } : {}}>
+                                <Flag src={m.home_flag} className="w-4 h-4" /> {m.home_team}
+                              </button>
+                              <button type="button" disabled={locked}
+                                onClick={() => { setPreds(p => ({ ...p, [m.id]: { ...p[m.id], penalty: 'AWAY' } })); setHasChanges(true) }}
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-black transition-all
+                                  ${preds[m.id]?.penalty === 'AWAY' ? 'border-transparent text-white' : 'border-slate-200 text-slate-600'}`}
+                                style={preds[m.id]?.penalty === 'AWAY' ? { background: color } : {}}>
+                                <Flag src={m.away_flag} className="w-4 h-4" /> {m.away_team}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )
                   })}
@@ -1200,11 +1246,16 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                           : pts === 0
                             ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400">0 pts</span>
                             : <span className="text-xs font-bold text-slate-400">Sin pronóstico</span>
+                      const penaltyBadge = m.duration === 'PENALTY_SHOOTOUT' && pred?.penalty_pred
+                        ? (pred.penalty_points === 2
+                            ? <span className="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700 ml-1">+2 🥅</span>
+                            : <span className="text-xs font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-400 ml-1">0 🥅</span>)
+                        : null
                       return (
                         <div key={m.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                           <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                             <span className="text-xs font-bold text-slate-500">{formatDate(m.kickoff_at)}</span>
-                            {ptsBadge}
+                            <span>{ptsBadge}{penaltyBadge}</span>
                           </div>
                           <div className="flex items-center gap-3 px-4 py-3">
                             <div className="flex items-center gap-2 flex-1">
@@ -1220,6 +1271,12 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                               {pred && (
                                 <span className="text-[10px] text-slate-400 font-medium">
                                   Tu pred: {pred.home_pred} - {pred.away_pred}
+                                  {pred.penalty_pred && ` (pasa ${pred.penalty_pred === 'HOME' ? m.home_team : m.away_team})`}
+                                </span>
+                              )}
+                              {m.duration === 'PENALTY_SHOOTOUT' && m.winner && m.winner !== 'DRAW' && (
+                                <span className="text-[10px] text-slate-400">
+                                  Pasó: {m.winner === 'HOME' ? m.home_team : m.away_team} (penales)
                                 </span>
                               )}
                             </div>
