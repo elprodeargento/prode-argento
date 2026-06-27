@@ -1,11 +1,14 @@
-import { IsString, IsUUID, IsArray, ValidateNested, IsInt, Min, Max } from 'class-validator'
+import { IsString, IsUUID, IsArray, ValidateNested, IsInt, IsOptional, IsIn, Min, Max } from 'class-validator'
 import { Type } from 'class-transformer'
-import { ApiProperty } from '@nestjs/swagger'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class PredictionItemDto {
   @ApiProperty() @IsInt() matchId!: number
   @ApiProperty() @IsInt() @Min(0) @Max(30) homeScore!: number
   @ApiProperty() @IsInt() @Min(0) @Max(30) awayScore!: number
+  @ApiPropertyOptional({ enum: ['HOME', 'AWAY'] })
+  @IsOptional() @IsIn(['HOME', 'AWAY'])
+  penaltyPred?: 'HOME' | 'AWAY'
 }
 
 export class SavePredictionsDto {

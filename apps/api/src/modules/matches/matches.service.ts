@@ -15,21 +15,38 @@ interface FdMatch {
   homeTeam:    FdTeam
   awayTeam:    FdTeam
   score: {
-    winner: string | null
-    fullTime: { home: number | null; away: number | null }
+    winner:     string | null
+    duration:   string
+    fullTime:   { home: number | null; away: number | null }
+    penalties?: { home: number | null; away: number | null }
+  }
+}
+
+// football-data.org acumula los goles de la tanda de penales dentro de score.fullTime
+// (ej. 1-1 que se va a penales y los gana 6-5 llega como fullTime 7-6). Para el marcador
+// del partido (lo que predicen los usuarios) hay que descontarlos: tiempo regular + alargue
+// sí cuentan como parte del resultado, los penales no.
+function regulationScore(score: FdMatch['score']) {
+  const { home, away } = score.fullTime
+  if (home === null || away === null) return { home, away }
+  return {
+    home: home - (score.penalties?.home ?? 0),
+    away: away - (score.penalties?.away ?? 0),
   }
 }
 
 const FD_STATUS_MAP: Record<string, 'scheduled' | 'live' | 'finished'> = {
-  TIMED:     'scheduled',
-  SCHEDULED: 'scheduled',
-  LIVE:      'live',
-  IN_PLAY:   'live',
-  PAUSED:    'live',
-  FINISHED:  'finished',
-  POSTPONED: 'scheduled',
-  SUSPENDED: 'scheduled',
-  CANCELLED: 'scheduled',
+  TIMED:            'scheduled',
+  SCHEDULED:        'scheduled',
+  LIVE:             'live',
+  IN_PLAY:          'live',
+  PAUSED:           'live',
+  EXTRA_TIME:       'live',
+  PENALTY_SHOOTOUT: 'live',
+  FINISHED:         'finished',
+  POSTPONED:        'scheduled',
+  SUSPENDED:        'scheduled',
+  CANCELLED:        'scheduled',
 }
 
 const FD_STAGE_MAP: Record<string, 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'> = {
@@ -40,6 +57,12 @@ const FD_STAGE_MAP: Record<string, 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'fina
   SEMI_FINALS:    'sf',
   THIRD_PLACE:    'sf',
   FINAL:          'final',
+}
+
+const FD_WINNER_MAP: Record<string, 'HOME' | 'AWAY' | 'DRAW'> = {
+  HOME_TEAM: 'HOME',
+  AWAY_TEAM: 'AWAY',
+  DRAW:      'DRAW',
 }
 
 const SEED_MATCHES = [
@@ -112,19 +135,24 @@ export class MatchesService {
 
     const rows = matches
       .filter(m => m.homeTeam.name !== null && m.awayTeam.name !== null)
-      .map(m => ({
-        fd_match_id: m.id,
-        stage:       FD_STAGE_MAP[m.stage] ?? 'group',
-        group:       m.group ? m.group.replace('GROUP_', '') : null,
-        home_team:   m.homeTeam.shortName ?? m.homeTeam.name,
-        away_team:   m.awayTeam.shortName ?? m.awayTeam.name,
-        home_flag:   m.homeTeam.crest ?? '',
-        away_flag:   m.awayTeam.crest ?? '',
-        kickoff_at:  m.utcDate,
-        home_score:  m.score.fullTime.home,
-        away_score:  m.score.fullTime.away,
-        status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
-      }))
+      .map(m => {
+        const { home: home_score, away: away_score } = regulationScore(m.score)
+        return {
+          fd_match_id: m.id,
+          stage:       FD_STAGE_MAP[m.stage] ?? 'group',
+          group:       m.group ? m.group.replace('GROUP_', '') : null,
+          home_team:   m.homeTeam.shortName ?? m.homeTeam.name,
+          away_team:   m.awayTeam.shortName ?? m.awayTeam.name,
+          home_flag:   m.homeTeam.crest ?? '',
+          away_flag:   m.awayTeam.crest ?? '',
+          kickoff_at:  m.utcDate,
+          home_score,
+          away_score,
+          status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
+          winner:      m.score.winner ? FD_WINNER_MAP[m.score.winner] ?? null : null,
+          duration:    m.score.duration ?? null,
+        }
+      })
     this.logger.log(`${rows.length} filas a sincronizar (${matches.length - rows.length} descartadas sin equipo)`)
 
     // For each FD match, prefer updating an existing seed row (fd_match_id = NULL)
@@ -135,7 +163,7 @@ export class MatchesService {
     for (const row of rows) {
       const { data: seedMatch } = await this.supabase.client
         .from('matches')
-        .select('id, home_score, away_score')
+        .select('id, home_score, away_score, winner')
         .is('fd_match_id', null)
         .eq('kickoff_at', row.kickoff_at)
         .maybeSingle()
@@ -148,12 +176,14 @@ export class MatchesService {
           .eq('fd_match_id', row.fd_match_id)
 
         // Resetear scored_at si: los scores son nulos, el partido volvió a live/scheduled
-        // (la API a veces reabre un partido que ya fue marcado finished), o si el score
-        // final cambió respecto al que ya estaba guardado (la API a veces corrige el
-        // resultado después de marcarlo finished, dejando puntos viejos sin recalcular).
+        // (la API a veces reabre un partido que ya fue marcado finished), el score final
+        // cambió respecto al que ya estaba guardado (la API a veces corrige el resultado
+        // después de marcarlo finished), o si winner cambió (necesario para recalcular el
+        // bono de penales una vez que se resuelve la tanda).
         const scoreChanged = row.home_score !== seedMatch.home_score || row.away_score !== seedMatch.away_score
+        const winnerChanged = row.winner !== seedMatch.winner
         const shouldResetScoredAt =
-          row.home_score === null || row.away_score === null || row.status !== 'finished' || scoreChanged
+          row.home_score === null || row.away_score === null || row.status !== 'finished' || scoreChanged || winnerChanged
 
         // Update the seed row: link it to the real FD match and set live data.
         // team names and flags are kept from the seed (Spanish names + emoji flags).
@@ -164,15 +194,32 @@ export class MatchesService {
             status:      row.status,
             home_score:  row.home_score,
             away_score:  row.away_score,
+            winner:      row.winner,
+            duration:    row.duration,
             ...(shouldResetScoredAt ? { scored_at: null } : {}),
           })
           .eq('id', seedMatch.id)
         updatedSeed++
       } else {
         // No seed row matched — upsert by fd_match_id (handles re-runs and knockout rounds)
+        const { data: existing } = await this.supabase.client
+          .from('matches')
+          .select('home_score, away_score, winner')
+          .eq('fd_match_id', row.fd_match_id)
+          .maybeSingle()
+
+        const scoreChanged = existing && (row.home_score !== existing.home_score || row.away_score !== existing.away_score)
+        const winnerChanged = row.winner !== (existing?.winner ?? null)
+
         await this.supabase.client
           .from('matches')
-          .upsert(row, { onConflict: 'fd_match_id' })
+          .upsert({
+            ...row,
+            // Mismo criterio que la rama de seed row: si cambió el score o el winner, forzar
+            // re-scoring (necesario tanto para correcciones de resultado como para el bono
+            // de penales cuando se resuelve la tanda).
+            ...((scoreChanged || winnerChanged) ? { scored_at: null } : {}),
+          }, { onConflict: 'fd_match_id' })
         upserted++
       }
     }

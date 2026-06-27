@@ -47,6 +47,8 @@ export interface Match {
   home_score: number | null
   away_score: number | null
   status: 'scheduled' | 'live' | 'finished'
+  winner: 'HOME' | 'AWAY' | 'DRAW' | null
+  duration: string | null
 }
 
 export interface Prediction {
@@ -58,6 +60,8 @@ export interface Prediction {
   away_pred: number
   points_earned: number
   submitted_at: string
+  penalty_pred: 'HOME' | 'AWAY' | null
+  penalty_points: number
 }
 
 export interface Prize {

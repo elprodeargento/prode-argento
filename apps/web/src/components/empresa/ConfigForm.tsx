@@ -530,6 +530,7 @@ export function ConfigForm() {
                  { icon: '🎯', title: 'Resultado exacto', desc: 'Adivinás el marcador exacto', pts: 3, bg: 'bg-[#E8F8F1]', border: 'border-[#18A06A]/20', text: 'text-[#18A06A]' },
                  { icon: '👍', title: 'Ganador correcto', desc: 'Adivinás quién gana o si es empate', pts: 1, bg: 'bg-[#FEF3E8]', border: 'border-[#F07B1D]/20', text: 'text-[#F07B1D]' },
                  { icon: '❌', title: 'Error o sin cargar', desc: 'No se suma nada', pts: 0, bg: 'bg-[#F1F3F9]', border: 'border-[#DDE1EF]', text: 'text-[#8E96AE]' },
+                 { icon: '🥅', title: 'Penales (mata-mata)', desc: 'Bono extra si acertás quién pasa por penales', pts: 2, bg: 'bg-[#EAF1FE]', border: 'border-[#3B6FE0]/20', text: 'text-[#3B6FE0]' },
                ].map((rule, i) => (
                  <div key={i} className={`flex items-center gap-3 p-[12px] border-[1.5px] rounded-xl ${rule.bg} ${rule.border}`}>
                    <span className="text-[20px]">{rule.icon}</span>

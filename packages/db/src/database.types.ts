@@ -69,6 +69,8 @@ export type Database = {
           status: 'scheduled' | 'live' | 'finished'
           fd_match_id: number | null
           scored_at: string | null
+          winner: 'HOME' | 'AWAY' | 'DRAW' | null
+          duration: string | null
         }
         Insert: Omit<Database['public']['Tables']['matches']['Row'], never>
         Update: Partial<Database['public']['Tables']['matches']['Row']>
@@ -83,6 +85,8 @@ export type Database = {
           away_pred: number
           points_earned: number
           submitted_at: string
+          penalty_pred: 'HOME' | 'AWAY' | null
+          penalty_points: number
         }
         Insert: Omit<Database['public']['Tables']['predictions']['Row'], 'id'> & { id?: string }
         Update: Partial<Database['public']['Tables']['predictions']['Insert']>
@@ -154,6 +158,8 @@ export type Database = {
       plan_type: 'free' | 'premium' | 'pro'
       match_status: 'scheduled' | 'live' | 'finished'
       match_stage: 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'
+      match_winner: 'HOME' | 'AWAY' | 'DRAW'
+      penalty_winner: 'HOME' | 'AWAY'
     }
   }
 }

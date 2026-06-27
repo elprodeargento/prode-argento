@@ -8,7 +8,7 @@ export default function AyudaPage() {
   const faqs = [
     {
       q: '¿Cómo se calculan los puntos?',
-      a: 'Resultado exacto = 3 puntos · Ganador correcto = 1 punto · Error o sin cargar = 0 puntos. El ranking se actualiza automáticamente al terminar cada partido.'
+      a: 'Resultado exacto = 3 puntos · Ganador correcto = 1 punto · Error o sin cargar = 0 puntos. En partidos de mata-mata definidos por penales, hay 2 puntos extra por acertar quién pasa. El ranking se actualiza automáticamente al terminar cada partido.'
     },
     {
       q: '¿Qué pasa si alguien no carga sus pronósticos?',
