@@ -15,22 +15,38 @@ interface FdMatch {
   homeTeam:    FdTeam
   awayTeam:    FdTeam
   score: {
-    winner:   string | null
-    duration: string
-    fullTime: { home: number | null; away: number | null }
+    winner:     string | null
+    duration:   string
+    fullTime:   { home: number | null; away: number | null }
+    penalties?: { home: number | null; away: number | null }
+  }
+}
+
+// football-data.org acumula los goles de la tanda de penales dentro de score.fullTime
+// (ej. 1-1 que se va a penales y los gana 6-5 llega como fullTime 7-6). Para el marcador
+// del partido (lo que predicen los usuarios) hay que descontarlos: tiempo regular + alargue
+// sí cuentan como parte del resultado, los penales no.
+function regulationScore(score: FdMatch['score']) {
+  const { home, away } = score.fullTime
+  if (home === null || away === null) return { home, away }
+  return {
+    home: home - (score.penalties?.home ?? 0),
+    away: away - (score.penalties?.away ?? 0),
   }
 }
 
 const FD_STATUS_MAP: Record<string, 'scheduled' | 'live' | 'finished'> = {
-  TIMED:     'scheduled',
-  SCHEDULED: 'scheduled',
-  LIVE:      'live',
-  IN_PLAY:   'live',
-  PAUSED:    'live',
-  FINISHED:  'finished',
-  POSTPONED: 'scheduled',
-  SUSPENDED: 'scheduled',
-  CANCELLED: 'scheduled',
+  TIMED:            'scheduled',
+  SCHEDULED:        'scheduled',
+  LIVE:             'live',
+  IN_PLAY:          'live',
+  PAUSED:           'live',
+  EXTRA_TIME:       'live',
+  PENALTY_SHOOTOUT: 'live',
+  FINISHED:         'finished',
+  POSTPONED:        'scheduled',
+  SUSPENDED:        'scheduled',
+  CANCELLED:        'scheduled',
 }
 
 const FD_STAGE_MAP: Record<string, 'group' | 'r32' | 'r16' | 'qf' | 'sf' | 'final'> = {
@@ -119,21 +135,24 @@ export class MatchesService {
 
     const rows = matches
       .filter(m => m.homeTeam.name !== null && m.awayTeam.name !== null)
-      .map(m => ({
-        fd_match_id: m.id,
-        stage:       FD_STAGE_MAP[m.stage] ?? 'group',
-        group:       m.group ? m.group.replace('GROUP_', '') : null,
-        home_team:   m.homeTeam.shortName ?? m.homeTeam.name,
-        away_team:   m.awayTeam.shortName ?? m.awayTeam.name,
-        home_flag:   m.homeTeam.crest ?? '',
-        away_flag:   m.awayTeam.crest ?? '',
-        kickoff_at:  m.utcDate,
-        home_score:  m.score.fullTime.home,
-        away_score:  m.score.fullTime.away,
-        status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
-        winner:      m.score.winner ? FD_WINNER_MAP[m.score.winner] ?? null : null,
-        duration:    m.score.duration ?? null,
-      }))
+      .map(m => {
+        const { home: home_score, away: away_score } = regulationScore(m.score)
+        return {
+          fd_match_id: m.id,
+          stage:       FD_STAGE_MAP[m.stage] ?? 'group',
+          group:       m.group ? m.group.replace('GROUP_', '') : null,
+          home_team:   m.homeTeam.shortName ?? m.homeTeam.name,
+          away_team:   m.awayTeam.shortName ?? m.awayTeam.name,
+          home_flag:   m.homeTeam.crest ?? '',
+          away_flag:   m.awayTeam.crest ?? '',
+          kickoff_at:  m.utcDate,
+          home_score,
+          away_score,
+          status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
+          winner:      m.score.winner ? FD_WINNER_MAP[m.score.winner] ?? null : null,
+          duration:    m.score.duration ?? null,
+        }
+      })
     this.logger.log(`${rows.length} filas a sincronizar (${matches.length - rows.length} descartadas sin equipo)`)
 
     // For each FD match, prefer updating an existing seed row (fd_match_id = NULL)

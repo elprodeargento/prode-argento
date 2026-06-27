@@ -1401,6 +1401,13 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     <div className="text-xs text-slate-400">El resultado no coincide con tu pronóstico</div>
                   </div>
                 </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg">🥅</span>
+                  <div>
+                    <div className="text-sm font-black text-slate-900">+2 puntos — Acertaste los penales</div>
+                    <div className="text-xs text-slate-400">Cuando el partido se define por penales y elegiste bien quién pasa</div>
+                  </div>
+                </div>
               </div>
             )}
             {finishedMatches.length === 0 && (

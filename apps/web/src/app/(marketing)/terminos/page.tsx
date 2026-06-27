@@ -148,7 +148,7 @@ export default function TerminosPage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 mb-3">5. Reglas del prode</h2>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Puntuación:</strong> resultado exacto (marcador correcto) = 3 puntos; ganador correcto (sin acertar marcador) = 1 punto; pronóstico incorrecto o sin cargar = 0 puntos.</li>
+              <li><strong>Puntuación:</strong> resultado exacto (marcador correcto, incluyendo tiempo suplementario si lo hubiera) = 3 puntos; ganador correcto (sin acertar marcador) = 1 punto; pronóstico incorrecto o sin cargar = 0 puntos. En partidos de mata-mata que se definen por penales, se suman 2 puntos extra a quienes acierten qué equipo avanza.</li>
               <li><strong>Cierre de pronósticos:</strong> los pronósticos se bloquean exactamente 5 minutos antes del inicio de cada partido, según el horario oficial de la FIFA. Una vez bloqueados, no pueden modificarse.</li>
               <li><strong>Resultados:</strong> los resultados se obtienen automáticamente de football-data.org. En caso de discrepancia, el resultado oficial publicado por la FIFA prevalece.</li>
               <li><strong>Partidos pendientes:</strong> los partidos suspendidos o reprogramados se actualizarán con los nuevos horarios. No generamos puntuación para partidos que no se hayan jugado.</li>

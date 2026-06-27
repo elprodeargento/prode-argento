@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation'
 const FAQ_PLAYER = [
   {
     q: '¿Cómo sumo puntos?',
-    a: 'Sumás 3 puntos por acertar el resultado exacto. Si solo acertás el ganador o empate pero no los goles, sumás 1 punto.'
+    a: 'Sumás 3 puntos por acertar el resultado exacto (incluyendo el suplementario si lo hubiera). Si solo acertás el ganador o empate pero no los goles, sumás 1 punto. En partidos de mata-mata que se definen por penales, sumás 2 puntos extra si acertás quién pasa.'
   },
   {
     q: '¿Hasta cuándo puedo cargar mi pálpito?',
@@ -27,7 +27,7 @@ const FAQ_PLAYER = [
   },
   {
     q: '¿Qué pasa si un partido va a tiempo suplementario?',
-    a: 'Se toma el resultado de los 90 minutos reglamentarios (más adición), no se cuenta el suplementario ni los penales.'
+    a: 'El resultado del tiempo suplementario sí cuenta como parte del marcador del partido. Si el partido termina definiendo por penales, vas a poder elegir quién pasa y sumar 2 puntos extra si acertás.'
   }
 ]
 
