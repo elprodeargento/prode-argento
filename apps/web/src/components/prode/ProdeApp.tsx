@@ -251,6 +251,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
   const [weeklyLoading, setWeeklyLoading] = useState(false)
   const [weekRange, setWeekRange] = useState<{ start: string; end: string } | null>(null)
   const [exactAlert, setExactAlert] = useState(false)
+  const [showPenaltyAnnouncement, setShowPenaltyAnnouncement] = useState(false)
   const [predTab, setPredTab] = useState<'upcoming' | 'played'>('upcoming')
   const [referrerData, setReferrerData] = useState<{
     referral_code: string
@@ -292,6 +293,16 @@ export function ProdeApp({ empresa, participant, onLogout }: {
     trackEvent(name, { business_slug: empresa.slug, business_name: empresa.name, ...params })
 
   useEffect(() => { track('player_prode_view') }, [])
+
+  useEffect(() => {
+    const key = `prode:${empresa.slug}:penaltyAnnouncementDismissed`
+    if (localStorage.getItem(key) !== 'true') setShowPenaltyAnnouncement(true)
+  }, [empresa.slug])
+
+  const dismissPenaltyAnnouncement = () => {
+    localStorage.setItem(`prode:${empresa.slug}:penaltyAnnouncementDismissed`, 'true')
+    setShowPenaltyAnnouncement(false)
+  }
 
   useEffect(() => {
     // Fetch nearby promos silently using geolocation if available
@@ -762,6 +773,28 @@ export function ProdeApp({ empresa, participant, onLogout }: {
         {/* HOME */}
         {tab === 'home' && (
           <div>
+            {showPenaltyAnnouncement && (
+              <div className="mx-4 mt-4 rounded-2xl p-4 relative overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #1a1a2e, #002B72)' }}>
+                <button
+                  onClick={dismissPenaltyAnnouncement}
+                  className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-white/10 text-white/70 text-xs font-black flex items-center justify-center hover:bg-white/20 transition-colors">
+                  ✕
+                </button>
+                <div className="flex items-start gap-3 pr-6">
+                  <span className="text-2xl shrink-0">🥅</span>
+                  <div>
+                    <div className="font-black text-white text-sm leading-snug">
+                      ¿Empate en el mata-mata? ¡Sumá puntos extra!
+                    </div>
+                    <div className="text-white/70 text-xs mt-1 leading-snug">
+                      Si tu pronóstico es un empate en un partido de eliminación directa, ahora podés elegir quién pasa por penales y ganar <span className="text-yellow-300 font-bold">+2 puntos</span> si acertás.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {exactAlert && (
               <div
                 className="mx-4 mt-4 rounded-2xl p-4 text-center text-white"
