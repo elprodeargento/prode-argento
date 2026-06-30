@@ -15,24 +15,42 @@ interface FdMatch {
   homeTeam:    FdTeam
   awayTeam:    FdTeam
   score: {
-    winner:     string | null
-    duration:   string
-    fullTime:   { home: number | null; away: number | null }
-    penalties?: { home: number | null; away: number | null }
+    winner:       string | null
+    duration:     string
+    fullTime:     { home: number | null; away: number | null }
+    regularTime?: { home: number | null; away: number | null }
+    extraTime?:   { home: number | null; away: number | null }
   }
 }
 
-// football-data.org acumula los goles de la tanda de penales dentro de score.fullTime
-// (ej. 1-1 que se va a penales y los gana 6-5 llega como fullTime 7-6). Para el marcador
-// del partido (lo que predicen los usuarios) hay que descontarlos: tiempo regular + alargue
-// sí cuentan como parte del resultado, los penales no.
+// El marcador que predicen los usuarios es el resultado sin contar penales: tiempo
+// regular + alargue si lo hubo. football-data.org solo manda regularTime/extraTime
+// cuando duration no es REGULAR; cuando no vienen, fullTime ya es ese resultado.
 function regulationScore(score: FdMatch['score']) {
-  const { home, away } = score.fullTime
-  if (home === null || away === null) return { home, away }
-  return {
-    home: home - (score.penalties?.home ?? 0),
-    away: away - (score.penalties?.away ?? 0),
+  const { regularTime, extraTime, fullTime } = score
+  if (regularTime && regularTime.home !== null && regularTime.away !== null) {
+    return {
+      home: regularTime.home + (extraTime?.home ?? 0),
+      away: regularTime.away + (extraTime?.away ?? 0),
+    }
   }
+  return { home: fullTime.home, away: fullTime.away }
+}
+
+// Cuando duration es PENALTY_SHOOTOUT pero la fuente todavía no resolvió score.winner,
+// inferimos quién pasó aislando el aporte de los penales en fullTime (que en teoría
+// acumula regularTime + extraTime + penales). Es una mejor suposición, no una certeza:
+// si más adelante llega el winner real, el reset de scored_at hace que se recalcule.
+function derivePenaltyWinner(score: FdMatch['score']): 'HOME' | 'AWAY' | null {
+  const { home: ftHome, away: ftAway } = score.fullTime
+  const rt = score.regularTime
+  if (!rt || ftHome === null || ftAway === null || rt.home === null || rt.away === null) return null
+  const etHome = score.extraTime?.home ?? 0
+  const etAway = score.extraTime?.away ?? 0
+  const diffHome = ftHome - rt.home - etHome
+  const diffAway = ftAway - rt.away - etAway
+  if (diffHome === diffAway) return null
+  return diffHome > diffAway ? 'HOME' : 'AWAY'
 }
 
 const FD_STATUS_MAP: Record<string, 'scheduled' | 'live' | 'finished'> = {
@@ -149,7 +167,9 @@ export class MatchesService {
           home_score,
           away_score,
           status:      FD_STATUS_MAP[m.status] ?? 'scheduled',
-          winner:      m.score.winner ? FD_WINNER_MAP[m.score.winner] ?? null : null,
+          winner:      m.score.winner
+                         ? FD_WINNER_MAP[m.score.winner] ?? null
+                         : (m.score.duration === 'PENALTY_SHOOTOUT' ? derivePenaltyWinner(m.score) : null),
           duration:    m.score.duration ?? null,
         }
       })
