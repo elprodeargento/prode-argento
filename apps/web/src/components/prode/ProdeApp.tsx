@@ -1453,15 +1453,23 @@ export function ProdeApp({ empresa, participant, onLogout }: {
               {finishedMatches.map(m => {
                 const pred = apiPreds[m.id]
                 const pts = pred?.points_earned ?? null
+                const ptsBadge = pts === 3
+                  ? <span className="text-xs font-black px-2 py-1 rounded-full bg-green-100 text-green-700">+3 pts 🎯 Exacto</span>
+                  : pts === 1
+                    ? <span className="text-xs font-black px-2 py-1 rounded-full bg-amber-100 text-amber-700">+1 pt 👍 Ganador</span>
+                    : pts === 0
+                      ? <span className="text-xs font-black px-2 py-1 rounded-full bg-slate-100 text-slate-500">0 pts</span>
+                      : null
+                const penaltyBadge = m.duration === 'PENALTY_SHOOTOUT' && pred?.penalty_pred
+                  ? (pred.penalty_points === 2
+                      ? <span className="text-xs font-black px-2 py-1 rounded-full bg-green-100 text-green-700 ml-1">+2 🥅</span>
+                      : <span className="text-xs font-black px-2 py-1 rounded-full bg-slate-100 text-slate-400 ml-1">0 🥅</span>)
+                  : null
                 return (
                   <div key={m.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                       <span className="text-xs font-bold text-slate-500">{formatDate(m.kickoff_at)}</span>
-                      {pred ? (
-                        <span className={`text-xs font-black px-2 py-1 rounded-full ${pts === 3 ? 'bg-green-100 text-green-700' : pts === 1 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-                          {pts === 3 ? '+3 pts 🎯 Exacto' : pts === 1 ? '+1 pt 👍 Ganador' : pts === 0 ? '0 pts' : '—'}
-                        </span>
-                      ) : <span className="text-xs text-slate-400">Sin pronóstico</span>}
+                      {pred ? <span>{ptsBadge}{penaltyBadge}</span> : <span className="text-xs text-slate-400">Sin pronóstico</span>}
                     </div>
                     <div className="flex items-center gap-3 px-4 py-3">
                       <Flag src={m.home_flag} className="w-7 h-7 shrink-0" />
@@ -1477,6 +1485,7 @@ export function ProdeApp({ empresa, participant, onLogout }: {
                     {pred && (
                       <div className="px-4 pb-3 text-xs text-slate-400">
                         Tu pronóstico: {pred.home_pred} - {pred.away_pred}
+                        {pred.penalty_pred && ` (pasa ${pred.penalty_pred === 'HOME' ? m.home_team : m.away_team})`}
                       </div>
                     )}
                   </div>
