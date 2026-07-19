@@ -371,12 +371,36 @@ export class ParticipantsService {
       .in('participant_id', ids.length > 0 ? ids : ['']);
     const withPush = new Set((subs ?? []).map((s: any) => s.participant_id));
 
+    const referrerIds = [...new Set((data ?? [])
+      .map((p: any) => p.referred_by_participant_id)
+      .filter(Boolean))];
+    const { data: referrers } = await this.supabase.client
+      .from('participants')
+      .select('id, name')
+      .in('id', referrerIds.length > 0 ? referrerIds : ['']);
+    const referrerNames = new Map((referrers ?? []).map((r: any) => [r.id, r.name]));
+
+    const { data: referredRows } = await this.supabase.client
+      .from('participants')
+      .select('referred_by_participant_id')
+      .eq('business_id', business.id)
+      .in('referred_by_participant_id', ids.length > 0 ? ids : ['']);
+    const referralCounts = new Map<string, number>();
+    for (const r of referredRows ?? []) {
+      const refId = (r as any).referred_by_participant_id;
+      referralCounts.set(refId, (referralCounts.get(refId) ?? 0) + 1);
+    }
+
     const enriched = (data ?? []).map((p: any) => ({
       ...p,
       predictions_count: p.predictions?.[0]?.count ?? 0,
       total_matches: totalMatches ?? 0,
       predictions: undefined,
       has_push_subscription: withPush.has(p.id),
+      referred_by_name: p.referred_by_participant_id
+        ? (referrerNames.get(p.referred_by_participant_id) ?? null)
+        : null,
+      referral_count: referralCounts.get(p.id) ?? 0,
     }));
 
     return { data: enriched, total: count ?? 0, page, limit };

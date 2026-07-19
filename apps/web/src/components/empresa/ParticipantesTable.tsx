@@ -18,6 +18,8 @@ interface Participant {
   total_matches: number
   is_disabled: boolean
   referred_by_participant_id: string | null
+  referred_by_name: string | null
+  referral_count: number
   has_push_subscription: boolean
 }
 
@@ -80,6 +82,7 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState(false)
   const [toggleError, setToggleError] = useState('')
+  const [referrals, setReferrals] = useState<{ name: string; registered_at: string }[]>([])
 
   useEffect(() => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'
@@ -88,6 +91,11 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
       .then(data => setPredictions(Array.isArray(data) ? data : []))
       .catch(() => {})
       .finally(() => setLoading(false))
+
+    fetch(`${API_URL}/referral-campaigns/participant-history/${participant.id}`)
+      .then(r => r.json())
+      .then(data => setReferrals(Array.isArray(data?.referrals) ? data.referrals : []))
+      .catch(() => {})
   }, [participant.id])
 
   const finished = predictions.filter(p => p.matches?.status === 'finished')
@@ -171,6 +179,22 @@ function ParticipantDrawer({ participant, plan, onClose, onToggleDisabled }: {
               {toggling ? <Loader2 size={12} className="animate-spin" /> : participant.is_disabled ? <CheckCircle size={12} /> : <Ban size={12} />}
               {participant.is_disabled ? 'Habilitar participante' : 'Deshabilitar participante'}
             </button>
+          </div>
+        )}
+
+        {referrals.length > 0 && (
+          <div className="px-5 py-3 border-b border-[#DDE1EF]">
+            <div className="text-[10px] font-black text-[#8E96AE] uppercase tracking-widest mb-2">
+              👥 Refirió a {referrals.length} {referrals.length === 1 ? 'persona' : 'personas'}
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {referrals.map((r, i) => (
+                <div key={i} className="flex items-center justify-between gap-2">
+                  <span className="text-[12px] font-bold text-[#0D1A3A] truncate">{r.name}</span>
+                  <span className="text-[11px] text-[#8E96AE] font-medium shrink-0">{formatDate(r.registered_at)}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -423,9 +447,20 @@ export function ParticipantesTable() {
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-[13px] font-extrabold text-[#0D1A3A] truncate">{p.name}</span>
-                          {p.referred_by_participant_id && (
-                            <span className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-black bg-[#EBF4FC] text-[#003FA3] border border-[#003FA3]/20">
-                              🔗 Referido
+                          {p.referred_by_name && (
+                            <span
+                              className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-black bg-[#EBF4FC] text-[#003FA3] border border-[#003FA3]/20"
+                              title={`Referido por ${p.referred_by_name}`}
+                            >
+                              🔗 Ref. por {p.referred_by_name}
+                            </span>
+                          )}
+                          {p.referral_count > 0 && (
+                            <span
+                              className="shrink-0 px-1.5 py-0.5 rounded-md text-[10px] font-black bg-[#E8F8F1] text-[#18A06A] border border-[#18A06A]/10"
+                              title={`Refirió a ${p.referral_count} ${p.referral_count === 1 ? 'persona' : 'personas'}`}
+                            >
+                              👥 {p.referral_count}
                             </span>
                           )}
                         </div>
