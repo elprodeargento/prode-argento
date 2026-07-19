@@ -124,6 +124,7 @@ export class LeaderboardService {
       .from('participants')
       .select('id, name, email, phone')
       .eq('business_id', businessId)
+      .eq('is_disabled', false)
       .order('registered_at', { ascending: true })
       .limit(limit)
 

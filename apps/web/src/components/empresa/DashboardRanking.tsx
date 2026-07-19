@@ -46,6 +46,7 @@ export function DashboardRanking() {
           .from('participants')
           .select('id, name')
           .eq('business_id', business.id)
+          .eq('is_disabled', false)
           .order('registered_at', { ascending: true })
           .limit(5)
 
