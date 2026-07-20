@@ -37,11 +37,12 @@ export function formatWCWeekLabel(week: WorldCupWeek): string {
 export function getCurrentWCWeekIdx(weeks: WorldCupWeek[]): number {
   const today = new Date()
   const t = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  return weeks.findIndex(w => {
+  const idx = weeks.findIndex(w => {
     const s = new Date(w.start.getFullYear(), w.start.getMonth(), w.start.getDate())
     const e = new Date(w.end.getFullYear(), w.end.getMonth(), w.end.getDate())
     return t >= s && t <= e
   })
+  return idx === -1 ? weeks.length - 1 : idx
 }
 
 export const WC_WEEKS = getWorldCupWeeks()
