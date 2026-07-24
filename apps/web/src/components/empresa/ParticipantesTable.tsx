@@ -347,11 +347,21 @@ export function ParticipantesTable() {
   async function handleExport() {
     setExporting(true)
     try {
-      const params = new URLSearchParams({ page: '1', limit: '10000', sortBy: sortCol, sortDir })
-      if (search) params.set('search', search)
-      const res = await apiGet<{ data: Participant[] }>(`/participants/me?${params}`)
+      const pageLimit = 1000
+      let all: Participant[] = []
+      let exportPage = 1
+      let expectedTotal = Infinity
+      while (all.length < expectedTotal) {
+        const params = new URLSearchParams({ page: String(exportPage), limit: String(pageLimit), sortBy: sortCol, sortDir })
+        if (search) params.set('search', search)
+        const res = await apiGet<{ data: Participant[]; total: number }>(`/participants/me?${params}`)
+        expectedTotal = res.total ?? 0
+        all = all.concat(res.data || [])
+        if (!res.data || res.data.length === 0) break
+        exportPage++
+      }
       trackEvent('biz_participants_exported')
-      exportCSV(res.data || [])
+      exportCSV(all)
     } catch (e) {
       console.error('Export error:', e)
     } finally {
